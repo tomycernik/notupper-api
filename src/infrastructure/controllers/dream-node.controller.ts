@@ -108,7 +108,7 @@ export class DreamNodeController {
     try {
       const userId = (req as any).userId;
       const { description, previousInterpretation } = req.body;
-      
+
       const userDreamContext = await this.contextService.getUserDreamContext(userId);
       const reinterpretedDream = await this.interpretationDreamService.reinterpretDream(
         description,

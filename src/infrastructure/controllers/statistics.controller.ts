@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { StatisticsService } from '../../application/services/statistics.service';
 import { StatisticsResponseDto } from '../dtos/statistics/statistics-response.dto';
 
-
 export class StatisticsController {
   constructor(private statisticsService: StatisticsService) {}
 

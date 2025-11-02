@@ -200,7 +200,6 @@ describe('StatisticsService', () => {
     });
   });
 
-
   describe('getContextStatistics', () => {
     it('should return the top items for each context category', () => {
       // Act

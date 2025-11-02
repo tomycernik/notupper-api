@@ -118,7 +118,7 @@ export class MissionService {
     return null;
   }
 
-  //calcula la racha antes de guardar el sueño actual
+  //calcula la racha antes de guardar el sueño actual (evalua si el usuario acaba de aumentar su racha o si ya tenia sueños guardados en el dia)
   private async estimatePreviousStreak(profileId: string, currentStreak: number): Promise<number> {
     const now = new Date();
     // Obtiene el inicio y el fin del día actual en UTC
@@ -138,7 +138,7 @@ export class MissionService {
     const today = new Date();
     const lookbackDays = 60;
     const from = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - lookbackDays));
-    const to = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + 1)); // inclusive of today
+    const to = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() + 1));
 
     const filters = {
       from: from.toISOString(),
@@ -147,10 +147,10 @@ export class MissionService {
 
     const dreams = await this.dreamNodeRepository.getUserNodes(profileId, filters, { page: 1, limit: 1000, offset: 0 });
 
-   /* daySet contiene el string con las fechas de creacion de sueños de los ultimos 60 dias y esas fehcas les da un formato especifico,
-    recorre todos los sueños y si la fecha se normaliza correctamente, la agrega al set.
-   luego se hace un for 60 veces (60 dias), donde se hace una key con la fecha normalizada contando desde hoy hasta 60 dias atras.
-   Si dayset contiene esa fecha en el set, se suma uno a la racha, si no, se corta*/
+   /* se recorre un for 60 veces, i seria el dia recorrido, 
+   normaliza cada fecha teniendo en cuenta los dias 
+   que pasen (i) y luego verifica si esa fecha esta en el dayset*/
+   
     const daySet = new Set<string>();
     for (const d of dreams) {
 

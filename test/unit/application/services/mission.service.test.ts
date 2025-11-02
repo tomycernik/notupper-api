@@ -80,15 +80,15 @@ describe('MissionService - Badges', () => {
     badgeRepository.getBadgeById.mockResolvedValue({ id: 'b2' });
     dreamNodeRepository.countUserNodes.mockImplementation((_profileId: any, filters: any) => {
       if (filters && filters.from && filters.to &&
-        filters.from.startsWith('2025-11-01') && filters.to.startsWith('2025-11-02')) {
-        return Promise.resolve(1);
+        filters.from.startsWith('2025-11-02') && filters.to.startsWith('2025-11-03')) {
+        return Promise.resolve(0);
       }
-      return Promise.resolve(5);
+      return Promise.resolve(3);
     });
     dreamNodeRepository.getUserNodes.mockResolvedValue([
+      { creationDate: '2025-11-02T00:00:00.000Z' },
       { creationDate: '2025-11-01T00:00:00.000Z' },
-      { creationDate: '2025-10-31T00:00:00.000Z' },
-      { creationDate: '2025-10-30T00:00:00.000Z' }
+      { creationDate: '2025-10-31T00:00:00.000Z' }
     ]);
 
     const badges = await missionService.onDreamSaved('user');

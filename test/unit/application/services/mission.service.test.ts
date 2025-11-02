@@ -1,5 +1,4 @@
 import { MissionService } from '../../../../src/application/services/mission.service';
-import { Badge } from '../../../../src/domain/models/badge.model';
 
 describe('MissionService - Badges', () => {
   let missionService: MissionService;

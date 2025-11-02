@@ -1,5 +1,4 @@
 import { IMissionRepository } from "../../../../src/domain/repositories/mission.repository";
-import { Mission, UserMissionProgress } from "../../../../src/domain/models/mission.model";
 
 describe("MissionRepository", () => {
   let repo: IMissionRepository;

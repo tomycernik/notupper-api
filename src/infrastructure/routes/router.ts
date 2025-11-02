@@ -3,6 +3,7 @@ import { dreamNodeRouter } from "./modules/dream-node.routes";
 import { badgeRouter } from "./modules/badge.routes";
 import { userRouter } from "./modules/user.routes";
 import { missionRouter } from "./modules/mission.routes";
+import { statisticsRouter } from "./modules/statistics.routes";
 import { paymentRouter } from "./modules/payment.routes";
 
 export class AppRoutes {
@@ -14,6 +15,7 @@ export class AppRoutes {
     router.use("/api/badges", badgeRouter);
     router.use("/api/missions", missionRouter);
     router.use("/api/users", userRouter);
+    router.use("/api/statistics", statisticsRouter);
     router.use("/api/payments", paymentRouter);
     return router;
   }

@@ -7,13 +7,12 @@ export class RoomRepositorySupabase implements IRoomRepository {
     const { data, error } = await supabase
       .from('user_room')
       .select(`
+        is_active,
         room:room_id (
           id,
           name,
           description,
           image_url,
-          preview_light,
-          preview_dark,
           model_url,
           price,
           is_default,
@@ -25,29 +24,37 @@ export class RoomRepositorySupabase implements IRoomRepository {
 
     if (error) throw new Error(error.message);
 
-    // Transformamos la estructura para que coincida con Room[]
-    const rooms = data?.map((item: any) => {
+    // Obtener todas las skins compatibles para cada room
+    const rooms = await Promise.all(data?.map(async (item: any) => {
       const room = item.room;
+
+      // Consultar skins que tienen room_id = este room.id
+      const { data: compatibleSkinsData } = await supabase
+        .from('skin')
+        .select('id')
+        .eq('room_id', room.id);
+
+      const compatibleSkins = compatibleSkinsData?.map((s: any) => s.id) || [];
+
       return {
         id: room.id,
         name: room.name,
         description: room.description,
         imageUrl: room.image_url,
-        previewLight: room.preview_light,
-        previewDark: room.preview_dark,
         modelUrl: room.model_url,
         price: room.price,
         isDefault: room.is_default,
         includedInPlan: room.included_in_plan,
         createdAt: room.created_at,
-        ownershipStatus: 'owned'
+        compatibleSkins,
+        active: item.is_active || false
       };
-    }) || [];
+    }) || []);
 
     return rooms;
   }
 
-  async getDefaultRooms(): Promise<Room[]> {
+  async getDefaultRoom(): Promise<Room | null> {
     const { data, error } = await supabase
       .from('room')
       .select(`
@@ -55,8 +62,6 @@ export class RoomRepositorySupabase implements IRoomRepository {
         name,
         description,
         image_url,
-        preview_light,
-        preview_dark,
         model_url,
         price,
         is_default,
@@ -64,26 +69,35 @@ export class RoomRepositorySupabase implements IRoomRepository {
         created_at
       `)
       .eq('is_default', true)
-      .order('created_at', { ascending: false });
+      .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw new Error(error.message);
+    }
 
-    const rooms = (data as any)?.map((room: any) => ({
-      id: room.id,
-      name: room.name,
-      description: room.description,
-      imageUrl: room.image_url,
-      previewLight: room.preview_light,
-      previewDark: room.preview_dark,
-      modelUrl: room.model_url,
-      price: room.price,
-      isDefault: room.is_default,
-      includedInPlan: room.included_in_plan,
-      createdAt: room.created_at,
-      ownershipStatus: 'not_owned'
-    })) || [];
+    if (!data) return null;
 
-    return rooms;
+    // Obtener skins compatibles
+    const { data: compatibleSkinsData } = await supabase
+      .from('skin')
+      .select('id')
+      .eq('room_id', data.id);
+
+    const compatibleSkins = compatibleSkinsData?.map((s: any) => s.id) || [];
+
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      imageUrl: data.image_url,
+      modelUrl: data.model_url,
+      price: data.price,
+      isDefault: data.is_default,
+      includedInPlan: data.included_in_plan,
+      createdAt: data.created_at,
+      compatibleSkins
+    };
   }
 
   async findById(roomId: string): Promise<Room | null> {
@@ -161,27 +175,84 @@ export class RoomRepositorySupabase implements IRoomRepository {
     return room;
   }
 
-  async setOwnershipStatus(roomId: string, userId: string, ownershipStatus: string): Promise<Room> {
-    if (ownershipStatus === 'owned') {
-      const { error } = await supabase
-        .from('user_room')
-        .insert([{ profile_id: userId, room_id: roomId }]);
+  async getActiveRoom(userId: string): Promise<Room | null> {
+    const { data, error } = await supabase
+      .from('user_room')
+      .select(`
+        is_active,
+        room:room_id (
+          id,
+          name,
+          description,
+          image_url,
+          model_url,
+          price,
+          is_default,
+          included_in_plan,
+          created_at
+        )
+      `)
+      .eq('profile_id', userId)
+      .eq('is_active', true)
+      .single();
 
-      if (error) throw new Error(error.message);
-    } else if (ownershipStatus === 'not_owned') {
-      const { error } = await supabase
-        .from('user_room')
-        .delete()
-        .eq('profile_id', userId)
-        .eq('room_id', roomId);
-
-      if (error) throw new Error(error.message);
-    } else {
-      throw new Error('Invalid ownership status');
+    if (error || !data || !(data as any).room) {
+      return null;
     }
 
-    const room = await this.findById(roomId);
-    if (!room) throw new Error('Room not found');
-    return room;
+    const room = (data as any).room;
+
+    const { data: compatibleSkinsData } = await supabase
+      .from('skins')
+      .select('id')
+      .eq('room_id', room.id);
+
+    const compatibleSkins = compatibleSkinsData?.map((s: any) => s.id) || [];
+
+    return {
+      id: room.id,
+      name: room.name,
+      description: room.description,
+      imageUrl: room.image_url,
+      modelUrl: room.model_url,
+      price: room.price,
+      isDefault: room.is_default,
+      includedInPlan: room.included_in_plan,
+      createdAt: room.created_at,
+      active: true,
+      compatibleSkins
+    };
+  }
+
+  async setActiveRoom(userId: string, roomId: string): Promise<void> {
+    const { data: userRoom } = await supabase
+      .from('user_room')
+      .select('room_id')
+      .eq('profile_id', userId)
+      .eq('room_id', roomId)
+      .single();
+
+    if (!userRoom) {
+      throw new Error('El usuario no tiene acceso a esta habitación');
+    }
+
+    const { error: deactivateError } = await supabase
+      .from('user_room')
+      .update({ is_active: false })
+      .eq('profile_id', userId);
+
+    if (deactivateError) {
+      throw new Error(deactivateError.message);
+    }
+
+    const { error: activateError } = await supabase
+      .from('user_room')
+      .update({ is_active: true })
+      .eq('profile_id', userId)
+      .eq('room_id', roomId);
+
+    if (activateError) {
+      throw new Error(activateError.message);
+    }
   }
 }

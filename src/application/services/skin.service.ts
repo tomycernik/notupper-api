@@ -1,7 +1,6 @@
 import { Skin } from '../../domain/interfaces/skin.interface';
 import { GetUserSkinsResponseDto, SkinResponseDto } from '../../infrastructure/dtos/skin/get-user-skins.dto';
 import { ISkinRepository } from '../../domain/repositories/skin.repository';
-import { supabase } from '../../config/supabase';
 
 export class SkinService {
   constructor(private readonly skinRepository: ISkinRepository) {}
@@ -14,24 +13,24 @@ export class SkinService {
         message: 'ID de usuario no proporcionado'
       };
     }
-
     try {
       const skins = await this.skinRepository.getUserSkins(userId);
-      const skinResponses: SkinResponseDto[] = skins.map(skin => {
+
+      const skinResponses: SkinResponseDto[] = skins.map((skin) => {
         const response: SkinResponseDto = {
           id: skin.id,
           name: skin.name,
-          creationDate: skin.createdAt,
-          userId: userId,
-          isActive: true,
-          isDefault: skin.isDefault,
-          ownershipStatus: skin.isDefault ? 'default' : 'owned'
+          price: skin.price ? { amount: skin.price, currency: 'coins' } : null,
+          createdAt: skin.createdAt
         };
 
         if (skin.description) response.description = skin.description;
         if (skin.imageUrl) response.imageUrl = skin.imageUrl;
-        if (skin.compatibleRooms) response.compatibleRooms = skin.compatibleRooms;
         if (skin.previewLight) response.previewLight = skin.previewLight;
+        if (skin.previewDark) response.previewDark = skin.previewDark;
+        if (skin.roomId) response.roomId = skin.roomId;
+        if (skin.textureSet) response.textureSet = skin.textureSet;
+        if (skin.includedInPlan) response.includedInPlan = skin.includedInPlan;
 
         return response;
       });
@@ -116,47 +115,4 @@ export class SkinService {
     return await this.skinRepository.removeCompatibleRoom(skinId, roomId);
   }
 
-  async setSkinOwnership(skinId: string, userId: string, ownershipStatus: string): Promise<Skin> {
-    return await this.skinRepository.setOwnershipStatus(skinId, userId, ownershipStatus);
-  }
-
-  async checkSkinAccess(skinId: string, userId: string): Promise<boolean> {
-    if (!skinId || !userId) {
-      return false;
-    }
-
-    try {
-      const skin = await this.getSkinById(skinId);
-      if (!skin) {
-        return false;
-      }
-
-      if (skin.isDefault) {
-        return true;
-      }
-
-      const userSkins = await this.getUserSkins(userId);
-      if (userSkins.success) {
-        const userHasSkin = userSkins.data.some(userSkin => userSkin.id === skinId);
-        if (userHasSkin) {
-          return true;
-        }
-      }
-
-      const { data: userProfile } = await supabase
-        .from('profiles')
-        .select('subscription_plan')
-        .eq('id', userId)
-        .single();
-
-      if (skin.includedInPlan && userProfile?.subscription_plan === skin.includedInPlan) {
-        return true;
-      }
-
-      return false;
-    } catch (error) {
-      console.error('Error al verificar el acceso al skin:', error);
-      return false;
-    }
-  }
 }

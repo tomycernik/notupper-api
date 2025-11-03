@@ -48,14 +48,13 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
       5. Personas mencionadas (si las hay)
       6. Ubicaciones mencionadas (si las hay)
       7. Emociones contextuales presentes (máximo 3)
-      8. El tipo de sueño (Recurrente|Lucido|Pesadilla|Estándar)
+      8. El tipo de sueño (Lucido|Pesadilla|Estándar)
 
       Sueño: ${dreamText}
 
       Tipos de sueños posibles (DEBES ELEGIR SOLO UNO):
       - **Lúcido:** si el sueño menciona que el soñante es consciente de estar soñando, puede controlar sus acciones, volar a voluntad, o manipular el entorno del sueño. Ejemplos: 'me di cuenta que estaba soñando', 'podía controlar mis acciones', 'decidí volar', 'cambié algo del sueño a voluntad'.
       - **Pesadilla:** si el sueño provoca miedo, angustia o ansiedad intensa, a menudo con sensación de peligro o persecución. El soñante no tiene control sobre la situación.
-      - **Recurrente:** si el sueño repite elementos significativos de sueños anteriores (lugares, personas, situaciones).
       - **Estándar:** solo si no encaja en ninguna de las categorías anteriores.
 
       Responde EXACTAMENTE en este formato JSON (sin comentarios ni texto adicional):
@@ -67,7 +66,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         "people": ["persona1"],
         "locations": ["ubicación1"],
         "emotions_context": ["emoción1", "emoción2"],
-        "dreamType": "Recurrente|Lucido|Pesadilla|Estándar"
+        "dreamType": "Lucido|Pesadilla|Estándar"
       }`;
 
             const modelUsed =
@@ -133,10 +132,10 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
           isRecurring = result.isRecurring;
         }
 
-        if (isRecurring) {
+        if (isRecurring && dreamType == 'Estandar') {
           dreamType = 'Recurrente';
         } else {
-          const allowedDreamTypes = new Set(["Lucido", "Pesadilla", "Recurrente", "Estandar"]);
+          const allowedDreamTypes = new Set(["Lucido", "Pesadilla", "Estandar"]);
           let rawDreamType = aiResult.dreamType || 'Estandar';
           rawDreamType = rawDreamType
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -247,7 +246,6 @@ INSTRUCCIONES ESTRICTAS:
       Tipos de sueños posibles (DEBES ELEGIR SOLO UNO):
       - **Lúcido:** si el sueño menciona que el soñante es consciente de estar soñando, puede controlar sus acciones, volar a voluntad, o manipular el entorno del sueño. Ejemplos: 'me di cuenta que estaba soñando', 'podía controlar mis acciones', 'decidí volar', 'cambié algo del sueño a voluntad'.
       - **Pesadilla:** si el sueño provoca miedo, angustia o ansiedad intensa, a menudo con sensación de peligro o persecución. El soñante no tiene control sobre la situación.
-      - **Recurrente:** si el sueño repite elementos significativos de sueños anteriores (lugares, personas, situaciones).
       - **Estándar:** solo si no encaja en ninguna de las categorías anteriores.
 
 Responde EXACTAMENTE en este formato JSON:
@@ -258,8 +256,8 @@ Responde EXACTAMENTE en este formato JSON:
   "themes": ["tema1", "tema2"],
   "people": ["persona1"],
   "locations": ["ubicación1"],
-  "emotions_context": ["emoción1", "emoción2"]
-  "dreamType": "Lucido|Pesadilla|Recurrente|Estandar"
+  "emotions_context": ["emoción1", "emoción2"],
+  "dreamType": "Lucido|Pesadilla|Estandar"
 }`;
 
       const modelUsed =
@@ -318,6 +316,30 @@ Responde EXACTAMENTE en este formato JSON:
           rawDreamType === 'recurrente' ? 'Recurrente' :
           'Estandar'
         ) as DreamTypeName;
+         let isRecurring = false;
+
+          const dreamAnalysis = {
+          themes: Array.isArray(aiResult.themes) ? aiResult.themes : [],
+          people: Array.isArray(aiResult.people) ? aiResult.people : [],
+          locations: Array.isArray(aiResult.locations) ? aiResult.locations : [],
+          emotions: Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : []
+        };
+
+        if (dreamContext) {
+          const result = isRecurringDream(dreamAnalysis, dreamContext);
+          isRecurring = result.isRecurring;
+        }
+
+        if (isRecurring && dreamType == 'Estandar') {
+          dreamType = 'Recurrente';
+        } else {
+          const allowedDreamTypes = new Set(["Lucido", "Pesadilla", "Estandar"]);
+          let rawDreamType = aiResult.dreamType || 'Estandar';
+          rawDreamType = rawDreamType
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
+          dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
+        }
       } catch (parseError) {
         console.error(
           "Error parseando JSON de OpenAI en reinterpretación:",

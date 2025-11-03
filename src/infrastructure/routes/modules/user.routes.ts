@@ -6,13 +6,25 @@ import { validateBody } from "../../middlewares/validate-class.middleware";
 import { RegisterUserDTO } from "../../dtos/user/register-user.dto";
 import { LoginDTO } from "../../dtos/user/login.dto";
 import { authenticateToken } from "../../middlewares/auth.middleware";
+import { SetActiveRoomDto } from "../../dtos/room/set-active-room.dto";
+import { SkinService } from "../../../application/services/skin.service";
+import { RoomService } from "../../../application/services/room.service";
+import { RoomRepositorySupabase } from "../../repositories/room.repository.supabase";
+import { SkinRepositorySupabase } from "../../repositories/skin.repository.supabase";
 
 export const userRouter = Router();
 const userRepository = new UserRepository();
+const skinRepository = new SkinRepositorySupabase();
+const roomRepository = new RoomRepositorySupabase();
 const userService = new UserService(userRepository);
-const userController = new UserController(userService);
+const skinService = new SkinService(skinRepository);
+const roomService = new RoomService(roomRepository);
+const userController = new UserController(userService, skinService, roomService);
 
 userRouter.post("/register", validateBody(RegisterUserDTO),(req, res) => userController.register(req, res));
 userRouter.post("/login", validateBody(LoginDTO), (req, res) => userController.login(req, res));
+userRouter.get("/assets", authenticateToken, (req, res) => userController.getUserAssets(req, res));
 userRouter.get("/skins", authenticateToken, (req, res) => userController.getUserSkins(req, res));
 userRouter.get("/rooms", authenticateToken, (req, res) => userController.getUserRooms(req, res));
+userRouter.get("/rooms/active", authenticateToken, (req, res) => userController.getActiveRoom(req, res));
+userRouter.post("/rooms/active", authenticateToken, validateBody(SetActiveRoomDto), (req, res) => userController.setActiveRoom(req, res));

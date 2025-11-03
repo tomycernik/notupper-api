@@ -1,7 +1,6 @@
 import { Room } from '../../domain/interfaces/room.interface';
 import { GetUserRoomsResponseDto, RoomResponseDto } from '../../infrastructure/dtos/room/get-user-rooms.dto';
 import { IRoomRepository } from '../../domain/repositories/room.repository';
-import { supabase } from '../../config/supabase';
 
 export class RoomService {
   constructor(private readonly roomRepository: IRoomRepository) {}
@@ -17,7 +16,7 @@ export class RoomService {
 
     try {
       const rooms = await this.roomRepository.getUserRooms(userId);
-      const mappedRooms = await this.mapToResponseDto(rooms, userId);
+      const mappedRooms = this.mapToResponseDto(rooms);
       return {
         success: true,
         data: mappedRooms
@@ -32,12 +31,12 @@ export class RoomService {
     }
   }
 
-  async getDefaultRooms(): Promise<Room[]> {
+  async getDefaultRoom(): Promise<Room | null> {
     try {
-      return await this.roomRepository.getDefaultRooms();
+      return await this.roomRepository.getDefaultRoom();
     } catch (error) {
       console.error('Error al obtener las habitaciones por defecto:', error);
-      return [];
+      return null;
     }
   }
 
@@ -98,72 +97,52 @@ export class RoomService {
     return await this.roomRepository.removeCompatibleSkin(roomId, skinId);
   }
 
-  async setRoomOwnership(roomId: string, userId: string, ownershipStatus: string): Promise<Room> {
-    const room = await this.getRoomById(roomId);
-    if (!room) {
-      throw new Error('Habitación no encontrada');
-    }
-
-    const hasAccess = await this.checkRoomAccess(roomId, userId);
-    if (!hasAccess) {
-      throw new Error('No tienes permiso para modificar esta habitación');
-    }
-
-    return await this.roomRepository.setOwnershipStatus(roomId, userId, ownershipStatus);
-  }
-
-  async checkRoomAccess(roomId: string, userId: string): Promise<boolean> {
-    if (!roomId || !userId?.trim()) {
-      return false;
+  async getActiveRoom(userId: string): Promise<Room | null> {
+    if (!userId || userId.trim() === '') {
+      throw new Error('ID de usuario no proporcionado');
     }
 
     try {
-      const room = await this.getRoomById(roomId);
-      if (!room) {
-        return false;
-      }
-
-      if (room.isDefault || room.price === 0) {
-        return true;
-      }
-
-      const { data: userRoom } = await supabase
-        .from('user_items')
-        .select('ownership_type')
-        .eq('user_id', userId)
-        .eq('item_id', roomId)
-        .eq('item_type', 'room')
-        .single();
-
-      if (userRoom?.ownership_type === 'owned') {
-        return true;
-      }
-
-      const { data: userProfile } = await supabase
-        .from('profiles')
-        .select('subscription_plan')
-        .eq('id', userId)
-        .single();
-
-      return !!(userProfile?.subscription_plan && room.includedInPlan === userProfile.subscription_plan);
+      return await this.roomRepository.getActiveRoom(userId);
     } catch (error) {
-      console.error('Error al verificar acceso a la habitación:', error);
-      return false;
+      console.error('Error al obtener la habitación activa:', error);
+      return null;
     }
   }
 
-  private async mapToResponseDto(rooms: Room[], userId: string): Promise<RoomResponseDto[]> {
-    const mappedRooms: RoomResponseDto[] = [];
-
-    for (const room of rooms) {
-      const hasAccess = await this.checkRoomAccess(room.id, userId);
-      const mappedRoom: RoomResponseDto = {
-        ...room,
-        hasAccess
-      };
-      mappedRooms.push(mappedRoom);
+  async setActiveRoom(userId: string, roomId: string): Promise<void> {
+    if (!userId?.trim()) {
+      throw new Error('ID de usuario no proporcionado');
+    }
+    if (!roomId?.trim()) {
+      throw new Error('ID de habitación no proporcionado');
     }
 
-    return mappedRooms;
+    try {
+      await this.roomRepository.setActiveRoom(userId, roomId);
+    } catch (error: any) {
+      console.error('Error setting active room:', error);
+      throw error;
+    }
+  }
+
+  private mapToResponseDto(rooms: Room[]): RoomResponseDto[] {
+    return rooms.map((room) => {
+      const response: RoomResponseDto = {
+        id: room.id,
+        name: room.name,
+        price: room.price ? { amount: room.price, currency: 'coins' } : null,
+        active: room.active || false,
+        compatible_textures: room.compatibleSkins || [],
+        created_at: room.createdAt.toString()
+      };
+
+      if (room.description) response.description = room.description;
+      if (room.imageUrl) response.image_url = room.imageUrl;
+      if (room.modelUrl) response.model_url = room.modelUrl;
+      if (room.includedInPlan) response.included_in_plan = room.includedInPlan;
+
+      return response;
+    });
   }
 }

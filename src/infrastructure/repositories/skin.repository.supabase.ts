@@ -14,14 +14,10 @@ export class SkinRepositorySupabase implements ISkinRepository {
           image_url,
           preview_light,
           preview_dark,
-          supports_themes,
-          objects_light,
-          objects_dark,
-          walls_light,
-          walls_dark,
+          texture_set,
           price,
-          is_default,
           included_in_plan,
+          room_id,
           created_at
         )
       `)
@@ -38,17 +34,11 @@ export class SkinRepositorySupabase implements ISkinRepository {
         imageUrl: skin.image_url,
         previewLight: skin.preview_light,
         previewDark: skin.preview_dark,
-        supportsThemes: skin.supports_themes || false,
-        objectsLight: skin.objects_light,
-        objectsDark: skin.objects_dark,
-        wallsLight: skin.walls_light,
-        wallsDark: skin.walls_dark,
         price: skin.price,
-        isDefault: skin.is_default,
-        isActive: true,
         includedInPlan: skin.included_in_plan,
         createdAt: skin.created_at,
-        ownershipStatus: 'owned'
+        roomId: skin.room_id,
+        textureSet: skin.texture_set
       };
     }) || [];
 
@@ -57,9 +47,8 @@ export class SkinRepositorySupabase implements ISkinRepository {
 
   async getDefaultSkins(): Promise<Skin[]> {
     const { data, error } = await supabase
-      .from('skin')
+      .from('skins')
       .select('*')
-      .eq('is_default', true)
       .order('created_at', { ascending: false });
 
     if (error) throw new Error(error.message);
@@ -71,17 +60,11 @@ export class SkinRepositorySupabase implements ISkinRepository {
       imageUrl: skin.image_url,
       previewLight: skin.preview_light,
       previewDark: skin.preview_dark,
-      supportsThemes: skin.supports_themes || false,
-      objectsLight: skin.objects_light,
-      objectsDark: skin.objects_dark,
-      wallsLight: skin.walls_light,
-      wallsDark: skin.walls_dark,
       price: skin.price,
-      isDefault: skin.is_default,
-      isActive: true,
       includedInPlan: skin.included_in_plan,
       createdAt: skin.created_at,
-      ownershipStatus: 'not_owned'
+      roomId: skin.room_id,
+      textureSet: skin.texture_set
     })) || [];
 
     return skins;
@@ -89,7 +72,7 @@ export class SkinRepositorySupabase implements ISkinRepository {
 
   async findById(skinId: string): Promise<Skin | null> {
     const { data, error } = await supabase
-      .from('skin')
+      .from('skins')
       .select('*')
       .eq('id', skinId)
       .single();
@@ -99,49 +82,120 @@ export class SkinRepositorySupabase implements ISkinRepository {
       throw new Error(error.message);
     }
 
-    return data as Skin;
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      imageUrl: data.image_url,
+      previewLight: data.preview_light,
+      previewDark: data.preview_dark,
+      price: data.price,
+      includedInPlan: data.included_in_plan,
+      createdAt: data.created_at,
+      roomId: data.room_id,
+      textureSet: data.texture_set
+    };
   }
 
   async getCompatibleSkins(roomId: string): Promise<Skin[]> {
     const { data, error } = await supabase
-      .from('skin')
+      .from('skins')
       .select('*')
-      .contains('compatible_rooms', [roomId])
+      .eq('room_id', roomId)
       .order('created_at', { ascending: false });
 
     if (error) throw new Error(error.message);
 
-    return data as Skin[];
+    const skins = (data as any)?.map((skin: any) => ({
+      id: skin.id,
+      name: skin.name,
+      description: skin.description,
+      imageUrl: skin.image_url,
+      previewLight: skin.preview_light,
+      previewDark: skin.preview_dark,
+      price: skin.price,
+      includedInPlan: skin.included_in_plan,
+      createdAt: skin.created_at,
+      roomId: skin.room_id,
+      textureSet: skin.texture_set
+    })) || [];
+
+    return skins;
   }
 
   async create(skin: Omit<Skin, 'id' | 'createdAt'>): Promise<Skin> {
     const { data, error } = await supabase
-      .from('skin')
-      .insert([skin])
+      .from('skins')
+      .insert([{
+        name: skin.name,
+        description: skin.description,
+        image_url: skin.imageUrl,
+        preview_light: skin.previewLight,
+        preview_dark: skin.previewDark,
+        texture_set: skin.textureSet,
+        price: skin.price,
+        included_in_plan: skin.includedInPlan,
+        room_id: skin.roomId
+      }])
       .select()
       .single();
 
     if (error) throw new Error(error.message);
 
-    return data as Skin;
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      imageUrl: data.image_url,
+      previewLight: data.preview_light,
+      previewDark: data.preview_dark,
+      price: data.price,
+      includedInPlan: data.included_in_plan,
+      createdAt: data.created_at,
+      roomId: data.room_id,
+      textureSet: data.texture_set
+    };
   }
 
   async update(skinId: string, skin: Partial<Skin>): Promise<Skin> {
+    const updateData: any = {};
+    if (skin.name !== undefined) updateData.name = skin.name;
+    if (skin.description !== undefined) updateData.description = skin.description;
+    if (skin.imageUrl !== undefined) updateData.image_url = skin.imageUrl;
+    if (skin.previewLight !== undefined) updateData.preview_light = skin.previewLight;
+    if (skin.previewDark !== undefined) updateData.preview_dark = skin.previewDark;
+    if (skin.textureSet !== undefined) updateData.texture_set = skin.textureSet;
+    if (skin.price !== undefined) updateData.price = skin.price;
+    if (skin.includedInPlan !== undefined) updateData.included_in_plan = skin.includedInPlan;
+    if (skin.roomId !== undefined) updateData.room_id = skin.roomId;
+
     const { data, error } = await supabase
-      .from('skin')
-      .update(skin)
+      .from('skins')
+      .update(updateData)
       .eq('id', skinId)
       .select()
       .single();
 
     if (error) throw new Error(error.message);
 
-    return data as Skin;
+    return {
+      id: data.id,
+      name: data.name,
+      description: data.description,
+      imageUrl: data.image_url,
+      previewLight: data.preview_light,
+      previewDark: data.preview_dark,
+      price: data.price,
+      includedInPlan: data.included_in_plan,
+      createdAt: data.created_at,
+      roomId: data.room_id,
+      textureSet: data.texture_set
+    };
   }
 
   async delete(skinId: string): Promise<void> {
     const { error } = await supabase
-      .from('skin')
+      .from('skins')
       .delete()
       .eq('id', skinId);
 

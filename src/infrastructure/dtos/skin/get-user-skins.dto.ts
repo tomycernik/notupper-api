@@ -3,16 +3,16 @@ export interface SkinResponseDto {
   name: string;
   description?: string;
   imageUrl?: string;
-  creationDate: string;
-  userId: string;
-  isActive: boolean;
-  isDefault: boolean;
-  ownershipStatus: string;
-  compatibleRooms?: string[];
   previewLight?: string;
   previewDark?: string;
-  price?: number;
-  includedInPlan?: string;
+  roomId?: string;
+  textureSet?: Record<string, any>;
+  price?: {
+    amount: number;
+    currency: string;
+  } | null;
+  includedInPlan?: string | null;
+  createdAt: string;
 }
 
 export interface GetUserSkinsResponseDto {

@@ -48,11 +48,8 @@ describe('RoomService', () => {
     name: 'Living Room',
     description: 'A cozy room',
     imageUrl: 'https://example.com/room1.png',
-    previewLight: 'https://example.com/room1-light.png',
-    previewDark: 'https://example.com/room1-dark.png',
     modelUrl: 'https://example.com/room1.glb',
     isDefault: true,
-    ownershipStatus: 'owned',
     compatibleSkins: ['skin1', 'skin2'],
     createdAt: new Date('2025-10-30T00:00:00Z'),
     ...override
@@ -65,13 +62,10 @@ describe('RoomService', () => {
       name: 'Bedroom',
       description: 'A peaceful room',
       imageUrl: 'https://example.com/room2.png',
-      previewLight: 'https://example.com/room2-light.png',
-      previewDark: 'https://example.com/room2-dark.png',
       modelUrl: 'https://example.com/room2.glb',
       isDefault: false,
       price: 100,
       includedInPlan: 'premium',
-      ownershipStatus: 'available',
       compatibleSkins: ['skin1'],
       createdAt: new Date('2025-10-30T00:00:00Z')
     })
@@ -80,13 +74,18 @@ describe('RoomService', () => {
   beforeEach(() => {
     mockRoomRepository = {
       getUserRooms: jest.fn(),
-      getDefaultRooms: jest.fn(),
+      getDefaultRoom: jest.fn(),
       findById: jest.fn(),
       getCompatibleSkins: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-      getDefaultRoomsWithDependencies: jest.fn()
+      getDefaultRoomsWithDependencies: jest.fn(),
+      addCompatibleSkin: jest.fn(),
+      removeCompatibleSkin: jest.fn(),
+      setOwnershipStatus: jest.fn(),
+      getActiveRoom: jest.fn(),
+      setActiveRoom: jest.fn()
     } as any;
 
     roomService = new RoomService(mockRoomRepository);
@@ -100,19 +99,16 @@ describe('RoomService', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(2);
-      expect(result.data[0]).toEqual({
+      expect(result.data[0]).toMatchObject({
         id: '1',
         name: 'Living Room',
         description: 'A cozy room',
-        imageUrl: 'https://example.com/room1.png',
-        previewLight: 'https://example.com/room1-light.png',
-        previewDark: 'https://example.com/room1-dark.png',
-        modelUrl: 'https://example.com/room1.glb',
-        isDefault: true,
-        ownershipStatus: 'owned',
-        compatibleSkins: ['skin1', 'skin2'],
-        hasAccess: false,
-        createdAt: new Date('2025-10-30T00:00:00Z')
+        image_url: 'https://example.com/room1.png',
+        model_url: 'https://example.com/room1.glb',
+        price: null,
+        active: expect.any(Boolean),
+        compatible_textures: expect.arrayContaining(['skin1', 'skin2']),
+        created_at: expect.any(String)
       });
       expect(mockRoomRepository.getUserRooms).toHaveBeenCalledWith('user1');
     });
@@ -139,73 +135,24 @@ describe('RoomService', () => {
     });
   });
 
-  describe('getDefaultRooms', () => {
-    it('should return default rooms successfully', async () => {
-      const defaultRooms = mockRooms.filter(room => room.isDefault);
-      mockRoomRepository.getDefaultRooms.mockResolvedValue(defaultRooms);
+  describe('getDefaultRoom', () => {
+    it('should return default room successfully', async () => {
+      const defaultRoom = createMockRoom({ isDefault: true });
+      mockRoomRepository.getDefaultRoom.mockResolvedValue(defaultRoom);
 
-      const result = await roomService.getDefaultRooms();
+      const result = await roomService.getDefaultRoom();
 
-      expect(result).toEqual(defaultRooms);
-      expect(mockRoomRepository.getDefaultRooms).toHaveBeenCalled();
+      expect(result).toEqual(defaultRoom);
+      expect(mockRoomRepository.getDefaultRoom).toHaveBeenCalled();
     });
 
     it('should handle errors gracefully', async () => {
       const error = new Error('Database error');
-      mockRoomRepository.getDefaultRooms.mockRejectedValue(error);
+      mockRoomRepository.getDefaultRoom.mockRejectedValue(error);
 
-      const result = await roomService.getDefaultRooms();
-      expect(result).toEqual([]);
-      expect(mockRoomRepository.getDefaultRooms).toHaveBeenCalled();
-    });
-  });
-
-  describe('checkRoomAccess', () => {
-    it('should return true for default rooms', async () => {
-      const defaultRoom = createMockRoom({ isDefault: true });
-      mockRoomRepository.findById.mockResolvedValue(defaultRoom);
-
-      const result = await roomService.checkRoomAccess('1', 'user1');
-
-      expect(result).toBe(true);
-      expect(mockRoomRepository.findById).toHaveBeenCalledWith('1');
-    });
-
-    it('should return true for owned rooms', async () => {
-      // Setup mock room
-      const ownedRoom = createMockRoom({
-        id: '2',
-        isDefault: false,
-        price: 100,
-        includedInPlan: 'premium'
-      });
-      mockRoomRepository.findById.mockResolvedValue(ownedRoom);
-
-      // El mock de Supabase ya está configurado a nivel de módulo
-
-      const result = await roomService.checkRoomAccess('2', 'user1');
-
-      expect(result).toBe(true);
-      expect(mockRoomRepository.findById).toHaveBeenCalledWith('2');
-    });
-
-    it('should return false for non-existent room', async () => {
-      mockRoomRepository.findById.mockResolvedValue(null);
-
-      const result = await roomService.checkRoomAccess('999', 'user1');
-
-      expect(result).toBe(false);
-      expect(mockRoomRepository.findById).toHaveBeenCalledWith('999');
-    });
-
-    it('should return false when no userId is provided', async () => {
-      // Clear any existing mock state
-      mockRoomRepository.findById.mockClear();
-
-      const result = await roomService.checkRoomAccess('1', '');
-
-      expect(result).toBe(false);
-      expect(mockRoomRepository.findById).not.toHaveBeenCalled();
+      const result = await roomService.getDefaultRoom();
+      expect(result).toBeNull();
+      expect(mockRoomRepository.getDefaultRoom).toHaveBeenCalled();
     });
   });
 
@@ -241,6 +188,113 @@ describe('RoomService', () => {
 
       await expect(roomService.updateRoom('1', { price: -100 }))
         .rejects.toThrow('El precio no puede ser negativo');
+    });
+  });
+
+  describe('getActiveRoom', () => {
+    it('should return active room successfully', async () => {
+      const activeRoom = createMockRoom({
+        id: '2',
+        name: 'Active Room',
+        active: true
+      });
+      mockRoomRepository.getActiveRoom.mockResolvedValue(activeRoom);
+
+      const result = await roomService.getActiveRoom('user1');
+
+      expect(result).toEqual(activeRoom);
+      expect(mockRoomRepository.getActiveRoom).toHaveBeenCalledWith('user1');
+    });
+
+    it('should throw error when userId is empty', async () => {
+      await expect(roomService.getActiveRoom(''))
+        .rejects.toThrow('ID de usuario no proporcionado');
+
+      expect(mockRoomRepository.getActiveRoom).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when userId is only whitespace', async () => {
+      await expect(roomService.getActiveRoom('   '))
+        .rejects.toThrow('ID de usuario no proporcionado');
+
+      expect(mockRoomRepository.getActiveRoom).not.toHaveBeenCalled();
+    });
+
+    it('should return null when repository throws error', async () => {
+      const error = new Error('Database error');
+      mockRoomRepository.getActiveRoom.mockRejectedValue(error);
+
+      const result = await roomService.getActiveRoom('user1');
+
+      expect(result).toBeNull();
+      expect(mockRoomRepository.getActiveRoom).toHaveBeenCalledWith('user1');
+    });
+
+    it('should return null when no active room exists', async () => {
+      mockRoomRepository.getActiveRoom.mockResolvedValue(null);
+
+      const result = await roomService.getActiveRoom('user1');
+
+      expect(result).toBeNull();
+      expect(mockRoomRepository.getActiveRoom).toHaveBeenCalledWith('user1');
+    });
+  });
+
+  describe('setActiveRoom', () => {
+    it('should set active room successfully', async () => {
+      mockRoomRepository.setActiveRoom.mockResolvedValue();
+
+      await roomService.setActiveRoom('user1', 'room123');
+
+      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room123');
+    });
+
+    it('should throw error when userId is empty', async () => {
+      await expect(roomService.setActiveRoom('', 'room123'))
+        .rejects.toThrow('ID de usuario no proporcionado');
+
+      expect(mockRoomRepository.setActiveRoom).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when userId is only whitespace', async () => {
+      await expect(roomService.setActiveRoom('   ', 'room123'))
+        .rejects.toThrow('ID de usuario no proporcionado');
+
+      expect(mockRoomRepository.setActiveRoom).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when roomId is empty', async () => {
+      await expect(roomService.setActiveRoom('user1', ''))
+        .rejects.toThrow('ID de habitación no proporcionado');
+
+      expect(mockRoomRepository.setActiveRoom).not.toHaveBeenCalled();
+    });
+
+    it('should throw error when roomId is only whitespace', async () => {
+      await expect(roomService.setActiveRoom('user1', '   '))
+        .rejects.toThrow('ID de habitación no proporcionado');
+
+      expect(mockRoomRepository.setActiveRoom).not.toHaveBeenCalled();
+    });
+
+    it('should propagate repository errors', async () => {
+      const error = new Error('Room not found');
+      mockRoomRepository.setActiveRoom.mockRejectedValue(error);
+
+      await expect(roomService.setActiveRoom('user1', 'room999'))
+        .rejects.toThrow('Room not found');
+
+      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room999');
+    });
+
+    it('should handle database constraint errors', async () => {
+      const error = new Error('Unique constraint violation');
+      mockRoomRepository.setActiveRoom.mockRejectedValue(error);
+
+      await expect(roomService.setActiveRoom('user1', 'room123'))
+        .rejects.toThrow('Unique constraint violation');
+
+      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room123');
     });
   });
 });

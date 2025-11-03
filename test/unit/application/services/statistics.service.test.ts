@@ -10,8 +10,8 @@ describe('StatisticsService', () => {
   let mockDreamContextService: jest.Mocked<DreamContextService>;
 
   const mockUserId = 'user-123';
-  // Set fixed dates for consistent testing
-  const now = new Date('2025-10-31T12:00:00.000Z');
+  // Use actual current time for tests to match service logic
+  const now = new Date();
   // 5 days ago (within the last week)
   const oneWeekAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
   // 10 days ago (more than a week ago)

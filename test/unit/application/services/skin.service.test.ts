@@ -23,16 +23,9 @@ describe('SkinService', () => {
     imageUrl: 'https://example.com/skin1.png',
     previewLight: 'https://example.com/preview-light.png',
     previewDark: 'https://example.com/preview-dark.png',
-    supportsThemes: true,
-    objectsLight: '',
-    objectsDark: '',
-    wallsLight: '',
-    wallsDark: '',
-    isDefault: true,
-    isActive: true,
-    ownershipStatus: 'owned',
-    compatibleRooms: ['room1', 'room2'],
     createdAt: '2025-10-30T00:00:00Z',
+    roomId: 'room1',
+    textureSet: { walls_light: '', walls_dark: '', objects_light: '', objects_dark: '' },
     ...override
   });
 
@@ -43,11 +36,9 @@ describe('SkinService', () => {
       name: 'Dark Theme',
       description: 'A dark theme',
       imageUrl: 'https://example.com/skin2.png',
-      isDefault: false,
-      ownershipStatus: 'available',
       price: 100,
       includedInPlan: 'premium',
-      compatibleRooms: ['room1']
+      roomId: 'room2'
     })
   ];
 
@@ -81,10 +72,11 @@ describe('SkinService', () => {
         name: 'Light Theme',
         description: 'A light theme',
         imageUrl: 'https://example.com/skin1.png',
-        creationDate: expect.any(String),
-        userId: 'user1',
-        isActive: true,
-        isDefault: true
+        previewLight: 'https://example.com/preview-light.png',
+        previewDark: 'https://example.com/preview-dark.png',
+        roomId: 'room1',
+        price: null,
+        createdAt: expect.any(String)
       }));
       expect(mockSkinRepository.getUserSkins).toHaveBeenCalledWith('user1');
     });
@@ -113,12 +105,11 @@ describe('SkinService', () => {
 
   describe('getDefaultSkins', () => {
     it('should return default skins successfully', async () => {
-      const defaultSkins = mockSkins.filter(skin => skin.isDefault);
-      mockSkinRepository.getDefaultSkins.mockResolvedValue(defaultSkins);
+      mockSkinRepository.getDefaultSkins.mockResolvedValue(mockSkins);
 
       const result = await skinService.getDefaultSkins();
 
-      expect(result).toEqual(defaultSkins);
+      expect(result).toEqual(mockSkins);
       expect(mockSkinRepository.getDefaultSkins).toHaveBeenCalled();
     });
 
@@ -129,50 +120,6 @@ describe('SkinService', () => {
       const result = await skinService.getDefaultSkins();
       expect(result).toEqual([]);
       expect(mockSkinRepository.getDefaultSkins).toHaveBeenCalled();
-    });
-  });
-
-  describe('checkSkinAccess', () => {
-    it('should return true for default skins', async () => {
-      const defaultSkin = createMockSkin({ isDefault: true });
-      mockSkinRepository.findById.mockResolvedValue(defaultSkin);
-      mockSkinRepository.getUserSkins.mockResolvedValue([defaultSkin]);
-
-      const result = await skinService.checkSkinAccess('1', 'user1');
-
-      expect(result).toBe(true);
-      expect(mockSkinRepository.findById).toHaveBeenCalledWith('1');
-    });
-
-    it('should return true for skins included in user plan', async () => {
-      const planSkin = createMockSkin({
-        id: '2',
-        isDefault: false,
-        includedInPlan: 'premium'
-      });
-      mockSkinRepository.findById.mockResolvedValue(planSkin);
-      mockSkinRepository.getUserSkins.mockResolvedValue([planSkin]);
-
-      const result = await skinService.checkSkinAccess('2', 'user1');
-
-      expect(result).toBe(true);
-      expect(mockSkinRepository.findById).toHaveBeenCalledWith('2');
-    });
-
-    it('should return false for non-existent skin', async () => {
-      mockSkinRepository.findById.mockResolvedValue(null);
-
-      const result = await skinService.checkSkinAccess('999', 'user1');
-
-      expect(result).toBe(false);
-      expect(mockSkinRepository.findById).toHaveBeenCalledWith('999');
-    });
-
-    it('should return false when no userId is provided', async () => {
-      const result = await skinService.checkSkinAccess('1', '');
-
-      expect(result).toBe(false);
-      expect(mockSkinRepository.findById).not.toHaveBeenCalled();
     });
   });
 

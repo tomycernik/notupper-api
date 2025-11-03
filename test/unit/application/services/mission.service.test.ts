@@ -72,22 +72,32 @@ describe('MissionService - Badges', () => {
   });
 
   it('should unlock badge for streak mission via onDreamSaved', async () => {
+    const today = new Date();
+    const todayKey = today.toISOString().split('T')[0]; // 2025-11-03
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const twoDaysAgo = new Date(today);
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
     missionRepository.getAllMissions.mockResolvedValue([
       { code: 'constant_dreamer', target: 3, badgeId: 'b2' }
     ]);
     missionRepository.getUserMission.mockResolvedValue({ progress: 2, completedAt: null });
     badgeRepository.getBadgeById.mockResolvedValue({ id: 'b2' });
     dreamNodeRepository.countUserNodes.mockImplementation((_profileId: any, filters: any) => {
-      if (filters && filters.from && filters.to &&
-        filters.from.startsWith('2025-11-02') && filters.to.startsWith('2025-11-03')) {
-        return Promise.resolve(0);
+      if (filters && filters.from && filters.to) {
+        const fromDate = filters.from.split('T')[0];
+
+        if (fromDate === todayKey) {
+          return Promise.resolve(1);
+        }
       }
       return Promise.resolve(3);
     });
     dreamNodeRepository.getUserNodes.mockResolvedValue([
-      { creationDate: '2025-11-02T00:00:00.000Z' },
-      { creationDate: '2025-11-01T00:00:00.000Z' },
-      { creationDate: '2025-10-31T00:00:00.000Z' }
+      { creationDate: today.toISOString() },
+      { creationDate: yesterday.toISOString() },
+      { creationDate: twoDaysAgo.toISOString() }
     ]);
 
     const badges = await missionService.onDreamSaved('user');

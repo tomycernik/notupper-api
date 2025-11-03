@@ -22,6 +22,39 @@ export class UserRepository implements IUserRepository {
       throw new Error(authError?.message || "No se pudo crear usuario");
     }
 
+    // Asignar la room por defecto al nuevo usuario
+    const { data: defaultRoom } = await supabase
+      .from('room')
+      .select('id')
+      .eq('is_default', true)
+      .single();
+
+    if (defaultRoom) {
+      await supabase
+        .from('user_room')
+        .insert({
+          profile_id: authData.user.id,
+          room_id: defaultRoom.id,
+          active: true
+        });
+
+      const { data: defaultSkin } = await supabase
+        .from('skin')
+        .select('id')
+        .eq('room_id', defaultRoom.id)
+        .limit(1)
+        .single();
+
+      if (defaultSkin) {
+        await supabase
+          .from('user_skin')
+          .insert({
+            profile_id: authData.user.id,
+            skin_id: defaultSkin.id
+          });
+      }
+    }
+
     return {
       id: authData.user.id,
       email: user.email,

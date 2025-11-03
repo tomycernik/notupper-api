@@ -61,13 +61,10 @@ describe('UserController', () => {
           imageUrl: 'https://example.com/skin.png',
           previewLight: 'https://example.com/skin-light.png',
           previewDark: 'https://example.com/skin-dark.png',
-          price: 0,
-          creationDate: '2025-10-30T00:00:00Z',
-          userId: 'user1',
-          isActive: true,
-          isDefault: false,
-          ownershipStatus: 'owned',
-          compatibleRooms: ['room1'],
+          price: { amount: 0, currency: 'coins' },
+          createdAt: '2025-10-30T00:00:00Z',
+          roomId: 'room1',
+          textureSet: {},
           includedInPlan: 'free'
         }]
       };
@@ -126,17 +123,13 @@ describe('UserController', () => {
           id: '1',
           name: 'Test Room',
           description: 'A test room',
-          imageUrl: 'https://example.com/room.png',
-          previewLight: 'https://example.com/room-light.png',
-          previewDark: 'https://example.com/room-dark.png',
-          modelUrl: 'https://example.com/room.glb',
-          price: 0,
-          isDefault: false,
-          ownershipStatus: 'owned',
-          compatibleSkins: ['skin1', 'skin2'],
-          includedInPlan: 'free',
-          createdAt: new Date('2025-10-30T00:00:00Z'),
-          hasAccess: true
+          image_url: 'https://example.com/room.png',
+          model_url: 'https://example.com/room.glb',
+          price: { amount: 0, currency: 'coins' },
+          active: false,
+          compatible_textures: ['skin1', 'skin2'],
+          included_in_plan: 'free',
+          created_at: '2025-10-30T00:00:00Z'
         }]
       };
 

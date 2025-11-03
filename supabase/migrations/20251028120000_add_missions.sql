@@ -1,4 +1,3 @@
--- Missions and user_mission tracking
 create table if not exists public.mission (
   id serial primary key,
   code varchar(100) unique not null,
@@ -56,7 +55,6 @@ insert into public.mission (code, title, description, type, target) values
   ('reflective_interpreter', 'Intérprete reflexivo', 'Reinterpreta 3 sueños diferentes', 'counter', 3)
 on conflict (code) do nothing;
 
--- Backfill badge.mission_id linking by mission code and badge description pattern
 with mapping as (
   select 'first_dream' as code, 'Primer Sueño:%' as pattern union all
   select 'five_dreams', 'Cinco Sueños:%' union all

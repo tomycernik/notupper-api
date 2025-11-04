@@ -1,4 +1,4 @@
-import { Badge } from "../models/badge.model";
+import { Badge } from "@domain/models/badge.model";
 
 export interface IBadgeRepository {
   getUserBadges(profileId: string): Promise<Badge[]>;

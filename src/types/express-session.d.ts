@@ -1,4 +1,4 @@
-import { IDreamContext } from '../domain/interfaces/dream-context.interface';
+import { IDreamContext } from '@domain/interfaces/dream-context.interface';
 import 'express-session';
 
 declare module 'express-session' {

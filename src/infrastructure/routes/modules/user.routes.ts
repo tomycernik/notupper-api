@@ -1,16 +1,16 @@
 import { Router } from "express";
-import { UserController } from "../../controllers/user.controller";
-import { UserRepository } from './../../repositories/user.repository.supabase';
-import { UserService } from "../../../application/services/user.service";
-import { validateBody } from "../../middlewares/validate-class.middleware";
-import { RegisterUserDTO } from "../../dtos/user/register-user.dto";
-import { LoginDTO } from "../../dtos/user/login.dto";
-import { authenticateToken } from "../../middlewares/auth.middleware";
-import { SetActiveRoomDto } from "../../dtos/room/set-active-room.dto";
-import { SkinService } from "../../../application/services/skin.service";
-import { RoomService } from "../../../application/services/room.service";
-import { RoomRepositorySupabase } from "../../repositories/room.repository.supabase";
-import { SkinRepositorySupabase } from "../../repositories/skin.repository.supabase";
+import { UserController } from "@infrastructure/controllers/user.controller";
+import { UserRepository } from '@infrastructure/repositories/user.repository.supabase';
+import { UserService } from "@application/services/user.service";
+import { validateBody } from "@infrastructure/middlewares/validate-class.middleware";
+import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
+import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
+import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
+import { SetActiveRoomDto } from "@infrastructure/dtos/room/set-active-room.dto";
+import { SkinService } from "@application/services/skin.service";
+import { RoomService } from "@application/services/room.service";
+import { RoomRepositorySupabase } from "@infrastructure/repositories/room.repository.supabase";
+import { SkinRepositorySupabase } from "@infrastructure/repositories/skin.repository.supabase";
 
 export const userRouter = Router();
 const userRepository = new UserRepository();

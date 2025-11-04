@@ -1,8 +1,8 @@
-import { supabase } from "../../config/supabase";
-import { IMembership } from "../../domain/interfaces/membership.interface";
-import { IRepositoryUser, IUser } from "../../domain/interfaces/user.interface";
-import { IUserRepository } from "../../domain/repositories/user.repository";
-import { LoginDTO } from "../dtos/user/login.dto";
+import { supabase } from "@config/supabase";
+import { IMembership } from "@domain/interfaces/membership.interface";
+import { IRepositoryUser, IUser } from "@domain/interfaces/user.interface";
+import { IUserRepository } from "@domain/repositories/user.repository";
+import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
 
 export class UserRepository implements IUserRepository {
   async register(user: IUser): Promise<IRepositoryUser> {

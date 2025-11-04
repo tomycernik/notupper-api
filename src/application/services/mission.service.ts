@@ -1,7 +1,7 @@
-import { IDreamNodeRepository } from "../../domain/repositories/dream-node.repository";
-import { IBadgeRepository } from "../../domain/repositories/badge.repository";
-import { IMissionRepository } from "../../domain/repositories/mission.repository";
-import { Badge } from "../../domain/models/badge.model";
+import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
+import { IBadgeRepository } from "@domain/repositories/badge.repository";
+import { IMissionRepository } from "@domain/repositories/mission.repository";
+import { Badge } from "@domain/models/badge.model";
 
 export class MissionService {
   constructor(

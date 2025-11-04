@@ -1,8 +1,8 @@
-import { IMembership } from "../../domain/interfaces/membership.interface";
-import { IUser } from "../../domain/interfaces/user.interface";
-import { IUserRepository } from "../../domain/repositories/user.repository";
-import { LoginDTO } from "../../infrastructure/dtos/user/login.dto";
-import { RegisterUserDTO } from "../../infrastructure/dtos/user/register-user.dto";
+import { IMembership } from "@domain/interfaces/membership.interface";
+import { IUser } from "@domain/interfaces/user.interface";
+import { IUserRepository } from "@domain/repositories/user.repository";
+import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
+import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
 
 export class UserService {
   constructor(private userRepository: IUserRepository) {

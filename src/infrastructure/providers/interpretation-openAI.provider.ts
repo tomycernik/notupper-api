@@ -1,10 +1,10 @@
-import { InterpretationProvider } from "../../domain/providers/interpretation.provider";
+import { InterpretationProvider } from "@domain/providers/interpretation.provider";
 import { OpenAI } from "openai";
-import { envs } from "../../config/envs";
-import { Interpretation } from "../../domain/interfaces/interpretation-dream.interface";
-import { IDreamContext } from "../../domain/interfaces/dream-context.interface";
-import { isRecurringDream } from '../../domain/utils/dream-utils';
-import { DreamTypeName } from "../../domain/models/dream-node.model";
+import { envs } from "@config/envs";
+import { Interpretation } from "@domain/interfaces/interpretation-dream.interface";
+import { IDreamContext } from "@domain/interfaces/dream-context.interface";
+import { isRecurringDream } from '@domain/utils/dream-utils';
+import { DreamTypeName } from "@domain/models/dream-node.model";
 
 export class InterpretationOpenAIProvider implements InterpretationProvider {
   private openai: OpenAI;

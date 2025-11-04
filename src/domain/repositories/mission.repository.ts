@@ -1,4 +1,4 @@
-import { Mission, UserMissionProgress } from "../models/mission.model";
+import { Mission, UserMissionProgress } from "@domain/models/mission.model";
 
 export interface IMissionRepository {
   getAllMissions(): Promise<Mission[]>;

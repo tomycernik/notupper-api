@@ -1,6 +1,6 @@
-import { Interpretation } from "../../domain/interfaces/interpretation-dream.interface";
-import { InterpretationProvider } from "../../domain/providers/interpretation.provider";
-import { IDreamContext } from "../../domain/interfaces/dream-context.interface";
+import { Interpretation } from "@domain/interfaces/interpretation-dream.interface";
+import { InterpretationProvider } from "@domain/providers/interpretation.provider";
+import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 
 export class InterpretationDreamService {
     constructor(private interpretationProvider: InterpretationProvider, ) {

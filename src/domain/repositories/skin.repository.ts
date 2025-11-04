@@ -1,4 +1,4 @@
-import { Skin } from '../interfaces/skin.interface';
+import { Skin } from '@domain/interfaces/skin.interface';
 
 export interface ISkinRepository {
   getUserSkins(userId: string): Promise<Skin[]>;

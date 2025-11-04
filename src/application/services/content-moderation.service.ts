@@ -1,4 +1,4 @@
-import { inappropriateWords, inappropriatePatterns, allowPatterns } from '../../config/moderation-config';
+import { inappropriateWords, inappropriatePatterns, allowPatterns } from '@config/moderation-config';
 
 export class ContentModerationService {
   private wordRegexes: RegExp[];

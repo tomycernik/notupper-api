@@ -1,6 +1,6 @@
-import { supabase } from "../../config/supabase";
-import { IMissionRepository } from "../../domain/repositories/mission.repository";
-import { Mission, UserMissionProgress } from "../../domain/models/mission.model";
+import { supabase } from "@config/supabase";
+import { IMissionRepository } from "@domain/repositories/mission.repository";
+import { Mission, UserMissionProgress } from "@domain/models/mission.model";
 
 export class MissionRepositorySupabase implements IMissionRepository {
 

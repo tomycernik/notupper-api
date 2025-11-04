@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import { IllustrationProvider } from "../../domain/providers/illustration.provider";
-import { envs } from "../../config/envs";
+import { IllustrationProvider } from "@domain/providers/illustration.provider";
+import { envs } from "@config/envs";
 
 export class IllustrationGeminiProvider implements IllustrationProvider {
   private ai = new GoogleGenAI({ apiKey: envs.GEMINI_API_KEY });

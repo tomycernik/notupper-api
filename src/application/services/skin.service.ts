@@ -1,6 +1,6 @@
-import { Skin } from '../../domain/interfaces/skin.interface';
-import { GetUserSkinsResponseDto, SkinResponseDto } from '../../infrastructure/dtos/skin/get-user-skins.dto';
-import { ISkinRepository } from '../../domain/repositories/skin.repository';
+import { Skin } from '@domain/interfaces/skin.interface';
+import { GetUserSkinsResponseDto, SkinResponseDto } from '@infrastructure/dtos/skin/get-user-skins.dto';
+import { ISkinRepository } from '@domain/repositories/skin.repository';
 
 export class SkinService {
   constructor(private readonly skinRepository: ISkinRepository) {}

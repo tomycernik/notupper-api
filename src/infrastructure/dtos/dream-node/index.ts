@@ -1,4 +1,4 @@
-export { InterpreteDreamRequestDto } from './interpret-dream.dto';
-export { GetUserNodesRequestDto } from './get-user-nodes.dto';
-export { SaveDreamNodeRequestDto } from './save-dream-node.dto';
-export { ReinterpreteDreamRequestDto } from './reinterprete-dream.dto';
+export { InterpreteDreamRequestDto } from '@infrastructure/dtos/dream-node/interpret-dream.dto';
+export { GetUserNodesRequestDto } from '@infrastructure/dtos/dream-node/get-user-nodes.dto';
+export { SaveDreamNodeRequestDto } from '@infrastructure/dtos/dream-node/save-dream-node.dto';
+export { ReinterpreteDreamRequestDto } from '@infrastructure/dtos/dream-node/reinterprete-dream.dto';

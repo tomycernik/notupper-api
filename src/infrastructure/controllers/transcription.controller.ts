@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { Transcripcion } from "../../domain/models/transcription-audio";
-import { TranscriptionService } from "../../application/services/transcription.service";
+import { Transcripcion } from "@domain/models/transcription-audio";
+import { TranscriptionService } from "@application/services/transcription.service";
 
 export class TranscripcionController {
   constructor(

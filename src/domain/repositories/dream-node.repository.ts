@@ -1,7 +1,7 @@
-import { DreamTypeName, IDreamNode } from "../models/dream-node.model";
-import { IDreamNodeFilters } from "../interfaces/dream-node-filters.interface";
-import { IPaginationOptions } from "../interfaces/pagination.interface";
-import { IDreamContext } from "../interfaces/dream-context.interface";
+import { DreamTypeName, IDreamNode } from "@domain/models/dream-node.model";
+import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
+import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
+import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 
 export interface IDreamNodeRepository {
     save(dreamNode: IDreamNode, userId: string, dreamType: DreamTypeName): Promise<{ data: any; error: Error | null }>;

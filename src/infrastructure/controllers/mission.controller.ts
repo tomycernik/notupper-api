@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IMissionRepository } from '../../domain/repositories/mission.repository';
+import { IMissionRepository } from '@domain/repositories/mission.repository';
 
 export class MissionController {
   constructor(private readonly missionRepository: IMissionRepository) {}

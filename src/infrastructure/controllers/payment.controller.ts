@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { PaymentService } from "../../application/services/payment.service";
-import { UserService } from "../../application/services/user.service";
-import { CreatePaymentRequestDto } from "../dtos/payment/create-payment-request.dto";
+import { PaymentService } from "@application/services/payment.service";
+import { UserService } from "@application/services/user.service";
+import { CreatePaymentRequestDto } from "@infrastructure/dtos/payment/create-payment-request.dto";
 
 export class PaymentController {
   private paymentService: PaymentService;

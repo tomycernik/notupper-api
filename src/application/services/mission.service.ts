@@ -54,7 +54,7 @@ export class MissionService {
 
   await this.missionRepository.upsertUserMission(profileId, missionCode, progress, completed);
 
-  //si se completo la mision y se cruzo el umbral y antes no estaba completada  
+  //si se completo la mision y se cruzo el umbral y antes no estaba completada
   if (completed && crossedThreshold && !wasAlreadyCompleted && mission.badgeId) {
       await this.badgeRepository.awardBadge(profileId, mission.badgeId);
 
@@ -147,10 +147,10 @@ export class MissionService {
 
     const dreams = await this.dreamNodeRepository.getUserNodes(profileId, filters, { page: 1, limit: 1000, offset: 0 });
 
-   /* se recorre un for 60 veces, i seria el dia recorrido, 
-   normaliza cada fecha teniendo en cuenta los dias 
+   /* se recorre un for 60 veces, i seria el dia recorrido,
+   normaliza cada fecha teniendo en cuenta los dias
    que pasen (i) y luego verifica si esa fecha esta en el dayset*/
-   
+
     const daySet = new Set<string>();
     for (const d of dreams) {
 

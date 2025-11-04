@@ -20,20 +20,24 @@ import { TranscripcionController } from "../../controllers/transcription.control
 import { TranscriptionWhisperProvider } from "../../providers/transcription-whisper.provider";
 import { TranscriptionService } from "../../../application/services/transcription.service";
 import { UpdateDreamNodeRequestDto } from "../../dtos/dream-node/update-dream-node.dto";
+import { MembershipRepositorySupabase } from "../../repositories/membership.repository.supabase";
+import { MembershipService } from "../../../application/services/membership.service";
 
 export const dreamNodeRouter = Router();
 
 const interpretationProvider = new InterpretationOpenAIProvider();
+const interpretationDreamService = new InterpretationDreamService(interpretationProvider);
 const illustrationProvider = new IllustrationGeminiProvider();
 const illustrationService = new IllustrationDreamService(illustrationProvider);
-const interpretationDreamService = new InterpretationDreamService(interpretationProvider);
 const dreamNodeRepository = new DreamNodeRepositorySupabase();
 const missionRepository = new MissionRepositorySupabase();
 const badgeRepository = new BadgeRepositorySupabase();
+const membershipRepository = new MembershipRepositorySupabase();
+const membershipService = new MembershipService(membershipRepository);
 const missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository);
 const dreamNodeService = new DreamNodeService(dreamNodeRepository, missionService);
 const contextService = new DreamContextService(dreamNodeRepository);
-const dreamNodeController = new DreamNodeController(interpretationDreamService, dreamNodeService, illustrationService, contextService);
+const dreamNodeController = new DreamNodeController(interpretationDreamService, dreamNodeService, illustrationService, contextService, membershipService);
 const transcriptionProvider = new TranscriptionWhisperProvider();
 const transcriptionService = new TranscriptionService(transcriptionProvider);
 const transcriptionController = new TranscripcionController(transcriptionService);

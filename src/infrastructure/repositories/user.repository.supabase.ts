@@ -4,7 +4,7 @@ import { IRepositoryUser, IUser } from "../../domain/interfaces/user.interface";
 import { IUserRepository } from "../../domain/repositories/user.repository";
 import { LoginDTO } from "../dtos/user/login.dto";
 
-export class UserRepository implements IUserRepository {
+export class UserRepositorySupabase implements IUserRepository {
   async register(user: IUser): Promise<IRepositoryUser> {
     const { email, password, date_of_birth: dateOfBirth } = user;
 
@@ -24,34 +24,30 @@ export class UserRepository implements IUserRepository {
 
     // Asignar la room por defecto al nuevo usuario
     const { data: defaultRoom } = await supabase
-      .from('room')
-      .select('id')
-      .eq('is_default', true)
+      .from("room")
+      .select("id")
+      .eq("is_default", true)
       .single();
 
     if (defaultRoom) {
-      await supabase
-        .from('user_room')
-        .insert({
-          profile_id: authData.user.id,
-          room_id: defaultRoom.id,
-          active: true
-        });
+      await supabase.from("user_room").insert({
+        profile_id: authData.user.id,
+        room_id: defaultRoom.id,
+        active: true,
+      });
 
       const { data: defaultSkin } = await supabase
-        .from('skin')
-        .select('id')
-        .eq('room_id', defaultRoom.id)
+        .from("skin")
+        .select("id")
+        .eq("room_id", defaultRoom.id)
         .limit(1)
         .single();
 
       if (defaultSkin) {
-        await supabase
-          .from('user_skin')
-          .insert({
-            profile_id: authData.user.id,
-            skin_id: defaultSkin.id
-          });
+        await supabase.from("user_skin").insert({
+          profile_id: authData.user.id,
+          skin_id: defaultSkin.id,
+        });
       }
     }
 
@@ -115,14 +111,11 @@ export class UserRepository implements IUserRepository {
     return data as IUser;
   }
 
-  async updateMembership(
-    userId: string,
-    membership: IMembership
-  ): Promise<void> {
-    const {error} = await supabase
+  async updateMembership(userId: string, membership: IMembership): Promise<void> {
+    const { error } = await supabase
       .from("profile")
       .update({
-        membership: membership.membership,
+        membership_id: membership.membership_id,
         membership_start_date: membership.membership_start_date,
         membership_end_date: membership.membership_end_date,
       })

@@ -1,17 +1,23 @@
-import { IMembership } from "@domain/interfaces/membership.interface";
 import { IUser } from "@domain/interfaces/user.interface";
 import { IUserRepository } from "@domain/repositories/user.repository";
+import { RoomResponseDto } from "@infrastructure/dtos/room/get-user-rooms.dto";
 import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
 import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
+import { UserInfoResponseDto } from "@infrastructure/dtos/user/user-info-response.dto";
+import { MembershipService } from "@application/services/membership.service";
+import { RoomService } from "@application/services/room.service";
 
 export class UserService {
-  constructor(private userRepository: IUserRepository) {
-    this.userRepository = userRepository;
-  }
+  constructor(
+    private userRepository: IUserRepository,
+    private membershipService: MembershipService,
+    private roomService: RoomService
+  ) {}
+
   async register(userInfo: RegisterUserDTO) {
     const user: IUser = {
       coin_amount: 0,
-      membership: "free",
+      membership_id: 1,
       ...userInfo,
     };
 
@@ -22,48 +28,45 @@ export class UserService {
     return await this.userRepository.login(userCredentials);
   }
 
-  async updateMembership(userId: string, newTier: string): Promise<void> {
-    const user = await this.userRepository.findById(userId);
+  async updateMembership(userId: string, newTierName: string): Promise<void> {
+    const tier = await this.membershipService.getMembershipByName(newTierName);
+    if (!tier) throw new Error("Membership tier not found");
 
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const now = new Date();
-    const currentEnd = user.membership_end_date
-      ? new Date(user.membership_end_date)
-      : null;
-
-    let startDate = now;
-    let endDate = new Date(now);
-
-    endDate.setMonth(endDate.getMonth() + 1);
-    if (currentEnd && currentEnd > now && user.membership === newTier) {
-      startDate = new Date(user.membership_start_date!);
-      endDate = new Date(currentEnd);
-      endDate.setMonth(endDate.getMonth() + 1);
-    }
-
-    const newMembership: IMembership = {
-      membership: newTier,
-      membership_start_date: startDate.toISOString(),
-      membership_end_date: endDate.toISOString(),
-    };
+    const newMembership = await this.membershipService.buildMembershipForTier(
+      tier
+    );
     await this.userRepository.updateMembership(userId, newMembership);
-  }
-
-  async checkMembershipStatus(userId: string): Promise<"active" | "expired"> {
-    const user = await this.userRepository.findById(userId);
-    if (!user) {
-      throw new Error("User not found");
-    }
-    const now = new Date();
-    return user.membership_end_date && new Date(user.membership_end_date) > now
-      ? "active"
-      : "expired";
   }
 
   async addCoins(userId: string, amount: number) {
     return await this.userRepository.addCoins(userId, amount);
+  }
+
+  async getUserInfo(userId: string): Promise<UserInfoResponseDto> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw new Error("Usuario no encontrado");
+
+    const membership = await this.membershipService.getMembershipById(
+      user.membership_id
+    );
+    if (!membership) throw new Error("No se pudo obtener la membresía");
+
+    const roomsResponse = await this.roomService.getUserRooms(userId);
+    const rooms: RoomResponseDto[] = roomsResponse.data;
+
+    return {
+      id: user.id!,
+      email: user.email,
+      name: user.name,
+      coin_amount: user.coin_amount,
+      membership: {
+        id: membership.id,
+        name: membership.name,
+        startDate: user.membership_start_date!,
+        endDate: user.membership_end_date!,
+        features: membership.features,
+      },
+      rooms,
+    };
   }
 }

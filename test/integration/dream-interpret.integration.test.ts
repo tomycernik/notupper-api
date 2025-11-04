@@ -9,6 +9,7 @@ import { IllustrationDreamService } from "../../src/application/services/illustr
 import { DreamContextService } from "../../src/application/services/dream-context.service";
 import { IDreamContext } from "../../src/domain/interfaces/dream-context.interface";
 import { DreamTypeName } from "../../src/domain/models/dream-node.model";
+import { MembershipService } from "../../src/application/services/membership.service";
 
 jest.mock("uuid", () => ({
   v4: jest.fn(() => "mocked-uuid-123"),
@@ -20,6 +21,7 @@ describe("Dream API Integration Tests", () => {
   let mockDreamNodeService: jest.Mocked<DreamNodeService>;
   let mockIllustrationService: jest.Mocked<IllustrationDreamService>;
   let mockDreamContextService: jest.Mocked<DreamContextService>;
+  let mockMembershipService: jest.Mocked<MembershipService>;
 
   beforeAll(async () => {
     mockInterpretationService = {
@@ -60,6 +62,14 @@ describe("Dream API Integration Tests", () => {
       generateIllustration: jest.fn(),
     } as any;
 
+    mockMembershipService = {
+      getUserMembership: jest.fn().mockResolvedValue({
+        id: 2,
+        name: 'pro',
+        durations_month: 1
+      })
+    } as any;
+
     mockDreamContextService = {
       register: jest.fn(),
       login: jest.fn(),
@@ -83,7 +93,8 @@ describe("Dream API Integration Tests", () => {
       mockInterpretationService,
       mockDreamNodeService,
       mockIllustrationService,
-      mockDreamContextService
+      mockDreamContextService,
+      mockMembershipService
     );
 
     app.post("/api/dreams/interpret", (req, res) =>

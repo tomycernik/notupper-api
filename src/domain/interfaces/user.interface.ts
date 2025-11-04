@@ -5,7 +5,7 @@ export interface IUser {
     password: string;
     date_of_birth: Date;
     coin_amount: number;
-    membership: "free" | "pro";
+    membership_id: number;
     membership_start_date?: string;
     membership_end_date?: string;
 }

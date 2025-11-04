@@ -1,4 +1,4 @@
-import { IUser } from "../interfaces/user.interface";
+import { IUser } from "@domain/interfaces/user.interface";
 
 export class User implements IUser {
     id: string;

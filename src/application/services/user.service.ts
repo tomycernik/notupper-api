@@ -1,11 +1,11 @@
-import { IUser } from "../../domain/interfaces/user.interface";
-import { IUserRepository } from "../../domain/repositories/user.repository";
-import { RoomResponseDto } from "../../infrastructure/dtos/room/get-user-rooms.dto";
-import { LoginDTO } from "../../infrastructure/dtos/user/login.dto";
-import { RegisterUserDTO } from "../../infrastructure/dtos/user/register-user.dto";
-import { UserInfoResponseDto } from "../../infrastructure/dtos/user/user-info-response.dto";
-import { MembershipService } from "./membership.service";
-import { RoomService } from "./room.service";
+import { IUser } from "@domain/interfaces/user.interface";
+import { IUserRepository } from "@domain/repositories/user.repository";
+import { RoomResponseDto } from "@infrastructure/dtos/room/get-user-rooms.dto";
+import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
+import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
+import { UserInfoResponseDto } from "@infrastructure/dtos/user/user-info-response.dto";
+import { MembershipService } from "@application/services/membership.service";
+import { RoomService } from "@application/services/room.service";
 
 export class UserService {
   constructor(

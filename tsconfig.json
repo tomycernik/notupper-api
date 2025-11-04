@@ -18,6 +18,17 @@
     "types": ["node", "jest"],
     "typeRoots": ["./node_modules/@types", "./src/types"],
 
+    // Path Aliases
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@application/*": ["src/application/*"],
+      "@domain/*": ["src/domain/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@config/*": ["src/config/*"],
+      "@types/*": ["src/types/*"]
+    },
+
     // Other Outputs
     "sourceMap": true,
     "declaration": true,

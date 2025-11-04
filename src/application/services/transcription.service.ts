@@ -1,4 +1,4 @@
-import { TranscriptionProvider } from "../../domain/providers/transcription.provider";
+import { TranscriptionProvider } from "@domain/providers/transcription.provider";
 
 export class TranscriptionService {
     constructor(private transcriptionProvider: TranscriptionProvider) {

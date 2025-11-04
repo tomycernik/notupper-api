@@ -1,6 +1,6 @@
-import { Room } from '../../domain/interfaces/room.interface';
-import { GetUserRoomsResponseDto, RoomResponseDto } from '../../infrastructure/dtos/room/get-user-rooms.dto';
-import { IRoomRepository } from '../../domain/repositories/room.repository';
+import { Room } from '@domain/interfaces/room.interface';
+import { GetUserRoomsResponseDto, RoomResponseDto } from '@infrastructure/dtos/room/get-user-rooms.dto';
+import { IRoomRepository } from '@domain/repositories/room.repository';
 
 export class RoomService {
   constructor(private readonly roomRepository: IRoomRepository) {}

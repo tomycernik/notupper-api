@@ -1,5 +1,5 @@
-import { supabase } from "../../config/supabase";
-import { IllustrationProvider } from "../../domain/providers/illustration.provider";
+import { supabase } from "@config/supabase";
+import { IllustrationProvider } from "@domain/providers/illustration.provider";
 
 export class IllustrationDreamService {
   constructor(private illustrationProvider: IllustrationProvider) {}

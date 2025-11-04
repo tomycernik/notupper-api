@@ -1,6 +1,6 @@
-import { LoginDTO } from "../../infrastructure/dtos/user/login.dto";
-import { IMembership } from "../interfaces/membership.interface";
-import { IRepositoryUser, IUser } from "../interfaces/user.interface";
+import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
+import { IMembership } from "@domain/interfaces/membership.interface";
+import { IRepositoryUser, IUser } from "@domain/interfaces/user.interface";
 
 export interface IUserRepository {
   register(user: IUser): Promise<IRepositoryUser>;

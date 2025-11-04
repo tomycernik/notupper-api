@@ -1,5 +1,5 @@
-import { IMembershipFeature } from "../../../domain/interfaces/membership.interface";
-import { RoomResponseDto } from "../room/get-user-rooms.dto";
+import { IMembershipFeature } from "@domain/interfaces/membership.interface";
+import { RoomResponseDto } from "@infrastructure/dtos/room/get-user-rooms.dto";
 
 export interface UserInfoResponseDto {
   id: string;

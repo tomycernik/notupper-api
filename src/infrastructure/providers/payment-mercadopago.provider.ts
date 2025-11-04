@@ -1,10 +1,10 @@
 import { MercadoPagoConfig, Payment } from "mercadopago";
-import { PaymentProvider } from "../../domain/providers/payment-provider.interface";
-import { envs } from "../../config/envs";
+import { PaymentProvider } from "@domain/providers/payment-provider.interface";
+import { envs } from "@config/envs";
 import {
   PaymentRequest,
   PaymentResponse,
-} from "../../domain/models/payment.model";
+} from "@domain/models/payment.model";
 
 export class PaymentMercadoPagoProvider implements PaymentProvider {
   private paymentApi: Payment;

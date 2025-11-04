@@ -1,6 +1,6 @@
 
-import { DreamTypeName } from '../models/dream-node.model';
-import { ContextItem } from './dream-context-item.interface';
+import { DreamTypeName } from '@domain/models/dream-node.model';
+import { ContextItem } from '@domain/interfaces/dream-context-item.interface';
 
 export interface DreamContext {
   themes: ContextItem[];

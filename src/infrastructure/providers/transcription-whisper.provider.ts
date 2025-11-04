@@ -1,4 +1,4 @@
-import { TranscriptionProvider } from "../../domain/providers/transcription.provider";
+import { TranscriptionProvider } from "@domain/providers/transcription.provider";
 import fs from "fs";
 import OpenAI from "openai";
 

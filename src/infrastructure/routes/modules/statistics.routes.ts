@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { StatisticsController } from "../../controllers/statistics.controller";
-import { StatisticsService } from "../../../application/services/statistics.service";
-import { DreamNodeRepositorySupabase } from "../../repositories/dream-node.repository.supabase";
-import { authenticateToken } from "../../middlewares/auth.middleware";
-import { DreamContextService } from "../../../application/services/dream-context.service";
+import { StatisticsController } from "@infrastructure/controllers/statistics.controller";
+import { StatisticsService } from "@application/services/statistics.service";
+import { DreamNodeRepositorySupabase } from "@infrastructure/repositories/dream-node.repository.supabase";
+import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
+import { DreamContextService } from "@application/services/dream-context.service";
 
 export const statisticsRouter = Router();
 

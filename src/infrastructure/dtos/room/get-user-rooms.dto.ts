@@ -4,7 +4,7 @@ export interface RoomResponseDto {
   description?: string;
   image_url?: string;
   model_url?: string;
-  texture_default?: string;
+  texture_default?: string | null;
   texture_applied?: string | null;
   price?: {
     amount: number;
@@ -14,6 +14,7 @@ export interface RoomResponseDto {
   active: boolean;
   compatible_textures: string[];
   created_at: string;
+  room_engine_id: string;
 }
 
 export interface GetUserRoomsResponseDto {

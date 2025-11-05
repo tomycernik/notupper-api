@@ -1,11 +1,11 @@
 jest.mock('../../../../src/config/envs', () => ({
-    envs: {
-        SUPABASE_URL: 'https://fake.supabase.co',
-        SUPABASE_KEY: 'fake-key',
-        SUPABASE_JWT_SECRET: 'secret',
-        PORT: 3000,
-        OPENAI_API_KEY: 'fake-key'
-    }
+  envs: {
+    SUPABASE_URL: 'https://fake.supabase.co',
+    SUPABASE_KEY: 'fake-key',
+    SUPABASE_JWT_SECRET: 'secret',
+    PORT: 3000,
+    OPENAI_API_KEY: 'fake-key'
+  }
 }));
 
 import { Request, Response } from 'express';
@@ -129,7 +129,10 @@ describe('UserController', () => {
           active: false,
           compatible_textures: ['skin1', 'skin2'],
           included_in_plan: 'free',
-          created_at: '2025-10-30T00:00:00Z'
+          created_at: '2025-10-30T00:00:00Z',
+          room_engine_id: 'engine1',
+          texture_applied: null,
+          texture_default: null
         }]
       };
 

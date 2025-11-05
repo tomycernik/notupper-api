@@ -12,35 +12,35 @@ export class PaymentController {
   }
 
   async createPayment(req: Request, res: Response) {
-  try {
-    const userId = (req as any).userId;
-    const dto = req.body as CreatePaymentRequestDto;
-    const payment = await this.paymentService.createPayment(dto);
+    try {
+      const userId = (req as any).userId;
+      const dto = req.body as CreatePaymentRequestDto;
+      const payment = await this.paymentService.createPayment(dto);
 
-    switch (payment.status) {
-      case "approved":
-        await this.userService.updateMembership(userId, "pro");
-        return res
-          .status(200)
-          .json({ message: "Pago aprobado y membresía actualizada" });
+      switch (payment.status) {
+        case "approved":
+          await this.userService.updateMembership(userId, "plus");
+          return res
+            .status(200)
+            .json({ message: "Pago aprobado y membresía actualizada" });
 
-      case "in_process":
-        return res
-          .status(202)
-          .json({ message: "Pago en proceso de aprobación" });
+        case "in_process":
+          return res
+            .status(202)
+            .json({ message: "Pago en proceso de aprobación" });
 
-      default:
-        return res.status(400).json({
-          message: "Pago rechazado",
-          detail: payment.status_detail,
-        });
+        default:
+          return res.status(400).json({
+            message: "Pago rechazado",
+            detail: payment.status_detail,
+          });
+      }
+    } catch (error: any) {
+      console.error("Error al crear el pago:", error);
+      return res.status(500).json({
+        message: "Error al procesar el pago",
+        error: error.message,
+      });
     }
-  } catch (error: any) {
-    console.error("Error al crear el pago:", error);
-    return res.status(500).json({
-      message: "Error al procesar el pago",
-      error: error.message,
-    });
   }
-}
 }

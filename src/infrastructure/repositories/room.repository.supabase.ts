@@ -8,10 +8,17 @@ export class RoomRepositorySupabase implements IRoomRepository {
       .from('user_room')
       .select(`
         is_active,
+        texture_applied:texture_applied (
+          id
+        ),
         room:room_id (
           id,
           name,
+          room_engine_id,
           description,
+          default_texture:default_texture(
+            id
+          ),
           image_url,
           model_url,
           price,
@@ -27,6 +34,8 @@ export class RoomRepositorySupabase implements IRoomRepository {
     // Obtener todas las skins compatibles para cada room
     const rooms = await Promise.all(data?.map(async (item: any) => {
       const room = item.room;
+
+      console.log(item);
 
       // Consultar skins que tienen room_id = este room.id
       const { data: compatibleSkinsData } = await supabase
@@ -47,7 +56,11 @@ export class RoomRepositorySupabase implements IRoomRepository {
         includedInPlan: room.included_in_plan,
         createdAt: room.created_at,
         compatibleSkins,
-        active: item.is_active || false
+        active: item.is_active || false,
+        roomEngineId: room.room_engine_id,
+        defaultTexture: room.default_texture || null,
+        textureApplied: item.texture_applied || null
+
       };
     }) || []);
 
@@ -61,6 +74,7 @@ export class RoomRepositorySupabase implements IRoomRepository {
         id,
         name,
         description,
+        room_engine_id,
         image_url,
         model_url,
         price,
@@ -90,6 +104,7 @@ export class RoomRepositorySupabase implements IRoomRepository {
       id: data.id,
       name: data.name,
       description: data.description,
+      roomEngineId: data.room_engine_id,
       imageUrl: data.image_url,
       modelUrl: data.model_url,
       price: data.price,
@@ -184,6 +199,7 @@ export class RoomRepositorySupabase implements IRoomRepository {
           id,
           name,
           description,
+          room_engine_id,
           image_url,
           model_url,
           price,
@@ -213,6 +229,7 @@ export class RoomRepositorySupabase implements IRoomRepository {
       id: room.id,
       name: room.name,
       description: room.description,
+      roomEngineId: room.room_engine_id,
       imageUrl: room.image_url,
       modelUrl: room.model_url,
       price: room.price,

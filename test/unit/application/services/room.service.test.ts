@@ -1,13 +1,13 @@
 import { RoomRepositorySupabase } from '../../../../src/infrastructure/repositories/room.repository.supabase';
 import { RoomService } from '../../../../src/application/services/room.service';
 jest.mock('../../../../src/config/envs', () => ({
-    envs: {
-        SUPABASE_URL: 'https://fake.supabase.co',
-        SUPABASE_KEY: 'fake-key',
-        SUPABASE_JWT_SECRET: 'secret',
-        PORT: 3000,
-        OPENAI_API_KEY: 'fake-key'
-    }
+  envs: {
+    SUPABASE_URL: 'https://fake.supabase.co',
+    SUPABASE_KEY: 'fake-key',
+    SUPABASE_JWT_SECRET: 'secret',
+    PORT: 3000,
+    OPENAI_API_KEY: 'fake-key'
+  }
 }));
 
 jest.mock('../../../../src/config/supabase', () => {
@@ -52,6 +52,7 @@ describe('RoomService', () => {
     isDefault: true,
     compatibleSkins: ['skin1', 'skin2'],
     createdAt: new Date('2025-10-30T00:00:00Z'),
+    roomEngineId: 'engine1',
     ...override
   });
 

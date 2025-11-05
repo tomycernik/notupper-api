@@ -7,7 +7,7 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
   async getUserBadges(profileId: string): Promise<Badge[]> {
     const { data, error } = await supabase
       .from('user_badge')
-      .select('badge:badge_id ( id, badge_description, badge_image )')
+      .select('badge:badge_id ( id, badge_description, badge_image, badge_code )')
       .eq('profile_id', profileId);
 
     if (error) throw new Error(error.message);
@@ -16,13 +16,14 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
       id: row.badge.id,
       description: row.badge.badge_description || undefined,
       imageUrl: row.badge.badge_image || undefined,
+      code: row.badge.badge_code || undefined,
     }));
   }
 
   async getBadgeById(badgeId: string): Promise<Badge | null> {
     const { data, error } = await supabase
       .from('badge')
-      .select('id, badge_description, badge_image')
+      .select('id, badge_description, badge_image, badge_code')
       .eq('id', badgeId)
       .single();
 
@@ -33,6 +34,7 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
       id: data.id,
       description: data.badge_description || undefined,
       imageUrl: data.badge_image || undefined,
+      code: data.badge_code || undefined,
     };
   }
 

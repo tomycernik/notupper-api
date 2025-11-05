@@ -10,7 +10,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly skinService: SkinService,
     private readonly roomService: RoomService
-  ) {}
+  ) { }
 
   async register(req: Request, res: Response) {
     try {
@@ -187,10 +187,15 @@ export class UserController {
       const userId = (req as any).userId;
 
       const userInfo = await this.userService.getUserInfo(userId);
-      userInfo.rooms = (await this.roomService.getUserRooms(userId)).data;
+      const [roomsResponse, skinsResponse] = await Promise.all([
+        this.roomService.getUserRooms(userId),
+        this.skinService.getUserSkins(userId),
+      ]);
 
       res.status(200).json({
         userInfo,
+        rooms: roomsResponse.data,
+        skins: skinsResponse.data,
       });
     } catch (error) {
       console.error("Error en UserController getUserInfo:", error);

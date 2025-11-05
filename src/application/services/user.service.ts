@@ -1,6 +1,5 @@
 import { IUser } from "../../domain/interfaces/user.interface";
 import { IUserRepository } from "../../domain/repositories/user.repository";
-import { RoomResponseDto } from "../../infrastructure/dtos/room/get-user-rooms.dto";
 import { LoginDTO } from "../../infrastructure/dtos/user/login.dto";
 import { RegisterUserDTO } from "../../infrastructure/dtos/user/register-user.dto";
 import { UserInfoResponseDto } from "../../infrastructure/dtos/user/user-info-response.dto";
@@ -12,7 +11,7 @@ export class UserService {
     private userRepository: IUserRepository,
     private membershipService: MembershipService,
     private roomService: RoomService
-  ) {}
+  ) { }
 
   async register(userInfo: RegisterUserDTO) {
     const user: IUser = {
@@ -51,9 +50,6 @@ export class UserService {
     );
     if (!membership) throw new Error("No se pudo obtener la membresía");
 
-    const roomsResponse = await this.roomService.getUserRooms(userId);
-    const rooms: RoomResponseDto[] = roomsResponse.data;
-
     return {
       id: user.id!,
       email: user.email,
@@ -66,7 +62,6 @@ export class UserService {
         endDate: user.membership_end_date!,
         features: membership.features,
       },
-      rooms,
     };
   }
 }

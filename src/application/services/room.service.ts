@@ -3,7 +3,7 @@ import { GetUserRoomsResponseDto, RoomResponseDto } from '../../infrastructure/d
 import { IRoomRepository } from '../../domain/repositories/room.repository';
 
 export class RoomService {
-  constructor(private readonly roomRepository: IRoomRepository) {}
+  constructor(private readonly roomRepository: IRoomRepository) { }
 
   async getUserRooms(userId: string): Promise<GetUserRoomsResponseDto> {
     if (!userId) {
@@ -134,7 +134,10 @@ export class RoomService {
         price: room.price ? { amount: room.price, currency: 'coins' } : null,
         active: room.active || false,
         compatible_textures: room.compatibleSkins || [],
-        created_at: room.createdAt.toString()
+        created_at: room.createdAt.toString(),
+        room_engine_id: room.roomEngineId,
+        texture_applied: room.textureApplied || null,
+        texture_default: room.defaultTexture || null
       };
 
       if (room.description) response.description = room.description;

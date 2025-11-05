@@ -1,5 +1,4 @@
-import { IMembershipFeature } from "@domain/interfaces/membership.interface";
-import { RoomResponseDto } from "@infrastructure/dtos/room/get-user-rooms.dto";
+import { IMembershipFeature } from "../../../domain/interfaces/membership.interface";
 
 export interface UserInfoResponseDto {
   id: string;
@@ -13,5 +12,4 @@ export interface UserInfoResponseDto {
     endDate: string;
     features: IMembershipFeature[];
   };
-  rooms: RoomResponseDto[];
 }

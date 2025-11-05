@@ -2,4 +2,5 @@ export interface Badge {
   id: string;
   description?: string;
   imageUrl?: string;
+  code?: string;
 }

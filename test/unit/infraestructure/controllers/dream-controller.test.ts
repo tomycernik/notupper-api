@@ -92,7 +92,7 @@ describe('DreamNodeController Integration Tests', () => {
     mockMembershipService = {
       getUserMembership: jest.fn().mockResolvedValue({
         id: 2,
-        name: 'pro',
+        name: 'plus',
         durations_month: 1
       })
     } as any;
@@ -118,7 +118,8 @@ describe('DreamNodeController Integration Tests', () => {
           previousInterpretation: 'Previous interpretation'
         },
         session: mockSession,
-      };
+      } as any;
+      (mockReq as any).userId = 'test-user-id';
 
       mockRes = {
         status: jest.fn().mockReturnThis(),

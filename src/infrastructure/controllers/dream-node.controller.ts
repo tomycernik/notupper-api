@@ -14,7 +14,7 @@ export class DreamNodeController {
     private readonly illustrationService: IllustrationDreamService,
     private readonly contextService: DreamContextService,
     private readonly membershipService: MembershipService
-  ) {}
+  ) { }
 
   async interpret(req: Request, res: Response): Promise<void> {
     try {
@@ -75,11 +75,11 @@ export class DreamNodeController {
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))
         : {
-            themes: [],
-            people: [],
-            locations: [],
-            emotions_context: [],
-          };
+          themes: [],
+          people: [],
+          locations: [],
+          emotions_context: [],
+        };
 
       if (session.dreamContext) {
         session.dreamContext = null;
@@ -117,7 +117,7 @@ export class DreamNodeController {
         userId
       );
 
-      if (userMembership && userMembership.name !== "pro") {
+      if (userMembership && userMembership.name !== "plus") {
         return res.status(403).json({
           errors: "No tienes permiso para reinterpretar el sueño",
         });

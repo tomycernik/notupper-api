@@ -1,6 +1,6 @@
-import { supabase } from '../../config/supabase';
-import { Skin } from '../../domain/interfaces/skin.interface';
-import { ISkinRepository } from '../../domain/repositories/skin.repository';
+import { supabase } from '@config/supabase';
+import { Skin } from '@domain/interfaces/skin.interface';
+import { ISkinRepository } from '@domain/repositories/skin.repository';
 
 export class SkinRepositorySupabase implements ISkinRepository {
   async getUserSkins(userId: string): Promise<Skin[]> {

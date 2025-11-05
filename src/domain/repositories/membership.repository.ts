@@ -1,4 +1,4 @@
-import { IMembershipTier, IMembershipFeature } from "../interfaces/membership.interface";
+import { IMembershipTier, IMembershipFeature } from "@domain/interfaces/membership.interface";
 
 export interface IMembershipRepository {
   getMembershipById(id: number): Promise<IMembershipTier | null>;

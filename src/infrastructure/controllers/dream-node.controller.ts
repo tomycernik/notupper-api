@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { InterpretationDreamService } from "../../application/services/interpretation-dream.service";
-import { DreamNodeService } from "../../application/services/dream-node.service";
-import { IllustrationDreamService } from "../../application/services/illustration-dream.service";
-import { SaveDreamNodeRequestDto } from "../dtos/dream-node";
-import { DreamContextService } from "../../application/services/dream-context.service";
-import { UpdateDreamNodeRequestDto } from "../dtos/dream-node/update-dream-node.dto";
-import { MembershipService } from "../../application/services/membership.service";
+import { InterpretationDreamService } from "@application/services/interpretation-dream.service";
+import { DreamNodeService } from "@application/services/dream-node.service";
+import { IllustrationDreamService } from "@application/services/illustration-dream.service";
+import { SaveDreamNodeRequestDto } from "@infrastructure/dtos/dream-node";
+import { DreamContextService } from "@application/services/dream-context.service";
+import { UpdateDreamNodeRequestDto } from "@infrastructure/dtos/dream-node/update-dream-node.dto";
+import { MembershipService } from "@application/services/membership.service";
 
 export class DreamNodeController {
   constructor(

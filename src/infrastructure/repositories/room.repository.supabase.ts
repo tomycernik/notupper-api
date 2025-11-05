@@ -31,13 +31,9 @@ export class RoomRepositorySupabase implements IRoomRepository {
 
     if (error) throw new Error(error.message);
 
-    // Obtener todas las skins compatibles para cada room
     const rooms = await Promise.all(data?.map(async (item: any) => {
       const room = item.room;
 
-      console.log(item);
-
-      // Consultar skins que tienen room_id = este room.id
       const { data: compatibleSkinsData } = await supabase
         .from('skin')
         .select('id')
@@ -92,7 +88,6 @@ export class RoomRepositorySupabase implements IRoomRepository {
 
     if (!data) return null;
 
-    // Obtener skins compatibles
     const { data: compatibleSkinsData } = await supabase
       .from('skin')
       .select('id')

@@ -2,8 +2,8 @@ import {
   IMembership,
   IMembershipTier,
   IMembershipFeature,
-} from "../../domain/interfaces/membership.interface";
-import { IMembershipRepository } from "../../domain/repositories/membership.repository";
+} from "@domain/interfaces/membership.interface";
+import { IMembershipRepository } from "@domain/repositories/membership.repository";
 
 export interface IMembershipTierWithFeatures extends IMembershipTier {
   features: IMembershipFeature[];

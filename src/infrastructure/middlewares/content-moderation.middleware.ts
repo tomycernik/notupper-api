@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { ContentModerationService } from '../../application/services/content-moderation.service';
+import { ContentModerationService } from '@application/services/content-moderation.service';
 
 const moderationService = new ContentModerationService();
 export function contentModerationMiddleware(req: Request, res: Response, next: NextFunction) {

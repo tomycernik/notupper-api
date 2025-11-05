@@ -1,9 +1,9 @@
-import { supabase } from "../../config/supabase";
+import { supabase } from "@config/supabase";
 import {
   IMembershipTier,
   IMembershipFeature,
-} from "../../domain/interfaces/membership.interface";
-import { IMembershipRepository } from "../../domain/repositories/membership.repository";
+} from "@domain/interfaces/membership.interface";
+import { IMembershipRepository } from "@domain/repositories/membership.repository";
 
 export class MembershipRepositorySupabase implements IMembershipRepository {
   async getMembershipById(id: number): Promise<IMembershipTier | null> {

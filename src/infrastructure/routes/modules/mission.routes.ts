@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { authenticateToken } from '../../middlewares/auth.middleware';
-import { MissionRepositorySupabase } from '../../repositories/mission.repository.supabase';
-import { MissionController } from '../../controllers/mission.controller';
+import { authenticateToken } from '@infrastructure/middlewares/auth.middleware';
+import { MissionRepositorySupabase } from '@infrastructure/repositories/mission.repository.supabase';
+import { MissionController } from '@infrastructure/controllers/mission.controller';
 
 export const missionRouter = Router();
 

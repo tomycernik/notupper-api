@@ -1,4 +1,4 @@
-import { Room } from '../interfaces/room.interface';
+import { Room } from '@domain/interfaces/room.interface';
 
 export interface IRoomRepository {
   getUserRooms(userId: string): Promise<Room[]>;

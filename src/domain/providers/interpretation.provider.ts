@@ -1,5 +1,5 @@
-import { IDreamContext } from "../interfaces/dream-context.interface";
-import { Interpretation } from "../interfaces/interpretation-dream.interface";
+import { IDreamContext } from "@domain/interfaces/dream-context.interface";
+import { Interpretation } from "@domain/interfaces/interpretation-dream.interface";
 
 export interface InterpretationProvider {
   interpretDream(

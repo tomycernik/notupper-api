@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IBadgeRepository } from '../../domain/repositories/badge.repository';
+import { IBadgeRepository } from '@domain/repositories/badge.repository';
 
 export class BadgeController {
   constructor(private readonly badgeRepository: IBadgeRepository) {}

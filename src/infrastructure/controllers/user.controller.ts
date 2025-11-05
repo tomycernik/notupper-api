@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { UserService } from "../../application/services/user.service";
-import { RegisterUserDTO } from "../dtos/user/register-user.dto";
-import { LoginDTO } from "../dtos/user/login.dto";
-import { SkinService } from "../../application/services/skin.service";
-import { RoomService } from "../../application/services/room.service";
+import { UserService } from "@application/services/user.service";
+import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
+import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
+import { SkinService } from "@application/services/skin.service";
+import { RoomService } from "@application/services/room.service";
 
 export class UserController {
   constructor(

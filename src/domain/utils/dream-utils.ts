@@ -1,4 +1,4 @@
-import { IDreamContext } from '../interfaces/dream-context.interface';
+import { IDreamContext } from '@domain/interfaces/dream-context.interface';
 
 export interface DreamAnalysis {
   themes: string[];

@@ -1,9 +1,9 @@
-import { IDreamNodeRepository } from "../../domain/repositories/dream-node.repository";
-import { IDreamNode } from "../../domain/models/dream-node.model";
-import { IPaginationOptions } from "../../domain/interfaces/pagination.interface";
-import { IDreamContext } from "../../domain/interfaces/dream-context.interface";
-import { DreamContextService } from "./dream-context.service";
-import { IDreamNodeFilters } from "../../domain/interfaces/dream-node-filters.interface";
+import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
+import { IDreamNode } from "@domain/models/dream-node.model";
+import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
+import { IDreamContext } from "@domain/interfaces/dream-context.interface";
+import { DreamContextService } from "@application/services/dream-context.service";
+import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
 
 export interface TopItem {
   name: string;

@@ -1,6 +1,7 @@
 import { supabase } from '@config/supabase';
 import { Skin } from '@domain/interfaces/skin.interface';
 import { ISkinRepository } from '@domain/repositories/skin.repository';
+import { IPaginatedResult, IPaginationOptions } from '@domain/interfaces/pagination.interface';
 
 export class SkinRepositorySupabase implements ISkinRepository {
   async getUserSkins(userId: string): Promise<Skin[]> {
@@ -45,6 +46,69 @@ export class SkinRepositorySupabase implements ISkinRepository {
     return skins;
   }
 
+  async getAllSkins(pagination?: IPaginationOptions): Promise<IPaginatedResult<Skin>> {
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 10;
+    const offset = ((page - 1) * limit);
+
+    // Obtener el total
+    const { count, error: countError } = await supabase
+      .from('skin')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) throw new Error(countError.message);
+
+    // Obtener los datos paginados
+    const { data, error } = await supabase
+      .from('skin')
+      .select(`
+        id,
+        name,
+        description,
+        image_url,
+        preview_light,
+        preview_dark,
+        texture_set,
+        price,
+        included_in_plan,
+        room_id,
+        created_at
+      `)
+      .range(offset, offset + limit - 1)
+      .order('created_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    const skins = data?.map((skin: any) => ({
+      id: skin.id,
+      name: skin.name,
+      description: skin.description,
+      imageUrl: skin.image_url,
+      previewLight: skin.preview_light,
+      previewDark: skin.preview_dark,
+      price: skin.price,
+      includedInPlan: skin.included_in_plan,
+      createdAt: skin.created_at,
+      roomId: skin.room_id,
+      textureSet: skin.texture_set
+    })) || [];
+
+    const total = count || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: skins,
+      pagination: {
+        currentPage: page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+  }
+
   async getDefaultSkins(): Promise<Skin[]> {
     const { data, error } = await supabase
       .from('skins')
@@ -72,7 +136,7 @@ export class SkinRepositorySupabase implements ISkinRepository {
 
   async findById(skinId: string): Promise<Skin | null> {
     const { data, error } = await supabase
-      .from('skins')
+      .from('skin')
       .select('*')
       .eq('id', skinId)
       .single();
@@ -97,9 +161,41 @@ export class SkinRepositorySupabase implements ISkinRepository {
     };
   }
 
+  async addSkinToUser(userId: string, skinId: string): Promise<void> {
+    // Verificar que el skin existe
+    const skin = await this.findById(skinId);
+    if (!skin) {
+      throw new Error('Skin no encontrada');
+    }
+
+    // Verificar si el usuario ya tiene este skin
+    const { data: existing } = await supabase
+      .from('user_skin')
+      .select('profile_id')
+      .eq('profile_id', userId)
+      .eq('skin_id', skinId)
+      .single();
+
+    if (existing) {
+      throw new Error('El usuario ya tiene este skin');
+    }
+
+    // Insertar la relación
+    const { error } = await supabase
+      .from('user_skin')
+      .insert({
+        profile_id: userId,
+        skin_id: skinId
+      });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
   async getCompatibleSkins(roomId: string): Promise<Skin[]> {
     const { data, error } = await supabase
-      .from('skins')
+      .from('skin')
       .select('*')
       .eq('room_id', roomId)
       .order('created_at', { ascending: false });

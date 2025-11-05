@@ -1,9 +1,42 @@
 import { Skin } from '@domain/interfaces/skin.interface';
 import { GetUserSkinsResponseDto, SkinResponseDto } from '@infrastructure/dtos/skin/get-user-skins.dto';
 import { ISkinRepository } from '@domain/repositories/skin.repository';
+import { IPaginatedResult, IPaginationOptions } from '@domain/interfaces/pagination.interface';
 
 export class SkinService {
-  constructor(private readonly skinRepository: ISkinRepository) {}
+  constructor(private readonly skinRepository: ISkinRepository) { }
+
+  async getAllSkins(pagination?: IPaginationOptions): Promise<IPaginatedResult<SkinResponseDto>> {
+    try {
+      const result = await this.skinRepository.getAllSkins(pagination);
+      const skinResponses: SkinResponseDto[] = result.data.map((skin) => {
+        const response: SkinResponseDto = {
+          id: skin.id,
+          name: skin.name,
+          price: skin.price ? { amount: skin.price, currency: 'coins' } : null,
+          createdAt: skin.createdAt
+        };
+
+        if (skin.description) response.description = skin.description;
+        if (skin.imageUrl) response.imageUrl = skin.imageUrl;
+        if (skin.previewLight) response.previewLight = skin.previewLight;
+        if (skin.previewDark) response.previewDark = skin.previewDark;
+        if (skin.roomId) response.roomId = skin.roomId;
+        if (skin.textureSet) response.textureSet = skin.textureSet;
+        if (skin.includedInPlan) response.includedInPlan = skin.includedInPlan;
+
+        return response;
+      });
+
+      return {
+        data: skinResponses,
+        pagination: result.pagination
+      };
+    } catch (error) {
+      console.error('Error al obtener todas las skins:', error);
+      throw error;
+    }
+  }
 
   async getUserSkins(userId: string): Promise<GetUserSkinsResponseDto> {
     if (!userId) {
@@ -64,6 +97,19 @@ export class SkinService {
     } catch (error) {
       console.error('Error al obtener el skin:', error);
       return null;
+    }
+  }
+
+  async addSkinToUser(userId: string, skinId: string): Promise<void> {
+    if (!userId || !skinId) {
+      throw new Error('ID de usuario y skin son requeridos');
+    }
+
+    try {
+      await this.skinRepository.addSkinToUser(userId, skinId);
+    } catch (error) {
+      console.error('Error al agregar skin al usuario:', error);
+      throw error;
     }
   }
 

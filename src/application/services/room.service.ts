@@ -1,9 +1,23 @@
 import { Room } from '@domain/interfaces/room.interface';
 import { GetUserRoomsResponseDto, RoomResponseDto } from '@infrastructure/dtos/room/get-user-rooms.dto';
 import { IRoomRepository } from '@domain/repositories/room.repository';
+import { IPaginatedResult, IPaginationOptions } from '@domain/interfaces/pagination.interface';
 
 export class RoomService {
   constructor(private readonly roomRepository: IRoomRepository) { }
+
+  async getAllRooms(pagination?: IPaginationOptions): Promise<IPaginatedResult<RoomResponseDto>> {
+    try {
+      const result = await this.roomRepository.getAllRooms(pagination);
+      return {
+        data: this.mapToResponseDto(result.data),
+        pagination: result.pagination
+      };
+    } catch (error) {
+      console.error('Error al obtener todas las habitaciones:', error);
+      throw error;
+    }
+  }
 
   async getUserRooms(userId: string): Promise<GetUserRoomsResponseDto> {
     if (!userId) {
@@ -46,6 +60,19 @@ export class RoomService {
     } catch (error) {
       console.error('Error al obtener la habitación:', error);
       return null;
+    }
+  }
+
+  async addRoomToUser(userId: string, roomId: string): Promise<void> {
+    if (!userId || !roomId) {
+      throw new Error('ID de usuario y habitación son requeridos');
+    }
+
+    try {
+      await this.roomRepository.addRoomToUser(userId, roomId);
+    } catch (error) {
+      console.error('Error al agregar habitación al usuario:', error);
+      throw error;
     }
   }
 

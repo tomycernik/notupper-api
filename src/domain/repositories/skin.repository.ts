@@ -1,9 +1,12 @@
 import { Skin } from '@domain/interfaces/skin.interface';
+import { IPaginatedResult, IPaginationOptions } from '@domain/interfaces/pagination.interface';
 
 export interface ISkinRepository {
   getUserSkins(userId: string): Promise<Skin[]>;
+  getAllSkins(pagination?: IPaginationOptions): Promise<IPaginatedResult<Skin>>;
   getDefaultSkins(): Promise<Skin[]>;
   findById(skinId: string): Promise<Skin | null>;
+  addSkinToUser(userId: string, skinId: string): Promise<void>;
   create(skin: Omit<Skin, 'id' | 'createdAt'>): Promise<Skin>;
   update(skinId: string, skin: Partial<Skin>): Promise<Skin>;
   delete(skinId: string): Promise<void>;

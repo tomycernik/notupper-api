@@ -44,6 +44,7 @@ const transcriptionController = new TranscripcionController(transcriptionService
 
 // Endpoints de interpretación
 dreamNodeRouter.post("/interpret", authenticateToken, validateBody(InterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.interpret(req, res));
+dreamNodeRouter.post("/illustrate", authenticateToken, validateBody(InterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.illustrate(req, res));
 dreamNodeRouter.post("/reinterpret", authenticateToken, validateBody(ReinterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.reinterpret(req, res));
 dreamNodeRouter.post("/save", authenticateToken, validateBody(SaveDreamNodeRequestDto), (req, res) => dreamNodeController.save(req, res));
 dreamNodeRouter.post("/transcribe", authenticateToken, validateAudio, (req, res) => transcriptionController.transcribeAudio(req, res));

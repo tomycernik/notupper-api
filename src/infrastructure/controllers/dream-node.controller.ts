@@ -14,7 +14,7 @@ export class DreamNodeController {
     private readonly illustrationService: IllustrationDreamService,
     private readonly contextService: DreamContextService,
     private readonly membershipService: MembershipService
-  ) { }
+  ) {}
 
   async interpret(req: Request, res: Response): Promise<void> {
     try {
@@ -49,11 +49,9 @@ export class DreamNodeController {
           console.error("Error handling session:", error);
         }
       }
-      const illustrationUrl =
-        await this.illustrationService.generateIllustration(description);
+
       res.json({
         description,
-        imageUrl: illustrationUrl,
         interpretation: interpretation.interpretation,
         emotion: interpretation.emotion,
         title: interpretation.title,
@@ -67,6 +65,22 @@ export class DreamNodeController {
     }
   }
 
+  async illustrate(req: Request, res: Response): Promise<void> {
+    try {
+      const { description } = req.body;
+
+      const illustrationUrl =
+        await this.illustrationService.generateIllustration(description);
+
+      res.json({ imageUrl: illustrationUrl });
+    } catch (error: any) {
+      console.error("Error en DreamNodeController:", error);
+      res.status(500).json({
+        errors: "Error al generar ilustración",
+      });
+    }
+  }
+
   async save(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
@@ -75,11 +89,11 @@ export class DreamNodeController {
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))
         : {
-          themes: [],
-          people: [],
-          locations: [],
-          emotions_context: [],
-        };
+            themes: [],
+            people: [],
+            locations: [],
+            emotions_context: [],
+          };
 
       if (session.dreamContext) {
         session.dreamContext = null;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { BadgeController } from '../../controllers/badge.controller';
-import { authenticateToken } from '../../middlewares/auth.middleware';
-import { BadgeRepositorySupabase } from '../../repositories/badge.repository.supabase';
+import { BadgeController } from '@infrastructure/controllers/badge.controller';
+import { authenticateToken } from '@infrastructure/middlewares/auth.middleware';
+import { BadgeRepositorySupabase } from '@infrastructure/repositories/badge.repository.supabase';
 
 export const badgeRouter = Router();
 

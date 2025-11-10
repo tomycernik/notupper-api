@@ -1,5 +1,5 @@
-import { PaymentProvider } from "../../domain/providers/payment-provider.interface";
-import { CreatePaymentRequestDto } from "./../../infrastructure/dtos/payment/create-payment-request.dto";
+import { PaymentProvider } from "@domain/providers/payment-provider.interface";
+import { CreatePaymentRequestDto } from "@infrastructure/dtos/payment/create-payment-request.dto";
 
 export class PaymentService {
   private paymentProvider: PaymentProvider;

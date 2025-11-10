@@ -1,15 +1,15 @@
-import { envs } from "../../config/envs";
-import { IDreamNodeFilters } from "../../domain/interfaces/dream-node-filters.interface";
-import { DreamContext } from "../../domain/interfaces/interpretation-dream.interface";
+import { envs } from "@config/envs";
+import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
+import { DreamContext } from "@domain/interfaces/interpretation-dream.interface";
 import {
   IPaginationOptions,
   IPaginatedResult,
-} from "../../domain/interfaces/pagination.interface";
-import { IDreamNode, Emotion, DreamTypeName } from "../../domain/models/dream-node.model";
-import { IDreamNodeRepository } from "../../domain/repositories/dream-node.repository";
-import { SaveDreamNodeRequestDto } from "../../infrastructure/dtos/dream-node";
-import { MissionService } from "./mission.service";
-import { Badge } from "../../domain/models/badge.model";
+} from "@domain/interfaces/pagination.interface";
+import { IDreamNode, Emotion, DreamTypeName } from "@domain/models/dream-node.model";
+import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
+import { SaveDreamNodeRequestDto } from "@infrastructure/dtos/dream-node";
+import { MissionService } from "@application/services/mission.service";
+import { Badge } from "@domain/models/badge.model";
 
 export class DreamNodeService {
   constructor(private dreamNodeRepository: IDreamNodeRepository, private missionService?: MissionService) {

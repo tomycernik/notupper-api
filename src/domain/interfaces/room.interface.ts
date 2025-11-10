@@ -2,14 +2,15 @@ export interface Room {
   id: string;
   name: string;
   description?: string;
+  defaultTexture?: string | null;
+  textureApplied?: string | null;
   imageUrl?: string;
-  previewLight?: string;
-  previewDark?: string;
   modelUrl?: string;
   isDefault: boolean;
   price?: number;
   includedInPlan?: string;
-  ownershipStatus: string;
+  roomEngineId: string;
   compatibleSkins?: string[];
+  active?: boolean;
   createdAt: Date;
 }

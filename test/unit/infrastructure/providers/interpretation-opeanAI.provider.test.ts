@@ -17,6 +17,12 @@ describe("InterpretationOpenAIProvider", () => {
   let provider: InterpretationOpenAIProvider;
   let mockOpenAI: jest.Mocked<OpenAI>;
   let mockChatCompletions: jest.Mock;
+  const mockEmotionRepo = {
+    getAllByName: jest.fn().mockResolvedValue(["Felicidad", "Tristeza", "Miedo", "Enojo", "Amor", "Sorpresa"]),
+  };
+  const mockDreamTypeRepo = {
+    getAllByName: jest.fn().mockResolvedValue(["Lucido", "Pesadilla", "Estandar", "Recurrente"]),
+  };
 
   beforeEach(() => {
     // Reset todos los mocks
@@ -36,8 +42,7 @@ describe("InterpretationOpenAIProvider", () => {
 
     // Mock del constructor de OpenAI
     MockedOpenAI.mockImplementation(() => mockOpenAI);
-
-    provider = new InterpretationOpenAIProvider();
+    provider = new InterpretationOpenAIProvider(mockEmotionRepo, mockDreamTypeRepo);
   });
 
   describe("constructor", () => {
@@ -478,7 +483,7 @@ describe("InterpretationOpenAIProvider", () => {
       } catch (err) {
         // Log para ver el error real
         console.log('Test error:', err);
-  expect((err as Error).message).toBe("Error al reinterpretar el sueño.");
+        expect((err as Error).message).toBe("Error al reinterpretar el sueño.");
       }
     });
 

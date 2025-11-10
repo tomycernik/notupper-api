@@ -1,4 +1,4 @@
-import { IUser } from "../interfaces/user.interface";
+import { IUser } from "@domain/interfaces/user.interface";
 
 export class User implements IUser {
     id: string;
@@ -7,15 +7,15 @@ export class User implements IUser {
     password: string;
     date_of_birth: Date;
     coin_amount: number;
-    membership: "free" | "pro";
+    membership_id: number;
 
-    constructor(id: string, email: string, name: string, password: string, date_of_birth: Date, coin_amount: number, membership: "free" | "pro") {
+    constructor(id: string, email: string, name: string, password: string, date_of_birth: Date, coin_amount: number, membership_id: number) {
         this.id = id;
         this.email = email;
         this.name = name;
         this.password = password;
         this.date_of_birth = date_of_birth;
         this.coin_amount = coin_amount;
-        this.membership = membership;
+        this.membership_id = membership_id;
     }
 }

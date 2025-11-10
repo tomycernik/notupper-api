@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { envs } from "../../config/envs";
+import { envs } from "@config/envs";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "@supabase/supabase-js";
 

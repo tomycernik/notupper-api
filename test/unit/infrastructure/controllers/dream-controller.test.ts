@@ -7,6 +7,7 @@ import { IllustrationDreamService } from '../../../../src/application/services/i
 import { DreamContextService } from '../../../../src/application/services/dream-context.service';
 import { IDreamNode } from '../../../../src/domain/models/dream-node.model';
 import { IPaginatedResult } from '../../../../src/domain/interfaces/pagination.interface';
+import { MembershipService } from '../../../../src/application/services/membership.service';
 
 jest.mock('uuid', () => ({
   v4: jest.fn(() => 'mocked-uuid-123'),
@@ -34,6 +35,7 @@ describe('DreamNodeController Integration Tests', () => {
   let mockDreamNodeService: jest.Mocked<DreamNodeService>;
   let mockIllustrationService: jest.Mocked<IllustrationDreamService>;
   let mockContextService: jest.Mocked<DreamContextService>;
+  let mockMembershipService: jest.Mocked<MembershipService>;
   // Common mock implementations
   const mockDreamContext = {
     themes: [],
@@ -87,11 +89,20 @@ describe('DreamNodeController Integration Tests', () => {
       getUserDreamContext: jest.fn().mockResolvedValue({ ...mockDreamContext })
     } as any;
 
+    mockMembershipService = {
+      getUserMembership: jest.fn().mockResolvedValue({
+        id: 2,
+        name: 'plus',
+        durations_month: 1
+      })
+    } as any;
+
     controller = new DreamNodeController(
       mockInterpretationService,
       mockDreamNodeService,
       mockIllustrationService,
-      mockContextService
+      mockContextService,
+      mockMembershipService
     );
   });
 
@@ -107,7 +118,8 @@ describe('DreamNodeController Integration Tests', () => {
           previousInterpretation: 'Previous interpretation'
         },
         session: mockSession,
-      };
+      } as any;
+      (mockReq as any).userId = 'test-user-id';
 
       mockRes = {
         status: jest.fn().mockReturnThis(),

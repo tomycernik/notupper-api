@@ -1,6 +1,6 @@
-import { supabase } from "../../config/supabase";
-import { IBadgeRepository } from "../../domain/repositories/badge.repository";
-import { Badge } from "../../domain/models/badge.model";
+import { supabase } from "@config/supabase";
+import { IBadgeRepository } from "@domain/repositories/badge.repository";
+import { Badge } from "@domain/models/badge.model";
 
 export class BadgeRepositorySupabase implements IBadgeRepository {
 

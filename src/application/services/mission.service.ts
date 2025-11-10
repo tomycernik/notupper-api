@@ -28,7 +28,7 @@ export class MissionService {
       if (badge) unlockedBadges.push(badge);
     }
 
-   // Misiones por racha de dias
+    //Misiones por racha de dias
     const currentStreak = await this.computeCurrentStreak(profileId);
     const previousStreak = await this.estimatePreviousStreak(profileId, currentStreak);
     const streakMissions = ['constant_dreamer', 'dream_routine', 'dream_diary'];
@@ -54,6 +54,7 @@ export class MissionService {
     //detecta si se desbloqueo la mision justo ahora, si antes no estaba completada y ahora si
     const crossedThreshold = previousCount < mission.target && count >= mission.target;
 
+    await this.missionRepository.upsertUserMission(profileId, missionCode, progress, completed);
     await this.missionRepository.upsertUserMission(profileId, missionCode, progress, completed);
 
     //si se completo la mision y se cruzo el umbral y antes no estaba completada  
@@ -155,10 +156,10 @@ export class MissionService {
 
     const dreams = await this.dreamNodeRepository.getUserNodes(profileId, filters, { page: 1, limit: 1000, offset: 0 });
 
-   /* se recorre un for 60 veces, i seria el dia recorrido, 
-   normaliza cada fecha teniendo en cuenta los dias 
-   que pasen (i) y luego verifica si esa fecha esta en el dayset*/
-   
+    /* se recorre un for 60 veces, i seria el dia recorrido,
+    normaliza cada fecha teniendo en cuenta los dias
+    que pasen (i) y luego verifica si esa fecha esta en el dayset*/
+
     const daySet = new Set<string>();
     for (const d of dreams) {
 

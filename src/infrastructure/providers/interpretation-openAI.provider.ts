@@ -1,17 +1,21 @@
-import { InterpretationProvider } from "../../domain/providers/interpretation.provider";
+import { InterpretationProvider } from "@domain/providers/interpretation.provider";
 import { OpenAI } from "openai";
-import { envs } from "../../config/envs";
-import { Interpretation } from "../../domain/interfaces/interpretation-dream.interface";
-import { IDreamContext } from "../../domain/interfaces/dream-context.interface";
-import { isRecurringDream } from '../../domain/utils/dream-utils';
-import { DreamTypeName } from "../../domain/models/dream-node.model";
+import { envs } from "@config/envs";
+import { Interpretation } from "@domain/interfaces/interpretation-dream.interface";
+import { IDreamContext } from "@domain/interfaces/dream-context.interface";
+import { isRecurringDream } from '@domain/utils/dream-utils';
+import { DreamTypeName } from "@domain/models/dream-node.model";
+import { EmotionRepositorySupabase } from "@infrastructure/repositories/emotion.repository.supabase";
+import { DreamTypeRepositorySupabase } from "@infrastructure/repositories/dream-type.repository.supabase";
 
 export class InterpretationOpenAIProvider implements InterpretationProvider {
   private openai: OpenAI;
-  constructor() {
+  constructor(private readonly emotionRepository: EmotionRepositorySupabase, private readonly dreamTypeRepository: DreamTypeRepositorySupabase) {
     this.openai = new OpenAI({
       apiKey: envs.OPENAI_API_KEY,
     });
+    this.emotionRepository = emotionRepository;
+    this.dreamTypeRepository = dreamTypeRepository;
   }
 
   private sanitizeText(text: string): string {
@@ -34,6 +38,10 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
     try {
       console.log('Dream Context:', JSON.stringify(dreamContext, null, 2));
       const contextSection = this.buildContextSection(dreamContext);
+      const emotions = await this.emotionRepository.getAllByName()
+      const emotionsString = emotions.join('|');
+      const dreamTypes = await this.dreamTypeRepository.getAllByName();
+      const dreamTypesString = (await dreamTypes).join('|');
       console.log('Context Section:', contextSection);
 
             const prompt = `${contextSection}Analiza este sueño y proporciona:
@@ -48,26 +56,25 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
       5. Personas mencionadas (si las hay)
       6. Ubicaciones mencionadas (si las hay)
       7. Emociones contextuales presentes (máximo 3)
-      8. El tipo de sueño (Recurrente|Lucido|Pesadilla|Estándar)
+      8. El tipo de sueño (Lucido|Pesadilla|Estándar)
 
       Sueño: ${dreamText}
 
       Tipos de sueños posibles (DEBES ELEGIR SOLO UNO):
       - **Lúcido:** si el sueño menciona que el soñante es consciente de estar soñando, puede controlar sus acciones, volar a voluntad, o manipular el entorno del sueño. Ejemplos: 'me di cuenta que estaba soñando', 'podía controlar mis acciones', 'decidí volar', 'cambié algo del sueño a voluntad'.
       - **Pesadilla:** si el sueño provoca miedo, angustia o ansiedad intensa, a menudo con sensación de peligro o persecución. El soñante no tiene control sobre la situación.
-      - **Recurrente:** si el sueño repite elementos significativos de sueños anteriores (lugares, personas, situaciones).
       - **Estándar:** solo si no encaja en ninguna de las categorías anteriores.
 
       Responde EXACTAMENTE en este formato JSON (sin comentarios ni texto adicional):
       {
         "title": "Título Creativo del Sueño",
         "interpretation": "tu interpretación clara y profunda (3-4 oraciones)",
-        "emotion": "felicidad|tristeza|miedo|enojo",
+        "emotion": ${emotionsString},
         "themes": ["tema1", "tema2"],
         "people": ["persona1"],
         "locations": ["ubicación1"],
         "emotions_context": ["emoción1", "emoción2"],
-        "dreamType": "Recurrente|Lucido|Pesadilla|Estándar"
+        "dreamType": ${dreamTypesString}
       }`;
 
             const modelUsed =
@@ -115,7 +122,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
 
         // Process emotion
         emotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
-        const allowedEmotions = new Set(["felicidad", "tristeza", "miedo", "enojo"]);
+        const allowedEmotions = new Set(emotions .map(e => e.toLowerCase()));
         if (!allowedEmotions.has(emotion)) emotion = "tristeza";
         emotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
 
@@ -133,10 +140,10 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
           isRecurring = result.isRecurring;
         }
 
-        if (isRecurring) {
+        if (isRecurring && dreamType == 'Estandar') {
           dreamType = 'Recurrente';
         } else {
-          const allowedDreamTypes = new Set(["Lucido", "Pesadilla", "Recurrente", "Estandar"]);
+          const allowedDreamTypes = new Set(dreamTypes);
           let rawDreamType = aiResult.dreamType || 'Estandar';
           rawDreamType = rawDreamType
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -226,6 +233,10 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
   ): Promise<Interpretation> {
     try {
       const contextSection = this.buildContextSection(dreamContext);
+      const emotions = await this.emotionRepository.getAllByName()
+      const emotionsString = emotions.join('|');
+      const dreamTypes = await this.dreamTypeRepository.getAllByName();
+      const dreamTypesString = (await dreamTypes).join('|');
       const prompt = `IGNORA COMPLETAMENTE la interpretación anterior. Debes dar una perspectiva RADICALMENTE OPUESTA y diferente.
 
 Sueño: ${dreamText}
@@ -247,19 +258,18 @@ INSTRUCCIONES ESTRICTAS:
       Tipos de sueños posibles (DEBES ELEGIR SOLO UNO):
       - **Lúcido:** si el sueño menciona que el soñante es consciente de estar soñando, puede controlar sus acciones, volar a voluntad, o manipular el entorno del sueño. Ejemplos: 'me di cuenta que estaba soñando', 'podía controlar mis acciones', 'decidí volar', 'cambié algo del sueño a voluntad'.
       - **Pesadilla:** si el sueño provoca miedo, angustia o ansiedad intensa, a menudo con sensación de peligro o persecución. El soñante no tiene control sobre la situación.
-      - **Recurrente:** si el sueño repite elementos significativos de sueños anteriores (lugares, personas, situaciones).
       - **Estándar:** solo si no encaja en ninguna de las categorías anteriores.
 
 Responde EXACTAMENTE en este formato JSON:
 {
   "title": "Nuevo Título Que Refleje la Perspectiva Opuesta",
   "interpretation": "interpretación COMPLETAMENTE OPUESTA (3-4 oraciones)",
-  "emotion": "felicidad|tristeza|miedo|enojo",
+  "emotion": ${emotionsString},
   "themes": ["tema1", "tema2"],
   "people": ["persona1"],
   "locations": ["ubicación1"],
-  "emotions_context": ["emoción1", "emoción2"]
-  "dreamType": "Lucido|Pesadilla|Recurrente|Estandar"
+  "emotions_context": ["emoción1", "emoción2"],
+  "dreamType": ${dreamTypesString} 
 }`;
 
       const modelUsed =
@@ -312,12 +322,31 @@ Responde EXACTAMENTE en este formato JSON:
           .replace(/[\u0300-\u036f]/g, '')
           .toLowerCase();
 
-        dreamType = (
-          rawDreamType === 'lucido' ? 'Lucido' :
-          rawDreamType === 'pesadilla' ? 'Pesadilla' :
-          rawDreamType === 'recurrente' ? 'Recurrente' :
-          'Estandar'
-        ) as DreamTypeName;
+        dreamType = rawDreamType.charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase() as DreamTypeName;
+         let isRecurring = false;
+
+          const dreamAnalysis = {
+          themes: Array.isArray(aiResult.themes) ? aiResult.themes : [],
+          people: Array.isArray(aiResult.people) ? aiResult.people : [],
+          locations: Array.isArray(aiResult.locations) ? aiResult.locations : [],
+          emotions: Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : []
+        };
+
+        if (dreamContext) {
+          const result = isRecurringDream(dreamAnalysis, dreamContext);
+          isRecurring = result.isRecurring;
+        }
+
+        if (isRecurring && dreamType == 'Estandar') {
+          dreamType = 'Recurrente';
+        } else {
+          const allowedDreamTypes = new Set(dreamTypes);
+          let rawDreamType = aiResult.dreamType || 'Estandar';
+          rawDreamType = rawDreamType
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
+          dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
+        }
       } catch (parseError) {
         console.error(
           "Error parseando JSON de OpenAI en reinterpretación:",

@@ -1,11 +1,11 @@
-import { DreamTypeName, IDreamNode } from "../../domain/models/dream-node.model";
-import { IDreamNodeRepository } from "../../domain/repositories/dream-node.repository";
-import { supabase } from "../../config/supabase";
-import { IDreamNodeEntity } from "../entities/dream-node.entity";
-import { privacyMap, stateMap, emotionMap, dreamTypeMap } from "../../config/mappings";
-import { IDreamNodeFilters } from "../../domain/interfaces/dream-node-filters.interface";
-import { IPaginationOptions } from "../../domain/interfaces/pagination.interface";
-import { IDreamContext } from "../../domain/interfaces/dream-context.interface";
+import { DreamTypeName, IDreamNode } from "@domain/models/dream-node.model";
+import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
+import { supabase } from "@config/supabase";
+import { IDreamNodeEntity } from "@infrastructure/entities/dream-node.entity";
+import { privacyMap, stateMap, emotionMap, dreamTypeMap } from "@config/mappings";
+import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
+import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
+import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 
 export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   async save(

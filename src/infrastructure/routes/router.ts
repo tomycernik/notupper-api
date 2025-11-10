@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { dreamNodeRouter } from "./modules/dream-node.routes";
-import { badgeRouter } from "./modules/badge.routes";
-import { userRouter } from "./modules/user.routes";
-import { missionRouter } from "./modules/mission.routes";
-import { statisticsRouter } from "./modules/statistics.routes";
-import { paymentRouter } from "./modules/payment.routes";
+import { dreamNodeRouter } from "@infrastructure/routes/modules/dream-node.routes";
+import { badgeRouter } from "@infrastructure/routes/modules/badge.routes";
+import { userRouter } from "@infrastructure/routes/modules/user.routes";
+import { missionRouter } from "@infrastructure/routes/modules/mission.routes";
+import { statisticsRouter } from "@infrastructure/routes/modules/statistics.routes";
+import { paymentRouter } from "@infrastructure/routes/modules/payment.routes";
+import { roomRouter } from "@infrastructure/routes/modules/room.routes";
+import { skinRouter } from "@infrastructure/routes/modules/skin.routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -17,6 +19,8 @@ export class AppRoutes {
     router.use("/api/users", userRouter);
     router.use("/api/statistics", statisticsRouter);
     router.use("/api/payments", paymentRouter);
+    router.use("/api/rooms", roomRouter);
+    router.use("/api/skins", skinRouter);
     return router;
   }
 }

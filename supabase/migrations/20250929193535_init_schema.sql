@@ -181,18 +181,12 @@ create table if not exists public.rooms (
     description     TEXT,
     
     image_url       VARCHAR(500),
-    preview_light   VARCHAR(500),
-    preview_dark    VARCHAR(500),
     model_url       VARCHAR(500),
-    
+  
     is_default      BOOLEAN NOT NULL DEFAULT FALSE,
     
     price           NUMERIC(10,2),
     included_in_plan VARCHAR(50),
-    ownership_status VARCHAR(50) NOT NULL,
-    
-    compatible_skins TEXT[],  
-    
     created_at      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -204,20 +198,11 @@ create table if not exists public.skins (
     image_url       VARCHAR(500),
     preview_light   VARCHAR(500),
     preview_dark    VARCHAR(500),
-    
-    supports_themes BOOLEAN NOT NULL,
-    
-    objects_light   VARCHAR(500),
-    objects_dark    VARCHAR(500),
-    walls_light     VARCHAR(500),
-    walls_dark      VARCHAR(500),
-    
+    texture_set jsonb,
+    room_id VARCHAR(100) REFERENCES public.rooms(id) ON DELETE SET NULL,
     is_default      BOOLEAN NOT NULL DEFAULT FALSE,
     price           NUMERIC(10,2),
     included_in_plan VARCHAR(50),
-    ownership_status VARCHAR(50) NOT NULL,
-    
-    compatible_rooms TEXT[],  
     created_at      TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

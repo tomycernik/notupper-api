@@ -9,6 +9,7 @@ import { IllustrationDreamService } from "../../src/application/services/illustr
 import { DreamContextService } from "../../src/application/services/dream-context.service";
 import { IDreamContext } from "../../src/domain/interfaces/dream-context.interface";
 import { DreamTypeName } from "../../src/domain/models/dream-node.model";
+import { MembershipService } from "../../src/application/services/membership.service";
 
 jest.mock("uuid", () => ({
   v4: jest.fn(() => "mocked-uuid-123"),
@@ -20,6 +21,7 @@ describe("Dream API Integration Tests", () => {
   let mockDreamNodeService: jest.Mocked<DreamNodeService>;
   let mockIllustrationService: jest.Mocked<IllustrationDreamService>;
   let mockDreamContextService: jest.Mocked<DreamContextService>;
+  let mockMembershipService: jest.Mocked<MembershipService>;
 
   beforeAll(async () => {
     mockInterpretationService = {
@@ -60,6 +62,14 @@ describe("Dream API Integration Tests", () => {
       generateIllustration: jest.fn(),
     } as any;
 
+    mockMembershipService = {
+      getUserMembership: jest.fn().mockResolvedValue({
+        id: 2,
+        name: 'plus',
+        durations_month: 1
+      })
+    } as any;
+
     mockDreamContextService = {
       register: jest.fn(),
       login: jest.fn(),
@@ -83,12 +93,17 @@ describe("Dream API Integration Tests", () => {
       mockInterpretationService,
       mockDreamNodeService,
       mockIllustrationService,
-      mockDreamContextService
+      mockDreamContextService,
+      mockMembershipService
     );
 
     app.post("/api/dreams/interpret", (req, res) =>
       controller.interpret(req, res)
     );
+
+    app.post("/api/dreams/illustrate", (req, res) =>
+    controller.illustrate(req, res)
+  );
 
     app.post("/api/dreams/reinterpret", (req, res) =>
       controller.reinterpret(req, res)
@@ -97,7 +112,7 @@ describe("Dream API Integration Tests", () => {
     app.post("/api/dreams/save", (req, res) => controller.save(req, res));
   });
 
-  afterAll(async () => {});
+  afterAll(async () => { });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -166,49 +181,44 @@ describe("Dream API Integration Tests", () => {
       expect(response.body.errors).toContain("Error al reinterpretar el sueño");
     });
 
-   it("should handle large description inputs", async () => {
-  const largeDescription =
-    "Soñé que ".repeat(200) + "volaba sobre montañas";
+    it("should handle large description inputs", async () => {
+      const largeDescription =
+        "Soñé que ".repeat(200) + "volaba sobre montañas";
 
-  const requestBody = {
-    description: largeDescription,
-    previousInterpretation: "Representa tu deseo de libertad",
-  };
+      const requestBody = {
+        description: largeDescription,
+        previousInterpretation: "Representa tu deseo de libertad",
+      };
 
-  const expectedResponseService: Interpretation = {
-    title: "Interpretación de Sueño Complejo",
-    interpretation: "Tu sueño detallado sugiere...",
-    emotion: "Felicidad",
-    context: {
-      themes: [],
-      people: [],
-      locations: [],
-      emotions_context: [],
-    },
-    dreamType: "Estandar" as DreamTypeName,
-  };
+      const expectedResponseService: Interpretation = {
+        title: "Interpretación de Sueño Complejo",
+        interpretation: "Tu sueño detallado sugiere...",
+        emotion: "Felicidad",
+        context: {
+          themes: [],
+          people: [],
+          locations: [],
+          emotions_context: [],
+        },
+        dreamType: "Estandar" as DreamTypeName,
+      };
 
-  mockInterpretationService.reinterpretDream.mockResolvedValue(
-    expectedResponseService
-  );
+      mockInterpretationService.reinterpretDream.mockResolvedValue(
+        expectedResponseService
+      );
 
-  mockIllustrationService.generateIllustration.mockResolvedValue(
-    "https://example.com/image.jpg"
-  );
+      const response = await request(app)
+        .post("/api/dreams/reinterpret")
+        .send(requestBody)
+        .expect(200);
 
-  const response = await request(app)
-    .post("/api/dreams/reinterpret")
-    .send(requestBody)
-    .expect(200);
-
-  expect(response.body).toMatchObject({
-    description: requestBody.description,
-    imageUrl: expect.any(String),
-    interpretation: expect.any(String),
-    emotion: 'Felicidad',
-    title: expect.any(String),
-    dreamType: expect.any(String)
-  });
+      expect(response.body).toMatchObject({
+        description: requestBody.description,
+        interpretation: expect.any(String),
+        emotion: 'Felicidad',
+        title: expect.any(String),
+        dreamType: expect.any(String)
+      });
     });
 
     it("should handle special characters in description", async () => {
@@ -241,15 +251,14 @@ describe("Dream API Integration Tests", () => {
         .send(requestBody)
         .expect(200);
 
-     expect(response.body).toEqual(expect.objectContaining({
-      description: requestBody.description,
-      interpretation: expectedResponse.interpretation,
-      title: expectedResponse.title,
-      emotion: expectedResponse.emotion,
-      dreamType: expectedResponse.dreamType,
-      imageUrl: expect.any(String),
-      unlockedBadges: expect.any(Array)
-    }));
+      expect(response.body).toEqual(expect.objectContaining({
+        description: requestBody.description,
+        interpretation: expectedResponse.interpretation,
+        title: expectedResponse.title,
+        emotion: expectedResponse.emotion,
+        dreamType: expectedResponse.dreamType,
+        unlockedBadges: expect.any(Array)
+      }));
     });
   });
 
@@ -281,16 +290,11 @@ describe("Dream API Integration Tests", () => {
         dreamType: "Estandar" as DreamTypeName,
       };
 
-      const mockImageUrl = "https://example.com/dream-illustration.png";
-
       mockInterpretationService.interpretDream.mockResolvedValue(
         expectedResponseService
       );
-      mockIllustrationService.generateIllustration.mockResolvedValue(
-        mockImageUrl
-      );
 
-      mockDreamContextService.getUserDreamContext.mockResolvedValue({themes: [],people: [], locations: [], emotions_context: []} as IDreamContext);
+      mockDreamContextService.getUserDreamContext.mockResolvedValue({ themes: [], people: [], locations: [], emotions_context: [] } as IDreamContext);
 
       const response = await request(app)
         .post("/api/dreams/interpret")
@@ -300,58 +304,18 @@ describe("Dream API Integration Tests", () => {
 
       expect(response.body).toEqual({
         description: requestBody.description,
-        ...expectedResponse,
-        imageUrl: mockImageUrl,
+        ...expectedResponse
       });
 
-     expect(mockInterpretationService.interpretDream).toHaveBeenCalledWith(
-     requestBody.description,
-     expect.objectContaining({
-     emotions_context: expect.any(Array),
-     locations: expect.any(Array),
-     people: expect.any(Array),
-     themes: expect.any(Array),
-  })
-);
-
-      expect(mockIllustrationService.generateIllustration).toHaveBeenCalledWith(
-        requestBody.description
+      expect(mockInterpretationService.interpretDream).toHaveBeenCalledWith(
+        requestBody.description,
+        expect.objectContaining({
+          emotions_context: expect.any(Array),
+          locations: expect.any(Array),
+          people: expect.any(Array),
+          themes: expect.any(Array),
+        })
       );
-    });
-
-    it("should return 500 when illustration service fails", async () => {
-      const requestBody = {
-        description: "Soñé que volaba sobre montañas",
-      };
-
-      const expectedResponse: Interpretation = {
-        title: "Libertad y Trascendencia",
-        interpretation:
-          "Volar en los sueños generalmente representa el deseo de libertad...",
-        emotion: "Felicidad",
-        context: {
-          themes: [],
-          people: [],
-          locations: [],
-          emotions_context: []
-        },
-        dreamType: "Estandar" as DreamTypeName,
-      };
-
-      mockInterpretationService.interpretDream.mockResolvedValue(
-        expectedResponse
-      );
-      mockIllustrationService.generateIllustration.mockRejectedValue(
-        new Error("Image generation API unavailable")
-      );
-
-      const response = await request(app)
-        .post("/api/dreams/interpret")
-        .send(requestBody)
-        .expect(500);
-
-      expect(response.body).toHaveProperty("errors");
-      expect(response.body.errors).toContain("Error al interpretar el sueño");
     });
 
     it("should handle large description inputs", async () => {
@@ -375,13 +339,8 @@ describe("Dream API Integration Tests", () => {
         dreamType: "Estandar" as DreamTypeName,
       };
 
-      const mockImageUrl = "https://example.com/forest-dream.png";
-
       mockInterpretationService.interpretDream.mockResolvedValue(
         expectedResponse
-      );
-      mockIllustrationService.generateIllustration.mockResolvedValue(
-        mockImageUrl
       );
 
       const response = await request(app)
@@ -391,12 +350,11 @@ describe("Dream API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-      description: requestBody.description,
-      imageUrl: mockImageUrl,
-      interpretation: expectedResponse.interpretation,
-      emotion: expectedResponse.emotion,
-      title: "Viaje Interior Profundo",
-      dreamType: expectedResponse.dreamType,
+        description: requestBody.description,
+        interpretation: expectedResponse.interpretation,
+        emotion: expectedResponse.emotion,
+        title: "Viaje Interior Profundo",
+        dreamType: expectedResponse.dreamType,
       });
     });
 
@@ -420,13 +378,8 @@ describe("Dream API Integration Tests", () => {
         dreamType: "Estandar" as DreamTypeName,
       };
 
-      const mockImageUrl = "https://example.com/mystical-dream.png";
-
       mockInterpretationService.interpretDream.mockResolvedValue(
         expectedResponse
-      );
-      mockIllustrationService.generateIllustration.mockResolvedValue(
-        mockImageUrl
       );
 
       const response = await request(app)
@@ -436,13 +389,12 @@ describe("Dream API Integration Tests", () => {
         .expect(200);
 
       expect(response.body).toEqual({
-      description: requestBody.description,
-      imageUrl: mockImageUrl,
-      interpretation: expectedResponse.interpretation,
-      emotion: expectedResponse.emotion,
-      title: "Mundo Fantástico Interior", // Add the expected title
-      dreamType: "Estandar",
-    });
+        description: requestBody.description,
+        interpretation: expectedResponse.interpretation,
+        emotion: expectedResponse.emotion,
+        title: "Mundo Fantástico Interior",
+        dreamType: "Estandar",
+      });
     });
 
     it("should handle different types of dream emotions", async () => {
@@ -487,9 +439,6 @@ describe("Dream API Integration Tests", () => {
         mockInterpretationService.interpretDream.mockResolvedValueOnce(
           expectedResponse
         );
-        mockIllustrationService.generateIllustration.mockResolvedValueOnce(
-          "https://example.com/emotion-dream.png"
-        );
 
         const response = await request(app)
           .post("/api/dreams/interpret")
@@ -498,7 +447,6 @@ describe("Dream API Integration Tests", () => {
 
         expect(response.body).toEqual({
           description: requestBody.description,
-          imageUrl: "https://example.com/emotion-dream.png",
           interpretation: expectedResponse.interpretation,
           emotion: expectedResponse.emotion,
           title: expectedResponse.title,
@@ -544,7 +492,6 @@ describe("Dream API Integration Tests", () => {
       responses.forEach((response) => {
         expect(response.body).toEqual(expect.objectContaining({
           description: requestBody.description,
-          imageUrl: expect.any(String),
           interpretation: expect.any(String),
           emotion: expect.any(String),
           title: expect.any(String),
@@ -552,8 +499,8 @@ describe("Dream API Integration Tests", () => {
           unlockedBadges: expect.any(Array)
         }));
       });
-      });
     });
+  });
 
   describe("Error handling and edge cases", () => {
     describe("Timeout scenarios", () => {
@@ -601,6 +548,42 @@ describe("Dream API Integration Tests", () => {
 
         expect(response.body.errors).toContain("Error al interpretar el sueño");
       });
+    });
+  });
+
+  describe("Illustration test", () => {
+    it("should return an image url", async () => {
+      const requestBody = {
+        description: "Soñé que volaba sobre montañas",
+      };
+
+      mockIllustrationService.generateIllustration.mockResolvedValueOnce(
+        "https://example.com/illustration.jpg"
+      );
+
+      const response = await request(app)
+        .post("/api/dreams/illustrate")
+        .send(requestBody)
+        .expect(200);
+
+      expect(response.body).toHaveProperty("imageUrl");
+    });
+
+    it("should return 500 when illustration provider fails", async () => {
+      const requestBody = {
+        description: "Soñé que volaba sobre montañas",
+      };
+
+      mockIllustrationService.generateIllustration.mockRejectedValueOnce(
+        new Error("Illustration provider error")
+      );
+
+      const response = await request(app)
+        .post("/api/dreams/illustrate")
+        .send(requestBody)
+        .expect(500);
+
+      expect(response.body.errors).toContain("Error al generar ilustración");
     });
   });
 });

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { PaymentService } from "../../application/services/payment.service";
-import { UserService } from "../../application/services/user.service";
-import { CreatePaymentRequestDto } from "../dtos/payment/create-payment-request.dto";
+import { PaymentService } from "@application/services/payment.service";
+import { UserService } from "@application/services/user.service";
+import { CreatePaymentRequestDto } from "@infrastructure/dtos/payment/create-payment-request.dto";
 
 export class PaymentController {
   private paymentService: PaymentService;
@@ -14,14 +14,12 @@ export class PaymentController {
   async createPayment(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-
       const dto = req.body as CreatePaymentRequestDto;
-
       const payment = await this.paymentService.createPayment(dto);
 
       switch (payment.status) {
         case "approved":
-          await this.userService.updateMembership(userId, "pro");
+          await this.userService.updateMembership(userId, "plus");
           return res
             .status(200)
             .json({ message: "Pago aprobado y membresía actualizada" });

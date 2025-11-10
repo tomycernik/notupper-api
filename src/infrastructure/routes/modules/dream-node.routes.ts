@@ -23,11 +23,13 @@ import { UpdateDreamNodeRequestDto } from "@infrastructure/dtos/dream-node/updat
 import { MembershipRepositorySupabase } from "@infrastructure/repositories/membership.repository.supabase";
 import { MembershipService } from "@application/services/membership.service";
 import { EmotionRepositorySupabase } from "@/infrastructure/repositories/emotion.repository.supabase";
+import { DreamTypeRepositorySupabase } from "@/infrastructure/repositories/dream-type.repository.supabase";
 
 export const dreamNodeRouter = Router();
 
 const emotionRepository = new EmotionRepositorySupabase();
-const interpretationProvider = new InterpretationOpenAIProvider(emotionRepository);
+const dreamTypeRepository = new DreamTypeRepositorySupabase();
+const interpretationProvider = new InterpretationOpenAIProvider(emotionRepository, dreamTypeRepository);
 const interpretationDreamService = new InterpretationDreamService(interpretationProvider);
 const illustrationProvider = new IllustrationGeminiProvider();
 const illustrationService = new IllustrationDreamService(illustrationProvider);

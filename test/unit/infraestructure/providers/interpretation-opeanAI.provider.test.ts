@@ -17,6 +17,11 @@ describe("InterpretationOpenAIProvider", () => {
   let provider: InterpretationOpenAIProvider;
   let mockOpenAI: jest.Mocked<OpenAI>;
   let mockChatCompletions: jest.Mock;
+  const mockEmotionRepo = {
+  getAllByName: jest.fn().mockResolvedValue(["Felicidad", "Tristeza", "Miedo", "Enojo", "Amor", "Sorpresa"]),
+};
+
+
 
   beforeEach(() => {
     // Reset todos los mocks
@@ -36,8 +41,7 @@ describe("InterpretationOpenAIProvider", () => {
 
     // Mock del constructor de OpenAI
     MockedOpenAI.mockImplementation(() => mockOpenAI);
-
-    provider = new InterpretationOpenAIProvider();
+    provider = new InterpretationOpenAIProvider(mockEmotionRepo);
   });
 
   describe("constructor", () => {

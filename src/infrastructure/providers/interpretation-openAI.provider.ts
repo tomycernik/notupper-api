@@ -5,13 +5,15 @@ import { Interpretation } from "@domain/interfaces/interpretation-dream.interfac
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 import { isRecurringDream } from '@domain/utils/dream-utils';
 import { DreamTypeName } from "@domain/models/dream-node.model";
+import { EmotionRepositorySupabase } from "../repositories/emotion.repository.supabase";
 
 export class InterpretationOpenAIProvider implements InterpretationProvider {
   private openai: OpenAI;
-  constructor() {
+  constructor(private readonly emotionRepository: EmotionRepositorySupabase) {
     this.openai = new OpenAI({
       apiKey: envs.OPENAI_API_KEY,
     });
+    this.emotionRepository = emotionRepository;
   }
 
   private sanitizeText(text: string): string {
@@ -34,6 +36,8 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
     try {
       console.log('Dream Context:', JSON.stringify(dreamContext, null, 2));
       const contextSection = this.buildContextSection(dreamContext);
+      const emotions = await this.emotionRepository.getAllByName()
+      const emotionsString = emotions.join('|');
       console.log('Context Section:', contextSection);
 
             const prompt = `${contextSection}Analiza este sueño y proporciona:
@@ -61,7 +65,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
       {
         "title": "Título Creativo del Sueño",
         "interpretation": "tu interpretación clara y profunda (3-4 oraciones)",
-        "emotion": "felicidad|tristeza|miedo|enojo",
+        "emotion": ${emotionsString},
         "themes": ["tema1", "tema2"],
         "people": ["persona1"],
         "locations": ["ubicación1"],
@@ -114,7 +118,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
 
         // Process emotion
         emotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
-        const allowedEmotions = new Set(["felicidad", "tristeza", "miedo", "enojo"]);
+        const allowedEmotions = new Set(emotions .map(e => e.toLowerCase()));
         if (!allowedEmotions.has(emotion)) emotion = "tristeza";
         emotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
 
@@ -225,6 +229,8 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
   ): Promise<Interpretation> {
     try {
       const contextSection = this.buildContextSection(dreamContext);
+      const emotions = await this.emotionRepository.getAllByName()
+      const emotionsString = emotions.join('|');
       const prompt = `IGNORA COMPLETAMENTE la interpretación anterior. Debes dar una perspectiva RADICALMENTE OPUESTA y diferente.
 
 Sueño: ${dreamText}
@@ -252,7 +258,7 @@ Responde EXACTAMENTE en este formato JSON:
 {
   "title": "Nuevo Título Que Refleje la Perspectiva Opuesta",
   "interpretation": "interpretación COMPLETAMENTE OPUESTA (3-4 oraciones)",
-  "emotion": "felicidad|tristeza|miedo|enojo",
+  "emotion": ${emotionsString},
   "themes": ["tema1", "tema2"],
   "people": ["persona1"],
   "locations": ["ubicación1"],

@@ -24,7 +24,6 @@ describe("InterpretationOpenAIProvider", () => {
     getAllByName: jest.fn().mockResolvedValue(["Lucido", "Pesadilla", "Estandar", "Recurrente"]),
   };
 
-
   beforeEach(() => {
     // Reset todos los mocks
     jest.clearAllMocks();

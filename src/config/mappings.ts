@@ -22,7 +22,7 @@ export const emotionMap: Record<string, string> = {
   Celos: "9d6a4d1f-1035-4504-b53f-e6e51a4d56fa",
   Nostalgia: "ac2cf457-4a08-4ed5-bc8c-aaecec2bd1d5",
   Amor: "c022bff7-06cd-46c7-aeae-ae43995951e1",
-  Confusion: "ce03333c-a372-415e-a97d-404071bb828af",
+  Confusion: "ce03333c-a372-415e-a97d-404071bb828a",
   Orgullo: "cfcb12a3-071a-4719-bfd2-ce254a328c6a",
   Gratitud: "db7b37ba-8487-454f-9b1f-a4d4baba1d37"
 };

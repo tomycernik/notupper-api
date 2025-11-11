@@ -11,7 +11,13 @@ export class GetUserNodesRequestDto {
   privacy?: string;
 
   @IsOptional()
-  @IsIn(['Felicidad', 'Tristeza', 'Miedo', 'Enojo'], { message: 'La emoción debe ser "Felicidad", "Tristeza", "Miedo" o "Enojo".' })
+  @IsIn(
+    ['Paz', 'Frustracion', 'Tristeza', 'Esperanza', 'Verguenza', 'Enojo', 'Sorpresa', 'Miedo', 'Alegria', 'Celos', 'Nostalgia', 'Amor', 'Confusion', 'Orgullo', 'Gratitud'],
+    {
+      message:
+        'La emoción debe ser una de las siguientes: Paz, Frustracion, Tristeza, Esperanza, Verguenza, Enojo, Sorpresa, Miedo, Alegria, Celos, Nostalgia, Amor, Confusion, Orgullo o Gratitud'
+    }
+  )
   emotion?: string;
 
   @IsOptional()

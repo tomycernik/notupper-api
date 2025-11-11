@@ -1,4 +1,4 @@
-import { DreamTypeName, IDreamNode } from "@domain/models/dream-node.model";
+import { DreamTypeName, Emotion, EmotionOption, IDreamNode } from "@domain/models/dream-node.model";
 import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
 import { supabase } from "@config/supabase";
 import { IDreamNodeEntity } from "@infrastructure/entities/dream-node.entity";
@@ -347,4 +347,16 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     return { data: null, error: error as Error };
   }
 }
+
+async getAllEmotions(): Promise<EmotionOption[]> {
+  const { data, error } = await supabase
+    .from("emotion")
+    .select("id, emotion, color")
+    .order("emotion", { ascending: true });
+    if (error) {
+      console.error("Error fetching emotions:", error);
+      throw new Error(error.message);
+    }
+    return (data ?? []).map((row: any) => ({id: row.id, label: row.emotion as Emotion}));
+  }
 }

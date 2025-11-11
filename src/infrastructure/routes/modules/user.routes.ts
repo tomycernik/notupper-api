@@ -9,6 +9,7 @@ import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
 import { SetActiveRoomDto } from "@infrastructure/dtos/room/set-active-room.dto";
 import { SkinService } from "@application/services/skin.service";
 import { RoomService } from "@application/services/room.service";
+import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
 import { RoomRepositorySupabase } from "@infrastructure/repositories/room.repository.supabase";
 import { SkinRepositorySupabase } from "@infrastructure/repositories/skin.repository.supabase";
 import { MembershipService } from "@application/services/membership.service";
@@ -22,7 +23,8 @@ const membershipRepository= new MembershipRepositorySupabase();
 
 const membershipService = new MembershipService(membershipRepository);
 const skinService = new SkinService(skinRepository);
-const roomService = new RoomService(roomRepository);
+const coinRepository = new CoinRepositorySupabase();
+const roomService = new RoomService(roomRepository, coinRepository);
 const userService = new UserService(userRepository ,membershipService, roomService);
 const userController = new UserController(userService, skinService, roomService);
 
@@ -34,3 +36,4 @@ userRouter.get("/rooms", authenticateToken, (req, res) => userController.getUser
 userRouter.get("/rooms/active", authenticateToken, (req, res) => userController.getActiveRoom(req, res));
 userRouter.post("/rooms/active", authenticateToken, validateBody(SetActiveRoomDto), (req, res) => userController.setActiveRoom(req, res));
 userRouter.get("/me", authenticateToken, (req, res) => userController.getUserInfo(req, res));
+userRouter.post("/rooms/buy", authenticateToken, (req, res) => userController.buyRoom(req, res));

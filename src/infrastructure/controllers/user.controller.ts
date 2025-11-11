@@ -206,4 +206,20 @@ export class UserController {
       });
     }
   }
+
+    async buyRoom(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).userId;
+      const { roomId } = req.body;
+      if (!userId || !roomId) {
+        res.status(400).json({ success: false, message: "Faltan datos obligatorios" });
+        return;
+      }
+      await this.roomService.buyRoom(userId, roomId);
+      res.status(200).json({ success: true, message: "Habitación comprada correctamente" });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message || "No se pudo comprar la habitación" });
+    }
+  }
+
 }

@@ -18,16 +18,28 @@ export class SaveDreamNodeRequestDto {
 
   @IsString({ message: 'La emoción debe ser una cadena válida.' })
   @IsNotEmpty({ message: 'La emoción no puede estar vacía.' })
-  @IsIn(['Felicidad', 'Tristeza', 'Miedo', 'Enojo'],
-    { message: 'La emoción debe ser: Felicidad, Tristeza, Miedo, Enojo' })
+  @IsIn(
+    ['Paz', 'Frustracion', 'Tristeza', 'Esperanza', 'Verguenza', 'Enojo', 'Sorpresa', 'Miedo', 'Alegria', 'Celos', 'Nostalgia', 'Amor', 'Confusion', 'Orgullo', 'Gratitud'],
+    {
+      message:
+        'La emoción debe ser una de las siguientes: Paz, Frustracion, Tristeza, Esperanza, Verguenza, Enojo, Sorpresa, Miedo, Alegria, Celos, Nostalgia, Amor, Confusion, Orgullo o Gratitud'
+    }
+  )
   emotion!: string;
 
+
   @IsOptional()
-  @IsString({message: 'La imagen debe ser una cadena válida.' })
+  @IsString({ message: 'La imagen debe ser una cadena válida.' })
   imageUrl?: string;
   @IsString({ message: 'El tipo debe ser una cadena válida.' })
   @IsNotEmpty({ message: 'El tipo no puede estar vacío.' })
-  @IsIn(['Lucido', 'Pesadilla', 'Recurrente', 'Estandar'],
-    { message: 'El tipo debe ser: Lucido, Pesadilla, Recurrente, Estandar' })
+  @IsIn(
+    ['Recurrente', 'Vivido', 'Pesadilla', 'Premonitorio', 'Lucido', 'Estandar'],
+    {
+      message:
+        'El tipo debe ser uno de los siguientes: Recurrente, Vivido, Pesadilla, Premonitorio, Lucido o Estandar',
+    },
+  )
   dreamType!: string;
+
 }

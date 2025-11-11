@@ -51,12 +51,12 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         - Posibles emociones o conflictos internos
         - Reflexión sobre el estado emocional del soñante
         (3-4 oraciones completas y sustanciales)
-      3. La emoción dominante que transmite el sueño
+      3. La emoción dominante que transmite el sueño (${emotionsString})
       4. Temas principales mencionados (máximo 3)
       5. Personas mencionadas (si las hay)
       6. Ubicaciones mencionadas (si las hay)
       7. Emociones contextuales presentes (máximo 3)
-      8. El tipo de sueño (Lucido|Pesadilla|Estándar)
+      8. El tipo de sueño (${dreamTypesString})
 
       Sueño: ${dreamText}
 
@@ -64,6 +64,9 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
       - **Lúcido:** si el sueño menciona que el soñante es consciente de estar soñando, puede controlar sus acciones, volar a voluntad, o manipular el entorno del sueño. Ejemplos: 'me di cuenta que estaba soñando', 'podía controlar mis acciones', 'decidí volar', 'cambié algo del sueño a voluntad'.
       - **Pesadilla:** si el sueño provoca miedo, angustia o ansiedad intensa, a menudo con sensación de peligro o persecución. El soñante no tiene control sobre la situación.
       - **Estándar:** solo si no encaja en ninguna de las categorías anteriores.
+      - **Premonitorio:** si el sueño sugiere eventos futuros o tiene una cualidad profética. Ejemplos: 'soñé que algo iba a pasar', 'el sueño parecía predecir', 'vi un evento futuro'.
+      - **Vivido:** si el sueño es extremadamente claro, detallado y realista, casi como una experiencia de la vida real. Ejemplos: 'el sueño se sentía tan real', 'podía oler y sentir todo', 'era como estar despierto'.
+      - **Recurrente:** si el sueño o sus temas se repiten con frecuencia a lo largo del tiempo. Ejemplos: 'he tenido este sueño varias veces', 'sueño similar ocurre a menudo', 'este tema vuelve en mis sueños'.
 
       Responde EXACTAMENTE en este formato JSON (sin comentarios ni texto adicional):
       {
@@ -259,6 +262,9 @@ INSTRUCCIONES ESTRICTAS:
       - **Lúcido:** si el sueño menciona que el soñante es consciente de estar soñando, puede controlar sus acciones, volar a voluntad, o manipular el entorno del sueño. Ejemplos: 'me di cuenta que estaba soñando', 'podía controlar mis acciones', 'decidí volar', 'cambié algo del sueño a voluntad'.
       - **Pesadilla:** si el sueño provoca miedo, angustia o ansiedad intensa, a menudo con sensación de peligro o persecución. El soñante no tiene control sobre la situación.
       - **Estándar:** solo si no encaja en ninguna de las categorías anteriores.
+      - **Premonitorio:** si el sueño sugiere eventos futuros o tiene una cualidad profética. Ejemplos: 'soñé que algo iba a pasar', 'el sueño parecía predecir', 'vi un evento futuro'.
+      - **Vivido:** si el sueño es extremadamente claro, detallado y realista, casi como una experiencia de la vida real. Ejemplos: 'el sueño se sentía tan real', 'podía oler y sentir todo', 'era como estar despierto'.
+      - **Recurrente:** si el sueño o sus temas se repiten con frecuencia a lo largo del tiempo. Ejemplos: 'he tenido este sueño varias veces', 'sueño similar ocurre a menudo', 'este tema vuelve en mis sueños'.
 
 Responde EXACTAMENTE en este formato JSON:
 {

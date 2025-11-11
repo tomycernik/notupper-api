@@ -16,4 +16,5 @@ export interface IPaginationMeta {
 export interface IPaginatedResult<T> {
     data: T[];
     pagination: IPaginationMeta;
+    options?: any;
 }

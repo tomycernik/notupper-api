@@ -5,6 +5,7 @@ describe('MissionService - Badges', () => {
   let dreamNodeRepository: any;
   let missionRepository: any;
   let badgeRepository: any;
+  let coinRepository: any;
 
   beforeEach(() => {
     dreamNodeRepository = {
@@ -20,7 +21,12 @@ describe('MissionService - Badges', () => {
       awardBadge: jest.fn(),
       getBadgeById: jest.fn()
     };
-    missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository);
+    coinRepository = {
+      addCoins: jest.fn(),
+      subtractCoins: jest.fn(),
+      getCoinAmount: jest.fn()
+    };
+    missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository, coinRepository);
   });
 
   it('should unlock badge for counter mission via onDreamSaved', async () => {

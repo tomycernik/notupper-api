@@ -19,5 +19,7 @@ export const roomRouter = Router();
 // GET /api/rooms - Obtener todas las habitaciones (paginado)
 roomRouter.get('/', authenticateToken, (req, res) => roomController.getAllRooms(req, res));
 
+roomRouter.post('/buy', authenticateToken, (req, res) => roomController.buyRoom(req, res));
+
 // POST /api/rooms - Agregar habitación al usuario (requiere Plus)
 roomRouter.post('/', authenticateToken, (req, res) => roomController.addRoomToUser(req, res));

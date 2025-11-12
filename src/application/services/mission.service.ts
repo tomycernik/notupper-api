@@ -14,20 +14,17 @@ export class MissionService {
 
   async onDreamSaved(profileId: string): Promise<Badge[]> {
     const unlockedBadges: Badge[] = [];
-
     const totalDreams = await this.dreamNodeRepository.countUserNodes(
       profileId,
       {} as any
     );
     const previousCount = Math.max(0, totalDreams - 1);
-
     // Misiones por cantidad de sueños guardados
     const counterMissions = ['first_dream', 'five_dreams', 'dedicated_dreamer', 'dream_explorer', 'dream_master'];
     for (const missionCode of counterMissions) {
       const badge = await this.updateCounterMission(profileId, missionCode, totalDreams, previousCount);
       if (badge) unlockedBadges.push(badge);
     }
-
     //Misiones por racha de dias
     const currentStreak = await this.computeCurrentStreak(profileId);
     const previousStreak = await this.estimatePreviousStreak(profileId, currentStreak);
@@ -36,7 +33,6 @@ export class MissionService {
       const badge = await this.updateStreakMission(profileId, missionCode, currentStreak, previousStreak);
       if (badge) unlockedBadges.push(badge);
     }
-
     return unlockedBadges;
   }
 

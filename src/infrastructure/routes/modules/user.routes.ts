@@ -36,4 +36,3 @@ userRouter.get("/rooms", authenticateToken, (req, res) => userController.getUser
 userRouter.get("/rooms/active", authenticateToken, (req, res) => userController.getActiveRoom(req, res));
 userRouter.post("/rooms/active", authenticateToken, validateBody(SetActiveRoomDto), (req, res) => userController.setActiveRoom(req, res));
 userRouter.get("/me", authenticateToken, (req, res) => userController.getUserInfo(req, res));
-userRouter.post("/rooms/buy", authenticateToken, (req, res) => userController.buyRoom(req, res));

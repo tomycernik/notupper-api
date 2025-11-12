@@ -38,12 +38,12 @@ jest.mock('../../../../src/config/supabase', () => {
 });
 
 import { Room } from '../../../../src/domain/interfaces/room.interface';
-import { CoinRepositorySupabase } from '@/infrastructure/repositories/coin.repository.supabase';
+import { ICoinRepository } from '../../../../src/domain/repositories/coin.repository';
 
 describe('RoomService', () => {
   let roomService: RoomService;
   let mockRoomRepository: jest.Mocked<RoomRepositorySupabase>;
-  let mockCoinRepository: jest.Mocked<CoinRepositorySupabase>;
+  let mockCoinRepository: jest.Mocked<ICoinRepository>;
 
   const createMockRoom = (override: Partial<Room> = {}): Room => ({
     id: '1',

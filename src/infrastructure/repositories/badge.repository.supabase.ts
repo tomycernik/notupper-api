@@ -13,17 +13,18 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
     if (error) throw new Error(error.message);
 
     return (data || []).map((row: any) => ({
-      id: row.badge.id,
-      description: row.badge.badge_description || undefined,
-      imageUrl: row.badge.badge_image || undefined,
-      coin_reward: row.badge.coin_reward ?? undefined,
+  id: row.badge.id,
+  description: row.badge.badge_description || undefined,
+  imageUrl: row.badge.badge_image || undefined,
+  code: row.badge.badge_code || undefined,
+  coin_reward: row.badge.coin_reward ?? undefined,
     }));
   }
 
   async getBadgeById(badgeId: string): Promise<Badge | null> {
     const { data, error } = await supabase
       .from('badge')
-      .select('id, badge_description, badge_image, coin_reward')
+      .select('id, badge_description, badge_image, badge_code, coin_reward')
       .eq('id', badgeId)
       .single();
 
@@ -31,10 +32,11 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
     if (!data) return null;
 
     return {
-      id: data.id,
-      description: data.badge_description || undefined,
-      imageUrl: data.badge_image || undefined,
-      coin_reward: data.coin_reward ?? undefined,
+  id: data.id,
+  description: data.badge_description || undefined,
+  imageUrl: data.badge_image || undefined,
+  code: data.badge_code || undefined,
+  coin_reward: data.coin_reward ?? undefined,
     };
   }
 

@@ -1,31 +1,30 @@
-import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
-import { IBadgeRepository } from "@domain/repositories/badge.repository";
-import { IMissionRepository } from "@domain/repositories/mission.repository";
-import { Badge } from "@domain/models/badge.model";
+import { IDreamNodeRepository } from "../../domain/repositories/dream-node.repository";
+import { IBadgeRepository } from "../../domain/repositories/badge.repository";
+import { IMissionRepository } from "../../domain/repositories/mission.repository";
+import { Badge } from "../../domain/models/badge.model";
+import { ICoinRepository } from "../../domain/repositories/coin.repository";
 
 export class MissionService {
   constructor(
     private readonly dreamNodeRepository: IDreamNodeRepository,
     private readonly missionRepository: IMissionRepository,
-    private readonly badgeRepository: IBadgeRepository
-  ) { }
+    private readonly badgeRepository: IBadgeRepository,
+    private readonly coinRepository: ICoinRepository
+  ) {}
 
   async onDreamSaved(profileId: string): Promise<Badge[]> {
     const unlockedBadges: Badge[] = [];
-
     const totalDreams = await this.dreamNodeRepository.countUserNodes(
       profileId,
       {} as any
     );
     const previousCount = Math.max(0, totalDreams - 1);
-
     // Misiones por cantidad de sueños guardados
     const counterMissions = ['first_dream', 'five_dreams', 'dedicated_dreamer', 'dream_explorer', 'dream_master'];
     for (const missionCode of counterMissions) {
       const badge = await this.updateCounterMission(profileId, missionCode, totalDreams, previousCount);
       if (badge) unlockedBadges.push(badge);
     }
-
     //Misiones por racha de dias
     const currentStreak = await this.computeCurrentStreak(profileId);
     const previousStreak = await this.estimatePreviousStreak(profileId, currentStreak);
@@ -34,7 +33,6 @@ export class MissionService {
       const badge = await this.updateStreakMission(profileId, missionCode, currentStreak, previousStreak);
       if (badge) unlockedBadges.push(badge);
     }
-
     return unlockedBadges;
   }
 
@@ -53,15 +51,17 @@ export class MissionService {
     const crossedThreshold = previousCount < mission.target && count >= mission.target;
 
     await this.missionRepository.upsertUserMission(profileId, missionCode, progress, completed);
+    await this.missionRepository.upsertUserMission(profileId, missionCode, progress, completed);
 
-    //si se completo la mision y se cruzo el umbral y antes no estaba completada
+    //si se completo la mision y se cruzo el umbral y antes no estaba completada  
     if (completed && crossedThreshold && !wasAlreadyCompleted && mission.badgeId) {
       await this.badgeRepository.awardBadge(profileId, mission.badgeId);
-
       const badge = await this.badgeRepository.getBadgeById(mission.badgeId);
+      if (badge && badge.coin_reward && badge.coin_reward > 0) {
+        await this.coinRepository.addCoins(profileId, badge.coin_reward);
+      }
       return badge;
     }
-
     return null;
   }
 
@@ -86,11 +86,13 @@ export class MissionService {
 
     if (completed && !wasAlreadyCompleted && mission.badgeId) {
       await this.badgeRepository.awardBadge(profileId, mission.badgeId);
-
       const badge = await this.badgeRepository.getBadgeById(mission.badgeId);
+      // Otorgar monedas si corresponde
+      if (badge && badge.coin_reward && badge.coin_reward > 0) {
+        await this.coinRepository.addCoins(profileId, badge.coin_reward);
+      }
       return badge;
     }
-
     return null;
   }
 
@@ -110,11 +112,13 @@ export class MissionService {
 
     if (completed && crossedThreshold && !wasAlreadyCompleted && mission.badgeId) {
       await this.badgeRepository.awardBadge(profileId, mission.badgeId);
-
       const badge = await this.badgeRepository.getBadgeById(mission.badgeId);
+      // Otorgar monedas si corresponde
+      if (badge && badge.coin_reward && badge.coin_reward > 0) {
+        await this.coinRepository.addCoins(profileId, badge.coin_reward);
+      }
       return badge;
     }
-
     return null;
   }
 

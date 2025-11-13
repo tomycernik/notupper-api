@@ -38,10 +38,12 @@ jest.mock('../../../../src/config/supabase', () => {
 });
 
 import { Room } from '../../../../src/domain/interfaces/room.interface';
+import { ICoinRepository } from '../../../../src/domain/repositories/coin.repository';
 
 describe('RoomService', () => {
   let roomService: RoomService;
   let mockRoomRepository: jest.Mocked<RoomRepositorySupabase>;
+  let mockCoinRepository: jest.Mocked<ICoinRepository>;
 
   const createMockRoom = (override: Partial<Room> = {}): Room => ({
     id: '1',
@@ -89,7 +91,12 @@ describe('RoomService', () => {
       setActiveRoom: jest.fn()
     } as any;
 
-    roomService = new RoomService(mockRoomRepository);
+    mockCoinRepository = {
+      addCoins: jest.fn(),
+      deductCoins: jest.fn(),
+      getUserCoins: jest.fn()
+    } as any;
+    roomService = new RoomService(mockRoomRepository, mockCoinRepository);
   });
 
   describe('getUserRooms', () => {

@@ -6,6 +6,7 @@ import { privacyMap, stateMap, emotionMap, dreamTypeMap } from "@config/mappings
 import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
 import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
+import { IPublicDream } from "@domain/interfaces/public-dream.interface";
 
 export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   async save(
@@ -358,5 +359,63 @@ async getAllEmotions(): Promise<EmotionOption[]> {
       throw new Error(error.message);
     }
     return (data ?? []).map((row: any) => ({id: row.id, label: row.emotion as Emotion}));
+  }
+
+  async getPublicDreams(pagination: IPaginationOptions): Promise<IPublicDream[]> {
+    let query = supabase
+      .from("dream_node")
+      .select("*")
+      .eq("privacy_id", privacyMap["Publico"])
+      .order("creation_date", { ascending: false });
+
+    if (pagination?.offset !== undefined && pagination?.limit !== undefined) {
+      const to = pagination.offset + pagination.limit - 1;
+      query = query.range(pagination.offset, to);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const publicDreams: IPublicDream[] = await Promise.all(
+      (data ?? []).map(async (node: any) => {
+
+        const { data: userData } = await supabase.auth.admin.getUserById(node.profile_id);
+        return {
+          id: node.id,
+          title: node.title,
+          dream_description: node.dream_description,
+          interpretation: node.interpretation,
+          imageUrl: node.image_url,
+          creationDate: new Date(node.creation_date),
+          privacy: (Object.keys(privacyMap).find(key => privacyMap[key] === node.privacy_id) || "Privado") as any,
+          state: (Object.keys(stateMap).find(key => stateMap[key] === node.state_id) || "Activo") as any,
+          emotion: node.emotion,
+          type: node.type,
+          owner: {
+            id: node.profile_id,
+            username: userData?.user?.user_metadata?.username || userData?.user?.email?.split('@')[0] || 'Usuario',
+            avatar_url: userData?.user?.user_metadata?.avatar_url || null,
+          },
+        };
+      })
+    );
+
+    return publicDreams;
+  }
+
+  async countPublicDreams(): Promise<number> {
+    const { count, error } = await supabase
+      .from("dream_node")
+      .select("*", { count: "exact", head: true })
+      .eq("privacy_id", privacyMap["Publico"]);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return count || 0;
   }
 }

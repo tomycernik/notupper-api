@@ -737,10 +737,10 @@ describe("DreamNodeController Integration Tests", () => {
 
   describe("POST /api/dreams/:id/share", () => {
     let storedDreams: any[] = [];
-    
+
     beforeEach(() => {
       storedDreams = [];
-      
+
       // Mock authentication middleware
       app.use("/api/dreams/:id/share", (req, res, next) => {
         const authHeader = req.headers.authorization;
@@ -821,11 +821,10 @@ describe("DreamNodeController Integration Tests", () => {
 
   describe("PATCH /api/dreams/:id/unshare", () => {
     let storedDreams: any[] = [];
-    
+
     beforeEach(() => {
       storedDreams = [];
-      
-      // Mock authentication middleware
+
       app.use("/api/dreams/:id/unshare", (req, res, next) => {
         const authHeader = req.headers.authorization;
         if (authHeader && authHeader.startsWith("Bearer ")) {
@@ -905,10 +904,10 @@ describe("DreamNodeController Integration Tests", () => {
 
   describe("GET /api/dreams/public", () => {
     let storedDreams: any[] = [];
-    
+
     beforeEach(() => {
       storedDreams = [];
-      
+
       app.get("/api/dreams/public", (req, res) => {
         const { page = "1", limit = "10" } = req.query;
         const pageNum = parseInt(page as string);

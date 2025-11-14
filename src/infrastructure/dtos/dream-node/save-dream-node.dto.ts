@@ -41,5 +41,4 @@ export class SaveDreamNodeRequestDto {
     },
   )
   dreamType!: string;
-
 }

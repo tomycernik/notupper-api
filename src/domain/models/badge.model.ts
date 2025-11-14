@@ -3,4 +3,5 @@ export interface Badge {
   description?: string;
   imageUrl?: string;
   code?: string;
+  coin_reward?: number;
 }

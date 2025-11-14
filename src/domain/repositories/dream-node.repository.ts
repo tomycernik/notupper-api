@@ -1,4 +1,4 @@
-import { DreamTypeName, IDreamNode } from "@domain/models/dream-node.model";
+import { DreamTypeName, EmotionOption, IDreamNode } from "@domain/models/dream-node.model";
 import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
 import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
@@ -10,4 +10,5 @@ export interface IDreamNodeRepository {
     addDreamContext(nodeId:string, userId: string, dreamContext : IDreamContext): Promise<void>;
     getUserDreamContext(userId: string): Promise<IDreamContext>;
     updateDreamNode(nodeId: string, userId: string, updates: Partial<Pick<IDreamNode, 'state' | 'privacy'>>): Promise<{ data: any | null; error: Error | null }>;
+    getAllEmotions(): Promise<EmotionOption[]>;
 }

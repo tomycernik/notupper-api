@@ -16,6 +16,8 @@ export interface IDreamNode {
   type: DreamTypeName;
 }
 
+export type EmotionOption = { id: number; label: Emotion };
+
 export class DreamNode implements IDreamNode {
   creationDate: Date;
   title: string;

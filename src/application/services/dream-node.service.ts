@@ -100,9 +100,10 @@ export class DreamNodeService {
         offset,
       };
 
-      const [nodes, total] = await Promise.all([
+      const [nodes, total, emotions] = await Promise.all([
         this.dreamNodeRepository.getUserNodes(userId, filters, paginationData),
         this.dreamNodeRepository.countUserNodes(userId, filters),
+        this.dreamNodeRepository.getAllEmotions(),
       ]);
 
       const totalPages = Math.ceil(total / limit);
@@ -118,6 +119,9 @@ export class DreamNodeService {
           totalPages: totalPages,
           hasNext: hasNext,
           hasPrev: hasPrev,
+        },
+        options: {
+          emotions,
         },
       };
     } catch (error) {

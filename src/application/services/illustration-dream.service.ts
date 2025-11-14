@@ -8,12 +8,12 @@ export class IllustrationDreamService {
     const buffer = await this.illustrationProvider.generateIllustration(
       dreamText
     );
-    const fileName = `dream_${Date.now()}.png`;
+    const fileName = `dream${Date.now()}.jpg`;
 
     const { error } = await supabase.storage
       .from("dreams")
       .upload(`dreams/${fileName}`, buffer, {
-        contentType: "image/png",
+        contentType: "image/jpeg",
         upsert: true,
       });
 

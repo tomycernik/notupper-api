@@ -369,6 +369,100 @@ expect(mockRes.json).toHaveBeenCalledWith({
       expect(mockResponse.json).toHaveBeenCalledWith(expectedResult);
     });
 
+    it("should filter by dreamType", async () => {
+      const userId = "mocked-user-id";
+      const filters = {
+        dreamType: "Lucido",
+      };
+      const pagination = { page: 1, limit: 10 };
+      const mockDreamNode: IDreamNode = {
+        id: "dream-node-id",
+        title: "Lucid Dream",
+        dream_description: "A lucid dream",
+        interpretation: "Test Interpretation",
+        privacy: "Privado",
+        state: "Activo",
+        emotion: "Felicidad",
+        creationDate: new Date(),
+        type: "Lucido"
+      };
+      const expectedResult: IPaginatedResult<IDreamNode> = {
+        data: [mockDreamNode],
+        pagination: {
+          currentPage: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        },
+      };
+
+      mockRequest.validatedQuery = { dreamType: "Lucido", ...pagination };
+      mockRequest.userId = userId;
+      mockDreamNodeService.getUserNodes.mockResolvedValue(expectedResult);
+
+      await controller.getUserNodes(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockDreamNodeService.getUserNodes).toHaveBeenCalledWith(
+        userId,
+        filters,
+        pagination
+      );
+      expect(mockResponse.json).toHaveBeenCalledWith(expectedResult);
+    });
+
+    it("should filter by dreamType and other filters combined", async () => {
+      const userId = "mocked-user-id";
+      const filters = {
+        dreamType: "Pesadilla",
+        emotion: "Miedo",
+        state: "Activo",
+      };
+      const pagination = { page: 1, limit: 10 };
+      const mockDreamNode: IDreamNode = {
+        id: "dream-node-id",
+        title: "Nightmare Dream",
+        dream_description: "A scary dream",
+        interpretation: "Test Interpretation",
+        privacy: "Privado",
+        state: "Activo",
+        emotion: "Miedo",
+        creationDate: new Date(),
+        type: "Pesadilla"
+      };
+      const expectedResult: IPaginatedResult<IDreamNode> = {
+        data: [mockDreamNode],
+        pagination: {
+          currentPage: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        },
+      };
+
+      mockRequest.validatedQuery = { dreamType: "Pesadilla", emotion: "Miedo", state: "Activo", ...pagination };
+      mockRequest.userId = userId;
+      mockDreamNodeService.getUserNodes.mockResolvedValue(expectedResult);
+
+      await controller.getUserNodes(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockDreamNodeService.getUserNodes).toHaveBeenCalledWith(
+        userId,
+        filters,
+        pagination
+      );
+      expect(mockResponse.json).toHaveBeenCalledWith(expectedResult);
+    });
+
     it("should return 400 when userId is missing", async () => {
       mockRequest.userId = "";
 

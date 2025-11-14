@@ -27,7 +27,6 @@ export class SaveDreamNodeRequestDto {
   )
   emotion!: string;
 
-
   @IsOptional()
   @IsString({ message: 'La imagen debe ser una cadena válida.' })
   imageUrl?: string;

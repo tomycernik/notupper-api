@@ -19,10 +19,10 @@ export class SaveDreamNodeRequestDto {
   @IsString({ message: 'La emoción debe ser una cadena válida.' })
   @IsNotEmpty({ message: 'La emoción no puede estar vacía.' })
   @IsIn(
-    ['Paz', 'Frustracion', 'Tristeza', 'Esperanza', 'Verguenza', 'Enojo', 'Sorpresa', 'Miedo', 'Alegria', 'Celos', 'Nostalgia', 'Amor', 'Confusion', 'Orgullo', 'Gratitud'],
+    ['Frustracion', 'Tristeza', 'Verguenza', 'Enojo', 'Sorpresa', 'Miedo', 'Alegria', 'Celos', 'Nostalgia', 'Confusion'],
     {
       message:
-        'La emoción debe ser una de las siguientes: Paz, Frustracion, Tristeza, Esperanza, Verguenza, Enojo, Sorpresa, Miedo, Alegria, Celos, Nostalgia, Amor, Confusion, Orgullo o Gratitud'
+        'La emoción debe ser una de las siguientes: Frustracion, Tristeza, Verguenza, Enojo, Sorpresa, Miedo, Alegria, Celos, Nostalgia, Confusion'
     }
   )
   emotion!: string;
@@ -41,6 +41,4 @@ export class SaveDreamNodeRequestDto {
     },
   )
   dreamType!: string;
-
-
 }

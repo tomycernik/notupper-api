@@ -9,6 +9,7 @@ import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
 import { SetActiveRoomDto } from "@infrastructure/dtos/room/set-active-room.dto";
 import { SkinService } from "@application/services/skin.service";
 import { RoomService } from "@application/services/room.service";
+import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
 import { RoomRepositorySupabase } from "@infrastructure/repositories/room.repository.supabase";
 import { SkinRepositorySupabase } from "@infrastructure/repositories/skin.repository.supabase";
 import { MembershipService } from "@application/services/membership.service";
@@ -22,7 +23,8 @@ const membershipRepository= new MembershipRepositorySupabase();
 
 const membershipService = new MembershipService(membershipRepository);
 const skinService = new SkinService(skinRepository);
-const roomService = new RoomService(roomRepository);
+const coinRepository = new CoinRepositorySupabase();
+const roomService = new RoomService(roomRepository, coinRepository);
 const userService = new UserService(userRepository ,membershipService, roomService);
 const userController = new UserController(userService, skinService, roomService);
 

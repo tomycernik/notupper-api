@@ -11,12 +11,14 @@ import { MembershipRepositorySupabase } from "@infrastructure/repositories/membe
 import { MembershipService } from "@application/services/membership.service";
 import { RoomRepositorySupabase } from "@infrastructure/repositories/room.repository.supabase";
 import { RoomService } from "@application/services/room.service";
+import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
 
 const userRepository = new UserRepositorySupabase();
 const membershipRepository = new MembershipRepositorySupabase();
 const roomRepository = new RoomRepositorySupabase();
 
-const roomService = new RoomService(roomRepository);
+const coinRepository = new CoinRepositorySupabase();
+const roomService = new RoomService(roomRepository, coinRepository);
 const membershipService = new MembershipService(membershipRepository);
 const userService = new UserService(userRepository, membershipService, roomService);
 const paymentProvider = new PaymentMercadoPagoProvider();

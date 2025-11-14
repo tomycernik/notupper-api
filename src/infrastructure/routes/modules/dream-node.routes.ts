@@ -24,6 +24,7 @@ import { MembershipRepositorySupabase } from "@infrastructure/repositories/membe
 import { MembershipService } from "@application/services/membership.service";
 import { EmotionRepositorySupabase } from "@/infrastructure/repositories/emotion.repository.supabase";
 import { DreamTypeRepositorySupabase } from "@/infrastructure/repositories/dream-type.repository.supabase";
+import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
 
 export const dreamNodeRouter = Router();
 
@@ -37,8 +38,9 @@ const dreamNodeRepository = new DreamNodeRepositorySupabase();
 const missionRepository = new MissionRepositorySupabase();
 const badgeRepository = new BadgeRepositorySupabase();
 const membershipRepository = new MembershipRepositorySupabase();
+const coinRepository = new CoinRepositorySupabase();
 const membershipService = new MembershipService(membershipRepository);
-const missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository);
+const missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository, coinRepository);
 const dreamNodeService = new DreamNodeService(dreamNodeRepository, missionService);
 const contextService = new DreamContextService(dreamNodeRepository);
 const dreamNodeController = new DreamNodeController(interpretationDreamService, dreamNodeService, illustrationService, contextService, membershipService);

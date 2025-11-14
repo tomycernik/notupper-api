@@ -80,7 +80,7 @@ describe('StatisticsService', () => {
   };
 
   beforeEach(() => {
-    // Mock Date.now() to return the fixed 'now' value
+
     jest.spyOn(Date, 'now').mockReturnValue(now.getTime());
     mockDreamNodeRepository = {
       getUserNodes: jest.fn(),

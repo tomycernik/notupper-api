@@ -10,7 +10,7 @@ import { InterpreteDreamRequestDto, ReinterpreteDreamRequestDto, SaveDreamNodeRe
 import { GetUserNodesRequestDto } from "@infrastructure/dtos/dream-node/get-user-nodes.dto";
 import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
 import { DreamContextService } from "@application/services/dream-context.service";
-import { IllustrationGeminiProvider } from "@infrastructure/providers/illustration-gemini.provider";
+import { IllustrationSkyboxProvider } from "@infrastructure/providers/illustration-skybox.provider";
 import { IllustrationDreamService } from "@application/services/illustration-dream.service";
 import { MissionService } from "@application/services/mission.service";
 import { MissionRepositorySupabase } from "@infrastructure/repositories/mission.repository.supabase";
@@ -32,7 +32,7 @@ const emotionRepository = new EmotionRepositorySupabase();
 const dreamTypeRepository = new DreamTypeRepositorySupabase();
 const interpretationProvider = new InterpretationOpenAIProvider(emotionRepository, dreamTypeRepository);
 const interpretationDreamService = new InterpretationDreamService(interpretationProvider);
-const illustrationProvider = new IllustrationGeminiProvider();
+const illustrationProvider = new IllustrationSkyboxProvider();
 const illustrationService = new IllustrationDreamService(illustrationProvider);
 const dreamNodeRepository = new DreamNodeRepositorySupabase();
 const missionRepository = new MissionRepositorySupabase();

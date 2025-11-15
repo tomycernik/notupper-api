@@ -46,7 +46,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   ): Promise<IDreamNode[]> {
     let query = supabase
       .from("dream_node")
-      .select("*")
+      .select("*, dream_type:dream_type_id(*)")
       .eq("profile_id", userId);
 
     if (filters?.state) {
@@ -62,6 +62,11 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     if (filters?.emotion) {
       const emotionId = emotionMap[filters.emotion];
       if (emotionId) query = query.eq("emotion_id", emotionId);
+    }
+
+    if (filters?.dreamType) {
+      const dreamTypeId = dreamTypeMap[filters.dreamType];
+      if (dreamTypeId) query = query.eq("dream_type_id", dreamTypeId);
     }
 
     if (filters?.search && filters.search.trim() !== "") {
@@ -99,9 +104,8 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       privacy: node.privacy,
       state: node.state,
       emotion: node.emotion,
-      type: node.type,
-      typeReason: node.type_reason,
-        }));
+      type: node.dream_type?.dream_type_name || node.type,
+    }));
 
     return dreamNodes;
   }
@@ -129,6 +133,11 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     if (filters?.emotion) {
       const emotionId = emotionMap[filters.emotion];
       if (emotionId) query = query.eq("emotion_id", emotionId);
+    }
+
+    if (filters?.dreamType) {
+      const dreamTypeId = dreamTypeMap[filters.dreamType];
+      if (dreamTypeId) query = query.eq("dream_type_id", dreamTypeId);
     }
 
     if (filters?.search && filters.search.trim() !== "") {

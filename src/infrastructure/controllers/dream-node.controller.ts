@@ -194,12 +194,13 @@ export class DreamNodeController {
   async getUserNodes(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-      const { state, privacy, emotion, search, page, limit, from, to } =
+      const { state, privacy, emotion, dreamType, search, page, limit, from, to } =
         (req as any).validatedQuery || {};
       const filters: any = {};
       if (state) filters.state = state;
       if (privacy) filters.privacy = privacy;
       if (emotion) filters.emotion = emotion;
+      if (dreamType) filters.dreamType = dreamType;
       if (search) filters.search = search;
       if (from) filters.from = from;
       if (to) filters.to = to;

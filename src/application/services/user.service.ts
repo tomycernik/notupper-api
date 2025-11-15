@@ -52,7 +52,7 @@ export class UserService {
       if (!authError && authUser?.user) {
         avatar_url = authUser.user.user_metadata?.avatar_url || undefined;
       }
-    } catch {}
+    } catch {/* no-op */ }
 
     const membership = await this.membershipService.getMembershipById(
       user.membership_id

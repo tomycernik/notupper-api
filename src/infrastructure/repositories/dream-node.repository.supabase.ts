@@ -6,7 +6,6 @@ import { privacyMap, stateMap, emotionMap, dreamTypeMap } from "@config/mappings
 import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
 import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
-import { IPublicDream } from "@domain/interfaces/public-dream.interface";
 
 export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   async save(

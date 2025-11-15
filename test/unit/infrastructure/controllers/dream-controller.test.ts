@@ -336,7 +336,7 @@ expect(mockRes.json).toHaveBeenCalledWith({
         interpretation: "Test Interpretation",
         privacy: "Publico",
         state: "Activo",
-        emotion: "Felicidad",
+        emotion: "Alegría",
         creationDate: new Date(),
         type: "Estandar"
       };
@@ -382,7 +382,7 @@ expect(mockRes.json).toHaveBeenCalledWith({
         interpretation: "Test Interpretation",
         privacy: "Privado",
         state: "Activo",
-        emotion: "Felicidad",
+        emotion: "Alegría",
         creationDate: new Date(),
         type: "Lucido"
       };

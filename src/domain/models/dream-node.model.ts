@@ -1,7 +1,7 @@
-export type DreamTypeName = "Lucido" | "Pesadilla" | "Recurrente" | "Estandar";
+export type DreamTypeName = "Lucido" | "Pesadilla" | "Recurrente" | "Estandar" | "Premonitorio" | "Vivido";
 export type DreamPrivacy = "Publico" | "Privado" | "Anonimo";
 export type DreamState = "Activo" | "Archivado";
-export type Emotion = "Felicidad" | "Tristeza" | "Miedo" | "Enojo";
+export type Emotion = "Alegría" | "Tristeza" | "Miedo" | "Enojo" | "Frustracion" | "Verguenza" | "Sorpresa" | "Celos" | "Nostalgia" | "Confusion";
 
 export interface IDreamNode {
   id?: string;

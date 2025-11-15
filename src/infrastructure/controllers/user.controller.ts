@@ -221,19 +221,15 @@ export class UserController {
         });
         return;
       }
-      // Obtener datos básicos del usuario
       const userInfo = await this.userService.getUserInfo(userId);
-      // Obtener insignias destacadas y todas las insignias desbloqueadas
-      // Nota: featuredBadges mostrará las 3 seleccionadas por el usuario. Si no hay selección manual,
-      // se mostrarán las primeras 3 insignias desbloqueadas como featuredBadges por defecto.
       let featuredBadges = await this.badgeService.getUserFeaturedBadges(userId);
       if (!featuredBadges || featuredBadges.length === 0) {
         featuredBadges = (await this.badgeService.getUserBadges(userId)).slice(0, 3);
       }
-      const allBadges = await this.badgeService.getUserBadges(userId);
+      const badges = await this.badgeService.getUserBadges(userId);
       res.status(200).json({
         ...userInfo,
-        badges: allBadges,
+        badges,
         featuredBadges,
       });
     } catch (error) {

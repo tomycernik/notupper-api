@@ -17,7 +17,6 @@ import { MembershipService } from "@application/services/membership.service";
 import { BadgeRepositorySupabase } from "@infrastructure/repositories/badge.repository.supabase";
 import { BadgeService } from "@application/services/badge.service";
 import { MembershipRepositorySupabase } from "@infrastructure/repositories/membership.repository.supabase";
-import { SetFeaturedBadgesDto } from "@infrastructure/dtos/user/set-featured-badges.dto";
 
 export const userRouter = Router();
 const userRepository = new UserRepositorySupabase();

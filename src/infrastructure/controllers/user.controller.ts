@@ -2,14 +2,18 @@ import { Request, Response } from "express";
 import { UserService } from "@application/services/user.service";
 import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
 import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
+
 import { SkinService } from "@application/services/skin.service";
 import { RoomService } from "@application/services/room.service";
+
+import { BadgeService } from "@application/services/badge.service";
 
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly skinService: SkinService,
-    private readonly roomService: RoomService
+    private readonly roomService: RoomService,
+    private readonly badgeService: BadgeService
   ) { }
 
   async register(req: Request, res: Response) {
@@ -207,5 +211,62 @@ export class UserController {
     }
   }
 
+  async getPublicProfile(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.params.userId;
+      if (!userId || userId.trim() === "") {
+        res.status(400).json({
+          success: false,
+          message: "ID de usuario no proporcionado",
+        });
+        return;
+      }
+      // Obtener datos básicos del usuario
+      const userInfo = await this.userService.getUserInfo(userId);
+      // Obtener insignias destacadas y todas las insignias desbloqueadas
+      // Nota: featuredBadges mostrará las 3 seleccionadas por el usuario. Si no hay selección manual,
+      // se mostrarán las primeras 3 insignias desbloqueadas como featuredBadges por defecto.
+      let featuredBadges = await this.badgeService.getUserFeaturedBadges(userId);
+      if (!featuredBadges || featuredBadges.length === 0) {
+        featuredBadges = (await this.badgeService.getUserBadges(userId)).slice(0, 3);
+      }
+      const allBadges = await this.badgeService.getUserBadges(userId);
+      res.status(200).json({
+        ...userInfo,
+        badges: allBadges,
+        featuredBadges,
+      });
+    } catch (error) {
+      console.error("Error en UserController getPublicProfile:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error al obtener el perfil público del usuario",
+        error: error instanceof Error ? error.message : "Error desconocido",
+      });
+    }
+  }
+
+  async setFeaturedBadges(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = (req as any).userId;
+      const { badgeIds } = req.body;
+      if (!Array.isArray(badgeIds) || badgeIds.length !== 3) {
+        res.status(400).json({
+          success: false,
+          message: "Debes enviar exactamente 3 badgeIds",
+        });
+        return;
+      }
+      await this.badgeService.setUserFeaturedBadges(userId, badgeIds);
+      res.status(200).json({ success: true, message: "Insignias destacadas actualizadas" });
+    } catch (error) {
+      console.error("Error en setFeaturedBadges:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error al actualizar insignias destacadas",
+        error: error instanceof Error ? error.message : "Error desconocido",
+      });
+    }
+  }
 
 }

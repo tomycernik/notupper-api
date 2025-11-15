@@ -359,4 +359,78 @@ async getAllEmotions(): Promise<EmotionOption[]> {
     }
     return (data ?? []).map((row: any) => ({id: row.id, label: row.emotion as Emotion}));
   }
+
+  /**
+   * Devuelve nodos públicos paginados para el feed
+   */
+  async getPublicNodes(pagination?: IPaginationOptions) {
+    const page = pagination?.page || 1;
+    const limit = pagination?.limit || 10;
+    const offset = (page - 1) * limit;
+    // Obtener el total
+    const { count, error: countError } = await supabase
+      .from('dream_node')
+      .select('*', { count: 'exact', head: true })
+      .eq('privacy_id', privacyMap['Publico']);
+    if (countError) throw new Error(countError.message);
+
+    // Obtener los datos paginados
+    const { data, error } = await supabase
+      .from('dream_node')
+      .select('id, title, dream_description, interpretation, creation_date, image_url, profile_id')
+      .eq('privacy_id', privacyMap['Publico'])
+      .order('creation_date', { ascending: false })
+      .range(offset, offset + limit - 1);
+    if (error) throw new Error(error.message);
+
+    const total = count || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: data || [],
+      pagination: {
+        currentPage: page,
+        limit,
+        total,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    };
+  }
+
+  async countLikes(dreamNodeId: string): Promise<number> {
+    const { count, error } = await supabase
+      .from('dream_node_like')
+      .select('*', { count: 'exact', head: true })
+      .eq('dream_node_id', dreamNodeId);
+    if (error) throw new Error(error.message);
+    return count || 0;
+  }
+
+  async isLikedByUser(dreamNodeId: string, profileId: string): Promise<boolean> {
+    const { count, error } = await supabase
+      .from('dream_node_like')
+      .select('*', { count: 'exact', head: true })
+      .eq('dream_node_id', dreamNodeId)
+      .eq('profile_id', profileId);
+    if (error) throw new Error(error.message);
+    return (count || 0) > 0;
+  }
+
+  async like(dreamNodeId: string, profileId: string): Promise<void> {
+    const { error } = await supabase
+      .from('dream_node_like')
+      .upsert({ dream_node_id: dreamNodeId, profile_id: profileId });
+    if (error) throw new Error(error.message);
+  }
+
+  async unlike(dreamNodeId: string, profileId: string): Promise<void> {
+    const { error } = await supabase
+      .from('dream_node_like')
+      .delete()
+      .eq('dream_node_id', dreamNodeId)
+      .eq('profile_id', profileId);
+    if (error) throw new Error(error.message);
+  }
 }

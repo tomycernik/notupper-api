@@ -57,3 +57,6 @@ dreamNodeRouter.post("/transcribe", authenticateToken, validateAudio, (req, res)
 dreamNodeRouter.get("/history", authenticateToken, validateQuery(GetUserNodesRequestDto), (req, res) => dreamNodeController.getUserNodes(req, res));
 dreamNodeRouter.get("/user", authenticateToken, (req, res) => dreamNodeController.showUser(req, res));
 dreamNodeRouter.put("/update", authenticateToken, validateBody(UpdateDreamNodeRequestDto), (req, res) => dreamNodeController.update(req, res));
+dreamNodeRouter.patch("/:id/share", authenticateToken, (req, res) => dreamNodeController.share(req, res));
+dreamNodeRouter.patch("/:id/unshare", authenticateToken, (req, res) => dreamNodeController.unshare(req, res));
+dreamNodeRouter.get("/public", (req, res) => dreamNodeController.getPublicDreams(req, res));

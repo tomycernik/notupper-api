@@ -734,4 +734,325 @@ describe("DreamNodeController Integration Tests", () => {
       expect(storedDreams[1].emotion).toBe("Tristeza");
     });
   });
+
+  describe("POST /api/dreams/:id/share", () => {
+    let storedDreams: any[] = [];
+
+    beforeEach(() => {
+      storedDreams = [];
+
+      // Mock authentication middleware
+      app.use("/api/dreams/:id/share", (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          const token = authHeader.substring(7);
+          if (token === "mock-jwt-token") {
+            (req as any).userId = testUser.id;
+          } else {
+            return res.status(401).json({ message: "Unauthorized" });
+          }
+        } else {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        next();
+      });
+
+      app.patch("/api/dreams/:id/share", (req, res) => {
+        const userId = (req as any).userId;
+        const { id } = req.params;
+
+        const dream = storedDreams.find((d) => d.id === id && d.userId === userId);
+        if (!dream) {
+          return res.status(404).json({
+            message: "Sueño no encontrado",
+            errors: ["El sueño no existe o no pertenece al usuario"],
+          });
+        }
+
+        dream.privacy = "Publico";
+
+        res.json({
+          message: "Sueño compartido exitosamente",
+          data: dream,
+          errors: [],
+        });
+      });
+    });
+
+    it("should share a dream successfully", async () => {
+      const dream = {
+        id: "dream-123",
+        userId: testUser.id,
+        title: "Mi sueño privado",
+        description: "Descripción del sueño",
+        interpretation: "Interpretación del sueño",
+        emotion: "Felicidad",
+        privacy: "Privado",
+      };
+      storedDreams.push(dream);
+
+      const response = await request(app)
+        .patch("/api/dreams/dream-123/share")
+        .set("Authorization", "Bearer mock-jwt-token")
+        .expect(200);
+
+      expect(response.body.message).toBe("Sueño compartido exitosamente");
+      expect(response.body.data.privacy).toBe("Publico");
+      expect(storedDreams[0].privacy).toBe("Publico");
+    });
+
+    it("should return 401 if not authenticated", async () => {
+      const response = await request(app)
+        .patch("/api/dreams/dream-123/share")
+        .expect(401);
+
+      expect(response.body.message).toBe("Unauthorized");
+    });
+
+    it("should return 404 if dream not found", async () => {
+      const response = await request(app)
+        .patch("/api/dreams/nonexistent-id/share")
+        .set("Authorization", "Bearer mock-jwt-token")
+        .expect(404);
+
+      expect(response.body.message).toBe("Sueño no encontrado");
+    });
+  });
+
+  describe("PATCH /api/dreams/:id/unshare", () => {
+    let storedDreams: any[] = [];
+
+    beforeEach(() => {
+      storedDreams = [];
+
+      app.use("/api/dreams/:id/unshare", (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          const token = authHeader.substring(7);
+          if (token === "mock-jwt-token") {
+            (req as any).userId = testUser.id;
+          } else {
+            return res.status(401).json({ message: "Unauthorized" });
+          }
+        } else {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        next();
+      });
+
+      app.patch("/api/dreams/:id/unshare", (req, res) => {
+        const userId = (req as any).userId;
+        const { id } = req.params;
+
+        const dream = storedDreams.find((d) => d.id === id && d.userId === userId);
+        if (!dream) {
+          return res.status(404).json({
+            message: "Sueño no encontrado",
+            errors: ["El sueño no existe o no pertenece al usuario"],
+          });
+        }
+
+        dream.privacy = "Privado";
+
+        res.json({
+          message: "Sueño descompartido exitosamente",
+          data: dream,
+          errors: [],
+        });
+      });
+    });
+
+    it("should unshare a dream successfully", async () => {
+      const dream = {
+        id: "dream-456",
+        userId: testUser.id,
+        title: "Mi sueño público",
+        description: "Descripción del sueño",
+        interpretation: "Interpretación del sueño",
+        emotion: "Alegría",
+        privacy: "Publico",
+      };
+      storedDreams.push(dream);
+
+      const response = await request(app)
+        .patch("/api/dreams/dream-456/unshare")
+        .set("Authorization", "Bearer mock-jwt-token")
+        .expect(200);
+
+      expect(response.body.message).toBe("Sueño descompartido exitosamente");
+      expect(response.body.data.privacy).toBe("Privado");
+      expect(storedDreams[0].privacy).toBe("Privado");
+    });
+
+    it("should return 401 if not authenticated", async () => {
+      const response = await request(app)
+        .patch("/api/dreams/dream-456/unshare")
+        .expect(401);
+
+      expect(response.body.message).toBe("Unauthorized");
+    });
+
+    it("should return 404 if dream not found", async () => {
+      const response = await request(app)
+        .patch("/api/dreams/nonexistent-id/unshare")
+        .set("Authorization", "Bearer mock-jwt-token")
+        .expect(404);
+
+      expect(response.body.message).toBe("Sueño no encontrado");
+    });
+  });
+
+  describe("GET /api/dreams/public", () => {
+    let storedDreams: any[] = [];
+
+    beforeEach(() => {
+      storedDreams = [];
+
+      app.get("/api/dreams/public", (req, res) => {
+        const { page = "1", limit = "10" } = req.query;
+        const pageNum = parseInt(page as string);
+        const limitNum = parseInt(limit as string);
+
+        const publicDreams = storedDreams.filter((d) => d.privacy === "Publico");
+        const total = publicDreams.length;
+        const totalPages = Math.ceil(total / limitNum);
+        const offset = (pageNum - 1) * limitNum;
+        const paginatedDreams = publicDreams.slice(offset, offset + limitNum);
+
+        res.json({
+          data: paginatedDreams.map((d) => ({
+            ...d,
+            owner: {
+              id: d.userId,
+              username: "testuser",
+              avatar_url: "https://example.com/avatar.jpg",
+            },
+          })),
+          pagination: {
+            currentPage: pageNum,
+            limit: limitNum,
+            total,
+            totalPages,
+            hasNext: pageNum < totalPages,
+            hasPrev: pageNum > 1,
+          },
+        });
+      });
+    });
+
+    it("should return public dreams with pagination", async () => {
+      storedDreams.push(
+        {
+          id: "dream-1",
+          userId: testUser.id,
+          title: "Sueño Público 1",
+          description: "Descripción 1",
+          interpretation: "Interpretación 1",
+          emotion: "Felicidad",
+          privacy: "Publico",
+        },
+        {
+          id: "dream-2",
+          userId: testUser.id,
+          title: "Sueño Público 2",
+          description: "Descripción 2",
+          interpretation: "Interpretación 2",
+          emotion: "Tristeza",
+          privacy: "Publico",
+        },
+        {
+          id: "dream-3",
+          userId: "user-2",
+          title: "Sueño Privado",
+          description: "Descripción 3",
+          interpretation: "Interpretación 3",
+          emotion: "Miedo",
+          privacy: "Privado",
+        }
+      );
+
+      const response = await request(app)
+        .get("/api/dreams/public?page=1&limit=10")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(2);
+      expect(response.body.data[0].privacy).toBe("Publico");
+      expect(response.body.data[0].owner).toBeDefined();
+      expect(response.body.data[0].owner.username).toBe("testuser");
+      expect(response.body.pagination).toEqual({
+        currentPage: 1,
+        limit: 10,
+        total: 2,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      });
+    });
+
+    it("should return empty array if no public dreams", async () => {
+      storedDreams.push({
+        id: "dream-1",
+        userId: testUser.id,
+        title: "Sueño Privado",
+        description: "Descripción",
+        interpretation: "Interpretación",
+        emotion: "Felicidad",
+        privacy: "Privado",
+      });
+
+      const response = await request(app)
+        .get("/api/dreams/public")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(0);
+      expect(response.body.pagination.total).toBe(0);
+    });
+
+    it("should handle pagination correctly", async () => {
+      for (let i = 1; i <= 15; i++) {
+        storedDreams.push({
+          id: `dream-${i}`,
+          userId: testUser.id,
+          title: `Sueño Público ${i}`,
+          description: `Descripción ${i}`,
+          interpretation: `Interpretación ${i}`,
+          emotion: "Felicidad",
+          privacy: "Publico",
+        });
+      }
+
+      const response = await request(app)
+        .get("/api/dreams/public?page=2&limit=10")
+        .expect(200);
+
+      expect(response.body.data).toHaveLength(5);
+      expect(response.body.pagination).toEqual({
+        currentPage: 2,
+        limit: 10,
+        total: 15,
+        totalPages: 2,
+        hasNext: false,
+        hasPrev: true,
+      });
+    });
+
+    it("should use default pagination if not provided", async () => {
+      storedDreams.push({
+        id: "dream-1",
+        userId: testUser.id,
+        title: "Sueño Público",
+        description: "Descripción",
+        interpretation: "Interpretación",
+        emotion: "Felicidad",
+        privacy: "Publico",
+      });
+
+      const response = await request(app)
+        .get("/api/dreams/public")
+        .expect(200);
+
+      expect(response.body.pagination.currentPage).toBe(1);
+      expect(response.body.pagination.limit).toBe(10);
+    });
+  });
 });

@@ -5,6 +5,7 @@ import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
 import { UserInfoResponseDto } from "@infrastructure/dtos/user/user-info-response.dto";
 import { MembershipService } from "@application/services/membership.service";
 import { RoomService } from "@application/services/room.service";
+import { supabase } from "@config/supabase";
 
 export class UserService {
   constructor(
@@ -45,6 +46,14 @@ export class UserService {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new Error("Usuario no encontrado");
 
+    let avatar_url: string | undefined = undefined;
+    try {
+      const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
+      if (!authError && authUser?.user) {
+        avatar_url = authUser.user.user_metadata?.avatar_url || undefined;
+      }
+    } catch (e) {}
+
     const membership = await this.membershipService.getMembershipById(
       user.membership_id
     );
@@ -55,6 +64,7 @@ export class UserService {
       email: user.email,
       name: user.name,
       coin_amount: user.coin_amount,
+      avatar_url: avatar_url ?? null,
       membership: {
         id: membership.id,
         name: membership.name,

@@ -5,6 +5,7 @@ export interface UserInfoResponseDto {
   email: string;
   name: string;
   coin_amount: number;
+  avatar_url?: string | null | undefined;
   membership: {
     id: number;
     name: string;

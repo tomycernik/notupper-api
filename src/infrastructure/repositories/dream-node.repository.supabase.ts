@@ -407,10 +407,10 @@ async getAllEmotions(): Promise<EmotionOption[]> {
   }
 
   
-  async getPublicDreams(pagination: IPaginationOptions): Promise<IPublicDream[]> {
+  async getPublicDreams(pagination: IPaginationOptions, currentUserId?: string): Promise<any[]> {
     let query = supabase
       .from("dream_node")
-      .select("*")
+      .select(`*, emotion:emotion_id(id, emotion, color)`)
       .eq("privacy_id", privacyMap["Publico"])
       .order("creation_date", { ascending: false });
 
@@ -420,35 +420,35 @@ async getAllEmotions(): Promise<EmotionOption[]> {
     }
 
     const { data, error } = await query;
-
     if (error) {
       throw new Error(error.message);
     }
 
-    const publicDreams: IPublicDream[] = await Promise.all(
+    return await Promise.all(
       (data ?? []).map(async (node: any) => {
         const { data: userData } = await supabase.auth.admin.getUserById(node.profile_id);
+        // Contar likes y si el usuario autenticado dio like
+        const likeCount = await this.countLikes(node.id);
+        const likedByMe = currentUserId ? await this.isLikedByUser(node.id, currentUserId) : false;
         return {
           id: node.id,
           title: node.title,
           dream_description: node.dream_description,
           interpretation: node.interpretation,
+          creationDate: node.creation_date,
           imageUrl: node.image_url,
-          creationDate: new Date(node.creation_date),
-          privacy: (Object.keys(privacyMap).find(key => privacyMap[key] === node.privacy_id) || "Privado") as any,
-          state: (Object.keys(stateMap).find(key => stateMap[key] === node.state_id) || "Activo") as any,
-          emotion: node.emotion,
-          type: node.type,
-          owner: {
-            id: node.profile_id,
-            username: userData?.user?.user_metadata?.username || userData?.user?.email?.split('@')[0] || 'Usuario',
-            avatar_url: userData?.user?.user_metadata?.avatar_url || null,
-          },
+          profile_id: node.profile_id,
+          userName: userData?.user?.user_metadata?.username || userData?.user?.email?.split('@')[0] || 'Usuario',
+          fotoUser: userData?.user?.user_metadata?.avatar_url || null,
+          likeCount,
+          likedByMe,
+          // commentCount: 0
+          colorEmotion: node.emotion?.color || null,
+          emotion: node.emotion?.emotion || null,
+          isOwner: currentUserId ? node.profile_id === currentUserId : false,
         };
       })
     );
-
-    return publicDreams;
   }
 
   async countPublicDreams(): Promise<number> {

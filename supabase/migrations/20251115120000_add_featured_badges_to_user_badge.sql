@@ -2,9 +2,6 @@
 alter table public.user_badge
   add column if not exists featured_order smallint;
 
--- featured_order: 1, 2, 3 para las destacadas, null para las no destacadas
--- Puedes crear un índice si lo deseas para optimizar consultas
-
 -- Tabla para registrar likes de usuarios a publicaciones (dream_node)
 create table if not exists public.dream_node_like (
     id uuid primary key default gen_random_uuid(),

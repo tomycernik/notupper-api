@@ -18,7 +18,7 @@ export class FeedService {
         return { ...node, likeCount, likedByMe };
       })
     );
-    // Construir paginación manualmente
+
     const page = pagination.page || 1;
     const limit = pagination.limit || 10;
     const total = await this.dreamNodeRepository.countPublicDreams();

@@ -51,7 +51,6 @@ export class MissionService {
     const crossedThreshold = previousCount < mission.target && count >= mission.target;
 
     await this.missionRepository.upsertUserMission(profileId, missionCode, progress, completed);
-    await this.missionRepository.upsertUserMission(profileId, missionCode, progress, completed);
 
     //si se completo la mision y se cruzo el umbral y antes no estaba completada
     if (completed && crossedThreshold && !wasAlreadyCompleted && mission.badgeId) {

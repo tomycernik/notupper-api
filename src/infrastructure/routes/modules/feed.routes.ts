@@ -7,7 +7,6 @@ import { DreamNodeCommentController } from '@infrastructure/controllers/dream-no
 import { validateBody } from '@infrastructure/middlewares/validate-class.middleware';
 import { CreateDreamNodeCommentDto } from '@infrastructure/dtos/dream-node/create-dream-node-comment.dto';
 
-
 const feedController = new FeedController(new FeedService());
 const feedRouter = Router();
 const dreamNodeCommentController = new DreamNodeCommentController();

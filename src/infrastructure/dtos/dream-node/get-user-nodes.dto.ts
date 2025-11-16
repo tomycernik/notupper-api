@@ -21,6 +21,15 @@ export class GetUserNodesRequestDto {
   emotion?: string;
 
   @IsOptional()
+  @IsIn(
+    ['Lucido', 'Pesadilla', 'Recurrente', 'Estandar', 'Premonitorio', 'Vivido'],
+    {
+      message: 'El tipo de sueño debe ser una de las siguientes: Lucido, Pesadilla, Recurrente, Estandar, Premonitorio o Vivido'
+    }
+  )
+  dreamType?: string;
+
+  @IsOptional()
   @IsString({ message: 'La búsqueda debe ser una cadena válida.' })
   @Length(2, 100, { message: 'La búsqueda debe tener entre 2 y 100 caracteres.' })
   search?: string;

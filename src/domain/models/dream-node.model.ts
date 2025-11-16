@@ -14,6 +14,8 @@ export interface IDreamNode {
   state: DreamState;
   emotion: Emotion;
   type: DreamTypeName;
+  likeCount?: number;
+  likedByMe?: boolean;
 }
 
 export type EmotionOption = { id: number; label: Emotion };
@@ -28,6 +30,8 @@ export class DreamNode implements IDreamNode {
   state: DreamState;
   emotion: Emotion;
   type: DreamTypeName;
+  likeCount?: number;
+  likedByMe?: boolean;
 
   private constructor(
     creationDate: Date,

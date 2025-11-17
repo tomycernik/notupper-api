@@ -6,9 +6,18 @@ import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
 import { DreamNodeCommentController } from '@infrastructure/controllers/dream-node-comment.controller';
 import { validateBody } from '@infrastructure/middlewares/validate-class.middleware';
 import { CreateDreamNodeCommentDto } from '@infrastructure/dtos/dream-node/create-dream-node-comment.dto';
+import { UserService } from '@/application/services/user.service';
+import { UserRepositorySupabase } from '@/infrastructure/repositories/user.repository.supabase';
+import { MembershipService } from '@/application/services/membership.service';
+import { MembershipRepositorySupabase } from '@/infrastructure/repositories/membership.repository.supabase';
+import { NotificationService } from '@/application/services/notification.service';
+import { NotificationRepositorySupabase } from '@/infrastructure/repositories/notification.repository.supabase';
 
-
-const feedController = new FeedController(new FeedService());
+const notificationRepository = new NotificationRepositorySupabase()
+const notificationService = new NotificationService(notificationRepository)
+const membershipRepository = new MembershipRepositorySupabase()
+const membershipService = new MembershipService(membershipRepository);
+const feedController = new FeedController(new FeedService(), new UserService(new UserRepositorySupabase(), membershipService), notificationService);
 const feedRouter = Router();
 const dreamNodeCommentController = new DreamNodeCommentController();
 

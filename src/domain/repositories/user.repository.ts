@@ -3,6 +3,7 @@ import { IMembership } from "@domain/interfaces/membership.interface";
 import { IRepositoryUser, IUser } from "@domain/interfaces/user.interface";
 
 export interface IUserRepository {
+  findByDreamNodeId(dreamNodeId: string): Promise<IUser | null>;
   register(user: IUser): Promise<IRepositoryUser>;
   login(userCredentials: LoginDTO): Promise<IRepositoryUser>;
   updateMembership(userId: string, membership: IMembership): Promise<void>;

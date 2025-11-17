@@ -151,4 +151,5 @@ export class UserRepositorySupabase implements IUserRepository {
       throw new Error("No se pudieron actualizar las monedas");
     }
   }
+
 }

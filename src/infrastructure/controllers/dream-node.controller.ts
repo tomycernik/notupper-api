@@ -36,7 +36,7 @@ export class DreamNodeController {
           );
 
           await new Promise<void>((resolve, reject) => {
-            req.session?.save((err: Error | null) => {
+            req.session?.save((err?: Error) => {
               if (err) {
                 console.error("Error saving session:", err);
                 reject(err);
@@ -154,7 +154,7 @@ export class DreamNodeController {
           );
 
           await new Promise<void>((resolve, reject) => {
-            req.session?.save((err: Error | null) => {
+            req.session?.save((err?: Error) => {
               if (err) {
                 console.error("Error saving session:", err);
                 reject(err);
@@ -194,12 +194,13 @@ export class DreamNodeController {
   async getUserNodes(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-      const { state, privacy, emotion, search, page, limit, from, to } =
+      const { state, privacy, emotion, dreamType, search, page, limit, from, to } =
         (req as any).validatedQuery || {};
       const filters: any = {};
       if (state) filters.state = state;
       if (privacy) filters.privacy = privacy;
       if (emotion) filters.emotion = emotion;
+      if (dreamType) filters.dreamType = dreamType;
       if (search) filters.search = search;
       if (from) filters.from = from;
       if (to) filters.to = to;
@@ -270,6 +271,95 @@ export class DreamNodeController {
       res.status(500).json({
         message: "Error interno del servidor",
         errors: [error.message || "Error al actualizar el nodo de sueño"],
+      });
+    }
+  }
+
+  async share(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({
+          message: "ID del sueño es requerido",
+          errors: ["El parámetro 'id' es obligatorio"],
+        });
+      }
+
+      const sharedDream = await this.dreamNodeService.shareDream(userId, id);
+
+      res.json({
+        message: "Sueño compartido exitosamente",
+        data: sharedDream,
+        errors: [],
+      });
+    } catch (error: any) {
+      console.error("Error en DreamNodeController share:", error);
+      res.status(500).json({
+        message: "Error interno del servidor",
+        errors: [error.message || "Error al compartir el sueño"],
+      });
+    }
+  }
+
+  async unshare(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({
+          message: "ID del sueño es requerido",
+          errors: ["El parámetro 'id' es obligatorio"],
+        });
+      }
+
+      const unsharedDream = await this.dreamNodeService.unshareDream(userId, id);
+
+      res.json({
+        message: "Sueño descompartido exitosamente",
+        data: unsharedDream,
+        errors: [],
+      });
+    } catch (error: any) {
+      console.error("Error en DreamNodeController unshare:", error);
+      res.status(500).json({
+        message: "Error interno del servidor",
+        errors: [error.message || "Error al descompartir el sueño"],
+      });
+    }
+  }
+
+  async getPublicDreams(req: Request, res: Response) {
+    try {
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+      const pagination = { page, limit };
+
+      const paginatedResult = await this.dreamNodeService.getPublicDreams(pagination);
+
+      res.json(paginatedResult);
+    } catch (error: any) {
+      console.error("Error en DreamNodeController getPublicDreams:", error);
+      res.status(500).json({
+        message: "Error interno del servidor",
+        errors: [error.message || "Error al obtener los sueños públicos"],
+      });
+    }
+  }
+
+  async getUserMap(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      const userMap = await this.dreamNodeService.getUserDreamMap(userId);
+      res.json(userMap);
+    } catch (error: any) {
+      console.error("Error en DreamNodeController getUserMap:", error);
+      res.status(500).json({
+        message: "Error interno del servidor",
+        errors: [error.message || "Error al obtener el mapa de sueños del usuario"],
       });
     }
   }

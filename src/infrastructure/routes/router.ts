@@ -3,6 +3,7 @@ import { dreamNodeRouter } from "@infrastructure/routes/modules/dream-node.route
 import { badgeRouter } from "@infrastructure/routes/modules/badge.routes";
 import { userRouter } from "@infrastructure/routes/modules/user.routes";
 import { missionRouter } from "@infrastructure/routes/modules/mission.routes";
+import { feedRouter } from "@infrastructure/routes/modules/feed.routes";
 import { statisticsRouter } from "@infrastructure/routes/modules/statistics.routes";
 import { paymentRouter } from "@infrastructure/routes/modules/payment.routes";
 import { roomRouter } from "@infrastructure/routes/modules/room.routes";
@@ -20,7 +21,8 @@ export class AppRoutes {
     router.use("/api/statistics", statisticsRouter);
     router.use("/api/payments", paymentRouter);
     router.use("/api/rooms", roomRouter);
-    router.use("/api/skins", skinRouter);
+  router.use("/api/skins", skinRouter);
+  router.use("/api/feed", feedRouter);
     return router;
   }
 }

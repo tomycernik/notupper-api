@@ -10,6 +10,8 @@ import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository
 import { SaveDreamNodeRequestDto } from "@infrastructure/dtos/dream-node";
 import { MissionService } from "@application/services/mission.service";
 import { Badge } from "@domain/models/badge.model";
+import { IPublicDream } from "@domain/interfaces/public-dream.interface";
+import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeService {
   constructor(private dreamNodeRepository: IDreamNodeRepository, private missionService?: MissionService) {
@@ -167,6 +169,111 @@ export class DreamNodeService {
       return data;
     } catch (error: any) {
       throw new Error(`Error al actualizar el nodo de sueño: ${error.message}`);
+    }
+  }
+
+  async shareDream(userId: string, nodeId: string): Promise<IDreamNode> {
+    try {
+      const { data, error } = await this.dreamNodeRepository.updateDreamNode(
+        nodeId,
+        userId,
+        { privacy: "Publico" }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No se encontró el nodo de sueño o no tienes permisos para compartirlo');
+      }
+
+      return data;
+    } catch (error: any) {
+      throw new Error(`Error al compartir el sueño: ${error.message}`);
+    }
+  }
+
+  async unshareDream(userId: string, nodeId: string): Promise<IDreamNode> {
+    try {
+      const { data, error } = await this.dreamNodeRepository.updateDreamNode(
+        nodeId,
+        userId,
+        { privacy: "Privado" }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error('No se encontró el nodo de sueño o no tienes permisos para descompartirlo');
+      }
+
+      return data;
+    } catch (error: any) {
+      throw new Error(`Error al descompartir el sueño: ${error.message}`);
+    }
+  }
+
+  async getPublicDreams(
+    pagination?: IPaginationOptions
+  ): Promise<IPaginatedResult<IPublicDream>> {
+    try {
+      const page = pagination?.page || 1;
+      const limit = pagination?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      const paginationData: IPaginationOptions = {
+        page,
+        limit,
+        offset,
+      };
+
+      const [dreams, total] = await Promise.all([
+        this.dreamNodeRepository.getPublicDreams(paginationData),
+        this.dreamNodeRepository.countPublicDreams(),
+      ]);
+
+      const totalPages = Math.ceil(total / limit);
+      const hasNext = page < totalPages;
+      const hasPrev = page > 1;
+
+      return {
+        data: dreams,
+        pagination: {
+          currentPage: page,
+          limit: limit,
+          total: total,
+          totalPages: totalPages,
+          hasNext: hasNext,
+          hasPrev: hasPrev,
+        },
+      };
+    } catch (error) {
+      throw new Error(
+        "Error obteniendo los sueños públicos: " + error
+      );
+    }
+  }
+
+  async getUserDreamMap(userId: string): Promise<DreamGraphResponse> {
+    try {
+      return this.dreamNodeRepository.getUserDreamMap(userId);
+    } catch (error) {
+      throw new Error(
+        "Error obteniendo el mapa de sueños del usuario: " + error
+      );
+    }
+  }
+
+  async getDreamNodeById(dreamNodeId: string): Promise<IDreamNode | null> {
+    try {
+      return this.dreamNodeRepository.getDreamNodeById(dreamNodeId);
+    } catch (error) {
+      throw new Error(
+        "Error obteniendo el nodo de sueño: " + error
+      );
     }
   }
 }

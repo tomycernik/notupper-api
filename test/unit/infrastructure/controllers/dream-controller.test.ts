@@ -336,7 +336,7 @@ expect(mockRes.json).toHaveBeenCalledWith({
         interpretation: "Test Interpretation",
         privacy: "Publico",
         state: "Activo",
-        emotion: "Felicidad",
+        emotion: "Alegría",
         creationDate: new Date(),
         type: "Estandar"
       };
@@ -353,6 +353,100 @@ expect(mockRes.json).toHaveBeenCalledWith({
       };
 
       mockRequest.validatedQuery = { ...filters, ...pagination };
+      mockRequest.userId = userId;
+      mockDreamNodeService.getUserNodes.mockResolvedValue(expectedResult);
+
+      await controller.getUserNodes(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockDreamNodeService.getUserNodes).toHaveBeenCalledWith(
+        userId,
+        filters,
+        pagination
+      );
+      expect(mockResponse.json).toHaveBeenCalledWith(expectedResult);
+    });
+
+    it("should filter by dreamType", async () => {
+      const userId = "mocked-user-id";
+      const filters = {
+        dreamType: "Lucido",
+      };
+      const pagination = { page: 1, limit: 10 };
+      const mockDreamNode: IDreamNode = {
+        id: "dream-node-id",
+        title: "Lucid Dream",
+        dream_description: "A lucid dream",
+        interpretation: "Test Interpretation",
+        privacy: "Privado",
+        state: "Activo",
+        emotion: "Alegría",
+        creationDate: new Date(),
+        type: "Lucido"
+      };
+      const expectedResult: IPaginatedResult<IDreamNode> = {
+        data: [mockDreamNode],
+        pagination: {
+          currentPage: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        },
+      };
+
+      mockRequest.validatedQuery = { dreamType: "Lucido", ...pagination };
+      mockRequest.userId = userId;
+      mockDreamNodeService.getUserNodes.mockResolvedValue(expectedResult);
+
+      await controller.getUserNodes(
+        mockRequest as Request,
+        mockResponse as Response
+      );
+
+      expect(mockDreamNodeService.getUserNodes).toHaveBeenCalledWith(
+        userId,
+        filters,
+        pagination
+      );
+      expect(mockResponse.json).toHaveBeenCalledWith(expectedResult);
+    });
+
+    it("should filter by dreamType and other filters combined", async () => {
+      const userId = "mocked-user-id";
+      const filters = {
+        dreamType: "Pesadilla",
+        emotion: "Miedo",
+        state: "Activo",
+      };
+      const pagination = { page: 1, limit: 10 };
+      const mockDreamNode: IDreamNode = {
+        id: "dream-node-id",
+        title: "Nightmare Dream",
+        dream_description: "A scary dream",
+        interpretation: "Test Interpretation",
+        privacy: "Privado",
+        state: "Activo",
+        emotion: "Miedo",
+        creationDate: new Date(),
+        type: "Pesadilla"
+      };
+      const expectedResult: IPaginatedResult<IDreamNode> = {
+        data: [mockDreamNode],
+        pagination: {
+          currentPage: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        },
+      };
+
+      mockRequest.validatedQuery = { dreamType: "Pesadilla", emotion: "Miedo", state: "Activo", ...pagination };
       mockRequest.userId = userId;
       mockDreamNodeService.getUserNodes.mockResolvedValue(expectedResult);
 
@@ -412,6 +506,195 @@ expect(mockRes.json).toHaveBeenCalledWith({
       expect(mockResponse.status).toHaveBeenCalledWith(500);
       expect(mockResponse.json).toHaveBeenCalledWith({
         errors: "Error al obtener los nodos de sueño del usuario",
+      });
+    });
+  });
+
+  describe('share', () => {
+    let mockRequest: any;
+    let mockResponse: any;
+
+    beforeEach(() => {
+      mockRequest = {
+        userId: 'user-123',
+        params: { id: 'dream-456' },
+      };
+
+      mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+    });
+
+    it('should share a dream successfully', async () => {
+      const sharedDream = { id: 'dream-456', privacy: 'Publico' };
+      mockDreamNodeService.shareDream = jest.fn().mockResolvedValue(sharedDream);
+
+      await controller.share(mockRequest, mockResponse);
+
+      expect(mockDreamNodeService.shareDream).toHaveBeenCalledWith('user-123', 'dream-456');
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'Sueño compartido exitosamente',
+        data: sharedDream,
+        errors: [],
+      });
+    });
+
+    it('should return 400 if dream id is missing', async () => {
+      mockRequest.params = {};
+
+      await controller.share(mockRequest, mockResponse);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'ID del sueño es requerido',
+        errors: ["El parámetro 'id' es obligatorio"],
+      });
+    });
+
+    it('should return 500 if service throws error', async () => {
+      mockDreamNodeService.shareDream = jest.fn().mockRejectedValue(new Error('Share failed'));
+
+      await controller.share(mockRequest, mockResponse);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'Error interno del servidor',
+        errors: ['Share failed'],
+      });
+    });
+  });
+
+  describe('unshare', () => {
+    let mockRequest: any;
+    let mockResponse: any;
+
+    beforeEach(() => {
+      mockRequest = {
+        userId: 'user-123',
+        params: { id: 'dream-456' },
+      };
+
+      mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+    });
+
+    it('should unshare a dream successfully', async () => {
+      const unsharedDream = { id: 'dream-456', privacy: 'Privado' };
+      mockDreamNodeService.unshareDream = jest.fn().mockResolvedValue(unsharedDream);
+
+      await controller.unshare(mockRequest, mockResponse);
+
+      expect(mockDreamNodeService.unshareDream).toHaveBeenCalledWith('user-123', 'dream-456');
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'Sueño descompartido exitosamente',
+        data: unsharedDream,
+        errors: [],
+      });
+    });
+
+    it('should return 400 if dream id is missing', async () => {
+      mockRequest.params = {};
+
+      await controller.unshare(mockRequest, mockResponse);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'ID del sueño es requerido',
+        errors: ["El parámetro 'id' es obligatorio"],
+      });
+    });
+
+    it('should return 500 if service throws error', async () => {
+      mockDreamNodeService.unshareDream = jest.fn().mockRejectedValue(new Error('Unshare failed'));
+
+      await controller.unshare(mockRequest, mockResponse);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'Error interno del servidor',
+        errors: ['Unshare failed'],
+      });
+    });
+  });
+
+  describe('getPublicDreams', () => {
+    let mockRequest: any;
+    let mockResponse: any;
+
+    beforeEach(() => {
+      mockRequest = {
+        query: { page: '1', limit: '10' },
+      };
+
+      mockResponse = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+    });
+
+    it('should return public dreams with pagination', async () => {
+      const mockPublicDreams = {
+        data: [
+          {
+            id: 'dream-1',
+            title: 'Public Dream 1',
+            privacy: 'Publico',
+            owner: { id: 'user-1', username: 'user1', avatar_url: 'avatar1.jpg' },
+          },
+        ],
+        pagination: {
+          currentPage: 1,
+          limit: 10,
+          total: 1,
+          totalPages: 1,
+          hasNext: false,
+          hasPrev: false,
+        },
+      };
+
+      mockDreamNodeService.getPublicDreams = jest.fn().mockResolvedValue(mockPublicDreams);
+
+      await controller.getPublicDreams(mockRequest, mockResponse);
+
+      expect(mockDreamNodeService.getPublicDreams).toHaveBeenCalledWith({ page: 1, limit: 10 });
+      expect(mockResponse.json).toHaveBeenCalledWith(mockPublicDreams);
+    });
+
+    it('should use default pagination if not provided', async () => {
+      mockRequest.query = {};
+
+      const mockPublicDreams = {
+        data: [],
+        pagination: {
+          currentPage: 1,
+          limit: 10,
+          total: 0,
+          totalPages: 0,
+          hasNext: false,
+          hasPrev: false,
+        },
+      };
+
+      mockDreamNodeService.getPublicDreams = jest.fn().mockResolvedValue(mockPublicDreams);
+
+      await controller.getPublicDreams(mockRequest, mockResponse);
+
+      expect(mockDreamNodeService.getPublicDreams).toHaveBeenCalledWith({ page: 1, limit: 10 });
+      expect(mockResponse.json).toHaveBeenCalledWith(mockPublicDreams);
+    });
+
+    it('should return 500 if service throws error', async () => {
+      mockDreamNodeService.getPublicDreams = jest.fn().mockRejectedValue(new Error('DB Error'));
+
+      await controller.getPublicDreams(mockRequest, mockResponse);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(mockResponse.json).toHaveBeenCalledWith({
+        message: 'Error interno del servidor',
+        errors: ['DB Error'],
       });
     });
   });

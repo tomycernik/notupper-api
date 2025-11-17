@@ -125,34 +125,28 @@ export class DreamNodeController {
   async reinterpret(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-      const { description, previousInterpretation } = req.body;
+      const { description, previousInterpretation, approach } = req.body;
 
-      const userMembership = await this.membershipService.getUserMembership(
-        userId
-      );
-
+      const userMembership = await this.membershipService.getUserMembership(userId);
       if (userMembership && userMembership.name !== "plus") {
         return res.status(403).json({
           errors: "No tienes permiso para reinterpretar el sueño",
         });
       }
 
-      const userDreamContext = await this.contextService.getUserDreamContext(
-        userId
+      const userDreamContext = await this.contextService.getUserDreamContext(userId);
+      const reinterpretedDream = await this.interpretationDreamService.reinterpretDream(
+        description,
+        previousInterpretation,
+        userDreamContext,
+        approach // Puede ser "psychological", "spiritual" o "symbolic"
       );
-      const reinterpretedDream =
-        await this.interpretationDreamService.reinterpretDream(
-          description,
-          previousInterpretation,
-          userDreamContext
-        );
 
       if (reinterpretedDream.context && req.session) {
         try {
           (req.session as any).dreamContext = JSON.parse(
             JSON.stringify(reinterpretedDream.context)
           );
-
           await new Promise<void>((resolve, reject) => {
             req.session?.save((err?: Error) => {
               if (err) {
@@ -168,11 +162,8 @@ export class DreamNodeController {
         }
       }
 
-      const illustrationUrl =
-        await this.illustrationService.generateIllustration(description);
-      const unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(
-        userId
-      );
+      const illustrationUrl = await this.illustrationService.generateIllustration(description);
+      const unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(userId);
 
       res.json({
         description,

@@ -1,6 +1,8 @@
 import { InterpretationProvider } from "@domain/providers/interpretation.provider";
 import { OpenAI } from "openai";
 import { envs } from "@config/envs";
+
+type DreamApproach = "psychological" | "spiritual" | "symbolic";
 import { Interpretation } from "@domain/interfaces/interpretation-dream.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 import { isRecurringDream } from '@domain/utils/dream-utils';
@@ -80,8 +82,8 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         "dreamType": ${dreamTypesString}
       }`;
 
-            const modelUsed =
-        envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
+            // Siempre usa el modelo psicológico para la primera interpretación
+            const modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
       console.log(
         "[InterpretationOpenAIProvider] Modelo usado para interpretación:",
         modelUsed
@@ -232,7 +234,8 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
   async reinterpretDream(
     dreamText: string,
     previousInterpretation: string,
-    dreamContext?: IDreamContext | null
+    dreamContext?: IDreamContext | null,
+    approach: DreamApproach = "psychological"
   ): Promise<Interpretation> {
     try {
       const contextSection = this.buildContextSection(dreamContext);
@@ -278,12 +281,21 @@ Responde EXACTAMENTE en este formato JSON:
   "dreamType": ${dreamTypesString} 
 }`;
 
-      const modelUsed =
-        envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
-      console.log(
-        "[InterpretationOpenAIProvider] Modelo usado para reinterpretación:",
-        modelUsed
-      );
+      // LOGS DE DEPURACIÓN
+      console.log("[InterpretationOpenAIProvider] Approach recibido:", approach);
+      console.log("[InterpretationOpenAIProvider] Modelos configurados:", {
+        psychological: envs.OPENAI_MODEL_PSYCHOLOGICAL,
+        spiritual: envs.OPENAI_MODEL_SPIRITUAL,
+        symbolic: envs.OPENAI_MODEL_SYMBOLIC
+      });
+      // Selecciona el modelo según el enfoque
+      let modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
+      if (approach === "spiritual") {
+        modelUsed = envs.OPENAI_MODEL_SPIRITUAL || modelUsed;
+      } else if (approach === "symbolic") {
+        modelUsed = envs.OPENAI_MODEL_SYMBOLIC || modelUsed;
+      }
+      console.log("[InterpretationOpenAIProvider] Modelo usado para reinterpretación:", modelUsed);
       const response = await this.openai.chat.completions.create({
         model: modelUsed,
         messages: [

@@ -25,6 +25,7 @@ import { MembershipService } from "@application/services/membership.service";
 import { EmotionRepositorySupabase } from "@/infrastructure/repositories/emotion.repository.supabase";
 import { DreamTypeRepositorySupabase } from "@/infrastructure/repositories/dream-type.repository.supabase";
 import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
+import { DreamNodeCommentController } from "@infrastructure/controllers/dream-node-comment.controller";
 
 export const dreamNodeRouter = Router();
 
@@ -47,6 +48,7 @@ const dreamNodeController = new DreamNodeController(interpretationDreamService, 
 const transcriptionProvider = new TranscriptionWhisperProvider();
 const transcriptionService = new TranscriptionService(transcriptionProvider);
 const transcriptionController = new TranscripcionController(transcriptionService);
+const dreamNodeCommentController = new DreamNodeCommentController();
 
 // Endpoints de interpretación
 dreamNodeRouter.post("/interpret", authenticateToken, validateBody(InterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.interpret(req, res));
@@ -60,3 +62,5 @@ dreamNodeRouter.put("/update", authenticateToken, validateBody(UpdateDreamNodeRe
 dreamNodeRouter.patch("/:id/share", authenticateToken, (req, res) => dreamNodeController.share(req, res));
 dreamNodeRouter.patch("/:id/unshare", authenticateToken, (req, res) => dreamNodeController.unshare(req, res));
 dreamNodeRouter.get("/public", (req, res) => dreamNodeController.getPublicDreams(req, res));
+dreamNodeRouter.get("/:id/comments", (req, res) => dreamNodeCommentController.getCommentsWithUser(req, res));
+dreamNodeRouter.get("/map", authenticateToken, (req, res) => dreamNodeController.getUserMap(req, res));

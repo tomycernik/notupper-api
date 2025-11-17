@@ -152,5 +152,4 @@ export class UserRepositorySupabase implements IUserRepository {
     }
   }
 
-
 }

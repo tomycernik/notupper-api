@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { FeedController } from '@infrastructure/controllers/feed.controller';
 import { FeedService } from '@application/services/feed.service';
@@ -6,7 +5,6 @@ import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
 import { DreamNodeCommentController } from '@infrastructure/controllers/dream-node-comment.controller';
 import { validateBody } from '@infrastructure/middlewares/validate-class.middleware';
 import { CreateDreamNodeCommentDto } from '@infrastructure/dtos/dream-node/create-dream-node-comment.dto';
-
 
 const feedController = new FeedController(new FeedService());
 const feedRouter = Router();

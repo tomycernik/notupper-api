@@ -219,6 +219,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   }
 
   async getDreamNodeById(dreamNodeId: string): Promise<IDreamNode | null> {
+
     const { data, error } = await supabase
       .from("dream_node")
       .select("*")
@@ -230,24 +231,25 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     }
 
     const [privacyData, stateData, emotionData, dreamTypeData] = await Promise.all([
-      supabase.from("privacy").select("privacy").eq("id", data.privacy_id).single(),
-      supabase.from("state").select("state").eq("id", data.state_id).single(),
+      supabase.from("dream_privacy").select("privacy_description").eq("id", data.privacy_id).single(),
+      supabase.from("dream_state").select("state_description").eq("id", data.state_id).single(),
       supabase.from("emotion").select("emotion").eq("id", data.emotion_id).single(),
       supabase.from("dream_type").select("dream_type_name").eq("id", data.dream_type_id).single(),
     ]);
 
-    return {
+    const result = {
       id: data.id,
       title: data.title,
       dream_description: data.dream_description,
       interpretation: data.interpretation,
       imageUrl: data.image_url,
       creationDate: new Date(data.creation_date),
-      privacy: privacyData.data?.privacy || "Privado",
-      state: stateData.data?.state || "Activo",
+      privacy: privacyData.data?.privacy_description || "Privado",
+      state: stateData.data?.state_description || "Activo",
       emotion: emotionData.data?.emotion || null,
       type: dreamTypeData.data?.dream_type_name || "Estandar",
     };
+    return result;
   }
 
    async getUserDreamContext(userId: string): Promise<IDreamContext> {

@@ -1,18 +1,8 @@
-import {
-  DreamTypeName,
-  Emotion,
-  EmotionOption,
-  IDreamNode,
-} from "@domain/models/dream-node.model";
+import { DreamTypeName, Emotion, EmotionOption, IDreamNode } from "@domain/models/dream-node.model";
 import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
 import { supabase } from "@config/supabase";
 import { IDreamNodeEntity } from "@infrastructure/entities/dream-node.entity";
-import {
-  privacyMap,
-  stateMap,
-  emotionMap,
-  dreamTypeMap,
-} from "@config/mappings";
+import { privacyMap, stateMap, emotionMap, dreamTypeMap } from "@config/mappings";
 import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
 import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
@@ -33,10 +23,10 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       privacy_id: privacyMap[dreamNode.privacy]!,
       state_id: stateMap[dreamNode.state]!,
       emotion_id: emotionMap[dreamNode.emotion]!,
-      image_url: dreamNode.imageUrl ?? "",
+      image_url: dreamNode.imageUrl ?? '',
       dream_type_id: dreamTypeMap[dreamType]!,
     };
-    const { data, error } = await supabase
+    const { data,  error  } = await supabase
       .from("dream_node")
       .insert(dreamNodeEntity)
       .select()
@@ -48,14 +38,14 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     return { data, error: null };
   }
 
-  async getUserNodes(
+ async getUserNodes(
     userId: string,
     filters?: IDreamNodeFilters,
     pagination?: IPaginationOptions
   ): Promise<IDreamNode[]> {
     let query = supabase
       .from("dream_node")
-      .select("*, dream_type:dream_type_id(*)")
+      .select("*, dream_type:dream_type_id(*), emotion:emotion_id(*)")
       .eq("profile_id", userId);
 
     if (filters?.state) {
@@ -103,6 +93,58 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       throw new Error(error.message);
     }
 
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    const dreamIds = data.map((node: any) => node.id);
+
+    const getContextLabels = async (
+      table: string,
+      joinTable: string
+    ): Promise<Map<string, string[]>> => {
+      const { data: contextData, error: contextError } = await supabase
+        .from(joinTable)
+        .select(`dream_id, ${table}!inner(label)`)
+        .in('dream_id', dreamIds);
+
+      if (contextError) {
+        console.error(`Error fetching ${joinTable}:`, contextError);
+        return new Map();
+      }
+
+      const contextMap = new Map<string, string[]>();
+
+      contextData?.forEach((item: any) => {
+        const dreamId = item.dream_id;
+
+        let label: string | undefined;
+        for (const key in item) {
+          if (key !== 'dream_id' && item[key]?.label) {
+            label = item[key].label;
+            break;
+          }
+        }
+
+        if (label) {
+          if (!contextMap.has(dreamId)) {
+            contextMap.set(dreamId, []);
+          }
+          contextMap.get(dreamId)!.push(label);
+        }
+      });
+
+      return contextMap;
+    };
+
+    const [emotionContexts, locationContexts, peopleContexts, themeContexts] =
+      await Promise.all([
+        getContextLabels('profile_emotion_context', 'dream_emotion_context'),
+        getContextLabels('profile_location', 'dream_location'),
+        getContextLabels('profile_person', 'dream_person'),
+        getContextLabels('profile_theme', 'dream_theme'),
+      ]);
+
     const dreamNodes = data.map((node: any) => ({
       id: node.id,
       title: node.title,
@@ -112,8 +154,13 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       creationDate: new Date(node.creation_date),
       privacy: node.privacy,
       state: node.state,
-      emotion: node.emotion,
+      emotion: node.emotion?.emotion || null,
+      emotionColor: node.emotion?.color || null,
       type: node.dream_type?.dream_type_name || node.type,
+      emotion_context: emotionContexts.get(node.id) || [],
+      location_context: locationContexts.get(node.id) || [],
+      people_context: peopleContexts.get(node.id) || [],
+      theme_context: themeContexts.get(node.id) || [],
     }));
 
     return dreamNodes;
@@ -171,7 +218,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     return count || 0;
   }
 
-  async getUserDreamContext(userId: string): Promise<IDreamContext> {
+   async getUserDreamContext(userId: string): Promise<IDreamContext> {
     const { data, error } = await supabase.rpc("get_user_context", {
       params: { user_id: userId },
     });
@@ -182,7 +229,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
         themes: [],
         people: [],
         locations: [],
-        emotions_context: [],
+        emotions_context: []
       };
     }
 
@@ -194,159 +241,189 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     userId: string,
     context: IDreamContext
   ) {
-    await Promise.all([
-      this.processBatchContext(
-        userId,
-        dreamNodeId,
-        context.themes || [],
-        "profile_theme",
-        "dream_theme",
-        "theme_id"
-      ),
-      this.processBatchContext(
-        userId,
-        dreamNodeId,
-        context.people || [],
-        "profile_person",
-        "dream_person",
-        "person_id"
-      ),
-      this.processBatchContext(
-        userId,
-        dreamNodeId,
-        context.locations || [],
-        "profile_location",
-        "dream_location",
-        "location_id"
-      ),
-      this.processBatchContext(
-        userId,
-        dreamNodeId,
-        context.emotions_context || [],
-        "profile_emotion_context",
-        "dream_emotion_context",
-        "emotion_context_id"
-      ),
-    ]);
-  }
+    const { themes, people, locations, emotions_context } = context;
 
-  private async processBatchContext(
-    userId: string,
-    dreamNodeId: string,
-    items: Array<{ label: string }>,
-    profileTable: string,
-    dreamTable: string,
-    foreignKeyColumn: string
-  ) {
-    if (!items.length) return;
+    if (themes?.length) {
+      for (const theme of themes) {
+        const { data: existingTheme } = await supabase
+          .from("profile_theme")
+          .select("id")
+          .eq("profile_id", userId)
+          .ilike("label", theme.label)
+          .single();
 
-    const labels = items.map((item) => item.label.toLowerCase());
+        const themeId =
+          existingTheme?.id ??
+          (
+            await supabase
+              .from("profile_theme")
+              .insert({ profile_id: userId, label: theme.label })
+              .select("id")
+              .single()
+          ).data?.id;
 
-    const { data: existing } = await supabase
-      .from(profileTable)
-      .select("id, label")
-      .eq("profile_id", userId)
-      .in("label", labels);
+        if (!themeId) throw new Error("No se pudo obtener el ID del theme");
 
-    const existingMap = new Map(
-      (existing || []).map((item) => [item.label.toLowerCase(), item.id])
-    );
-
-    const toCreate = items.filter(
-      (item) => !existingMap.has(item.label.toLowerCase())
-    );
-
-    if (toCreate.length > 0) {
-      const { data: created } = await supabase
-        .from(profileTable)
-        .insert(
-          toCreate.map((item) => ({
-            profile_id: userId,
-            label: item.label,
-          }))
-        )
-        .select("id, label");
-
-      if (created) {
-        created.forEach((item) => {
-          existingMap.set(item.label.toLowerCase(), item.id);
-        });
+        await supabase
+          .from("dream_theme")
+          .insert({
+            dream_id: dreamNodeId,
+            theme_id: themeId,
+          })
+          .throwOnError();
       }
     }
 
-    const relations = items
-      .map((item) => ({
-        dream_id: dreamNodeId,
-        [foreignKeyColumn]: existingMap.get(item.label.toLowerCase()),
-      }))
-      .filter((rel) => rel[foreignKeyColumn]);
+    if (people?.length) {
+      for (const person of people) {
+        const { data: existingPerson } = await supabase
+          .from("profile_person")
+          .select("id")
+          .eq("profile_id", userId)
+          .ilike("label", person.label)
+          .single();
 
-    if (relations.length > 0) {
-      await supabase.from(dreamTable).insert(relations).throwOnError();
+        const personId =
+          existingPerson?.id ??
+          (
+            await supabase
+              .from("profile_person")
+              .insert({ profile_id: userId, label: person.label })
+              .select("id")
+              .single()
+          ).data?.id;
+
+        if (!personId) throw new Error("No se pudo obtener el ID del person");
+
+        await supabase
+          .from("dream_person")
+          .insert({
+            dream_id: dreamNodeId,
+            person_id: personId,
+          })
+          .throwOnError();
+      }
+    }
+
+    if (locations?.length) {
+      for (const location of locations) {
+        const { data: existingLocation } = await supabase
+          .from("profile_location")
+          .select("id")
+          .eq("profile_id", userId)
+          .ilike("label", location.label)
+          .single();
+
+        const locationId =
+          existingLocation?.id ??
+          (
+            await supabase
+              .from("profile_location")
+              .insert({ profile_id: userId, label: location.label })
+              .select("id")
+              .single()
+          ).data?.id;
+
+        if (!locationId)
+          throw new Error("No se pudo obtener el ID del location");
+
+        await supabase
+          .from("dream_location")
+          .insert({
+            dream_id: dreamNodeId,
+            location_id: locationId,
+          })
+          .throwOnError();
+      }
+    }
+
+    if (emotions_context?.length) {
+      for (const emotion of emotions_context) {
+        const { data: existingEmotion } = await supabase
+          .from("profile_emotion_context")
+          .select("id")
+          .eq("profile_id", userId)
+          .ilike("label", emotion.label)
+          .single();
+
+        const emotionId =
+          existingEmotion?.id ??
+          (
+            await supabase
+              .from("profile_emotion_context")
+              .insert({ profile_id: userId, label: emotion.label })
+              .select("id")
+              .single()
+          ).data?.id;
+
+        if (!emotionId) throw new Error("No se pudo obtener el ID del emotion");
+
+        await supabase
+          .from("dream_emotion_context")
+          .insert({
+            dream_id: dreamNodeId,
+            emotion_context_id: emotionId,
+          })
+          .throwOnError();
+      }
     }
   }
+
   async updateDreamNode(
-    nodeId: string,
-    userId: string,
-    updates: Partial<Pick<IDreamNode, "state" | "privacy">>
-  ): Promise<{ data: any; error: Error | null }> {
-    try {
-      const updateData: any = {};
+  nodeId: string,
+  userId: string,
+  updates: Partial<Pick<IDreamNode, 'state' | 'privacy'>>
+): Promise<{ data: any; error: Error | null }> {
+  try {
+    const updateData: any = {};
 
-      if (updates.state !== undefined) {
-        updateData.state_id = stateMap[updates.state];
-      }
-
-      if (updates.privacy !== undefined) {
-        updateData.privacy_id = privacyMap[updates.privacy];
-      }
-
-      if (Object.keys(updateData).length === 0) {
-        return { data: null, error: new Error("No fields to update") };
-      }
-
-      const { data, error } = await supabase
-        .from("dream_node")
-        .update(updateData)
-        .eq("id", nodeId)
-        .eq("profile_id", userId)
-        .select()
-        .single();
-
-      if (error) {
-        return { data: null, error };
-      }
-
-      return {
-        data: {
-          id: data.id,
-          state: Object.keys(stateMap).find(
-            (key) => stateMap[key] === data.state_id
-          ),
-          privacy: Object.keys(privacyMap).find(
-            (key) => privacyMap[key] === data.privacy_id
-          ),
-        },
-        error: null,
-      };
-    } catch (error) {
-      return { data: null, error: error as Error };
+    if (updates.state !== undefined) {
+      updateData.state_id = stateMap[updates.state];
     }
-  }
 
-  async getAllEmotions(): Promise<EmotionOption[]> {
+    if (updates.privacy !== undefined) {
+      updateData.privacy_id = privacyMap[updates.privacy];
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return { data: null, error: new Error('No fields to update') };
+    }
+
     const { data, error } = await supabase
-      .from("emotion")
-      .select("id, emotion, color")
-      .order("emotion", { ascending: true });
+      .from('dream_node')
+      .update(updateData)
+      .eq('id', nodeId)
+      .eq('profile_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    return {
+      data: {
+        id: data.id,
+        state: Object.keys(stateMap).find(key => stateMap[key] === data.state_id),
+        privacy: Object.keys(privacyMap).find(key => privacyMap[key] === data.privacy_id),
+      },
+      error: null
+    };
+  } catch (error) {
+    return { data: null, error: error as Error };
+  }
+}
+
+async getAllEmotions(): Promise<EmotionOption[]> {
+  const { data, error } = await supabase
+    .from("emotion")
+    .select("id, emotion, color")
+    .order("emotion", { ascending: true });
     if (error) {
       console.error("Error fetching emotions:", error);
       throw new Error(error.message);
     }
-    return (data ?? []).map((row: any) => ({
-      id: row.id,
-      label: row.emotion as Emotion,
-    }));
+    return (data ?? []).map((row: any) => ({id: row.id, label: row.emotion as Emotion}));
   }
 
   async countLikes(dreamNodeId: string): Promise<number> {
@@ -407,9 +484,6 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
         // Contar likes y si el usuario autenticado dio like
         const likeCount = await this.countLikes(node.id);
         const likedByMe = currentUserId ? await this.isLikedByUser(node.id, currentUserId) : false;
-        const commentRepo = new (await import('./dream-node-comment.repository.supabase')).DreamNodeCommentRepositorySupabase();
-        const commentCount = await commentRepo.countComments(node.id);
-        const comments = (await commentRepo.getCommentsByNode(node.id)).slice(-3); // ultimos 3 comentarios
         return {
           id: node.id,
           title: node.title,
@@ -422,8 +496,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
           fotoUser: userData?.user?.user_metadata?.avatar_url || null,
           likeCount,
           likedByMe,
-          commentCount,
-          comments,
+          // commentCount: 0
           colorEmotion: node.emotion?.color || null,
           emotion: node.emotion?.emotion || null,
           isOwner: currentUserId ? node.profile_id === currentUserId : false,

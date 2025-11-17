@@ -13,6 +13,7 @@ export interface IDreamNodeRepository {
     getUserDreamContext(userId: string): Promise<IDreamContext>;
     updateDreamNode(nodeId: string, userId: string, updates: Partial<Pick<IDreamNode, 'state' | 'privacy'>>): Promise<{ data: any | null; error: Error | null }>;
     getAllEmotions(): Promise<EmotionOption[]>;
+    getDreamNodeById(dreamNodeId: string): Promise<IDreamNode | null>;
 
     countLikes(dreamNodeId: string): Promise<number>;
     isLikedByUser(dreamNodeId: string, profileId: string): Promise<boolean>;

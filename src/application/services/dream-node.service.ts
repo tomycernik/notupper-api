@@ -266,4 +266,14 @@ export class DreamNodeService {
       );
     }
   }
+
+  async getDreamNodeById(dreamNodeId: string): Promise<IDreamNode | null> {
+    try {
+      return this.dreamNodeRepository.getDreamNodeById(dreamNodeId);
+    } catch (error) {
+      throw new Error(
+        "Error obteniendo el nodo de sueño: " + error
+      );
+    }
+  }
 }

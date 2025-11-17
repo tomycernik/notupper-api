@@ -176,7 +176,6 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       .select("*", { count: "exact", head: true })
       .eq("profile_id", userId);
 
-    // Aplicar los mismos filtros que en getUserNodes
     if (filters?.state) {
       const stateId = stateMap[filters.state];
       if (stateId) query = query.eq("state_id", stateId);
@@ -217,6 +216,40 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     }
 
     return count || 0;
+  }
+
+  async getDreamNodeById(dreamNodeId: string): Promise<IDreamNode | null> {
+
+    const { data, error } = await supabase
+      .from("dream_node")
+      .select("*")
+      .eq("id", dreamNodeId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const [privacyData, stateData, emotionData, dreamTypeData] = await Promise.all([
+      supabase.from("dream_privacy").select("privacy_description").eq("id", data.privacy_id).single(),
+      supabase.from("dream_state").select("state_description").eq("id", data.state_id).single(),
+      supabase.from("emotion").select("emotion").eq("id", data.emotion_id).single(),
+      supabase.from("dream_type").select("dream_type_name").eq("id", data.dream_type_id).single(),
+    ]);
+
+    const result = {
+      id: data.id,
+      title: data.title,
+      dream_description: data.dream_description,
+      interpretation: data.interpretation,
+      imageUrl: data.image_url,
+      creationDate: new Date(data.creation_date),
+      privacy: privacyData.data?.privacy_description || "Privado",
+      state: stateData.data?.state_description || "Activo",
+      emotion: emotionData.data?.emotion || null,
+      type: dreamTypeData.data?.dream_type_name || "Estandar",
+    };
+    return result;
   }
 
    async getUserDreamContext(userId: string): Promise<IDreamContext> {
@@ -395,7 +428,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       .update(updateData)
       .eq('id', nodeId)
       .eq('profile_id', userId)
-      .select()
+      .select('id, state_id, privacy_id')
       .single();
 
     if (error) {

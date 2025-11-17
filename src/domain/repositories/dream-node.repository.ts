@@ -3,6 +3,7 @@ import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interfa
 import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 import { IPublicDream } from "@domain/interfaces/public-dream.interface";
+import { DreamGraphResponse } from "../interfaces/dream-map-item.interface";
 
 export interface IDreamNodeRepository {
     save(dreamNode: IDreamNode, userId: string, dreamType: DreamTypeName): Promise<{ data: any; error: Error | null }>;
@@ -20,4 +21,5 @@ export interface IDreamNodeRepository {
 
     getPublicDreams(pagination: IPaginationOptions): Promise<IPublicDream[]>;
     countPublicDreams(): Promise<number>;
+    getUserDreamMap(userId: string): Promise<DreamGraphResponse>;
 }

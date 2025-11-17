@@ -6,6 +6,7 @@ import { privacyMap, stateMap, emotionMap, dreamTypeMap } from "@config/mappings
 import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
 import { IPaginationOptions } from "@domain/interfaces/pagination.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
+import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   async save(
@@ -516,5 +517,19 @@ async getAllEmotions(): Promise<EmotionOption[]> {
     }
 
     return count || 0;
+  }
+
+  async getUserDreamMap(userId: string): Promise<DreamGraphResponse> {
+    try {
+      const { data, error } = await supabase.rpc("get_dream_graph", {
+        user_id: userId,
+      });
+      if (error) {
+        throw new Error(error.message);
+      }
+      return data;
+    } catch (error: any) {
+      throw new Error(`Error al obtener el mapa de sueños: ${error.message}`);
+    }
   }
 }

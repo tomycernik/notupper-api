@@ -60,3 +60,4 @@ dreamNodeRouter.put("/update", authenticateToken, validateBody(UpdateDreamNodeRe
 dreamNodeRouter.patch("/:id/share", authenticateToken, (req, res) => dreamNodeController.share(req, res));
 dreamNodeRouter.patch("/:id/unshare", authenticateToken, (req, res) => dreamNodeController.unshare(req, res));
 dreamNodeRouter.get("/public", (req, res) => dreamNodeController.getPublicDreams(req, res));
+dreamNodeRouter.get("/map", authenticateToken, (req, res) => dreamNodeController.getUserMap(req, res));

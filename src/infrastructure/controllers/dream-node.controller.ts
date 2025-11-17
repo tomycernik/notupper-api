@@ -349,4 +349,18 @@ export class DreamNodeController {
       });
     }
   }
+
+  async getUserMap(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      const userMap = await this.dreamNodeService.getUserDreamMap(userId);
+      res.json(userMap);
+    } catch (error: any) {
+      console.error("Error en DreamNodeController getUserMap:", error);
+      res.status(500).json({
+        message: "Error interno del servidor",
+        errors: [error.message || "Error al obtener el mapa de sueños del usuario"],
+      });
+    }
+  }
 }

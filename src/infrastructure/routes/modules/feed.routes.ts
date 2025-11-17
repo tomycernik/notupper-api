@@ -12,12 +12,18 @@ import { MembershipService } from '@/application/services/membership.service';
 import { MembershipRepositorySupabase } from '@/infrastructure/repositories/membership.repository.supabase';
 import { NotificationService } from '@/application/services/notification.service';
 import { NotificationRepositorySupabase } from '@/infrastructure/repositories/notification.repository.supabase';
+import { RoomRepositorySupabase } from '@/infrastructure/repositories/room.repository.supabase';
+import { RoomService } from '@/application/services/room.service';
+import { CoinRepositorySupabase } from '@/infrastructure/repositories/coin.repository.supabase';
 
 const notificationRepository = new NotificationRepositorySupabase()
 const notificationService = new NotificationService(notificationRepository)
 const membershipRepository = new MembershipRepositorySupabase()
 const membershipService = new MembershipService(membershipRepository);
-const feedController = new FeedController(new FeedService(), new UserService(new UserRepositorySupabase(), membershipService), notificationService);
+const roomRepository = new RoomRepositorySupabase();
+const coinRepository = new CoinRepositorySupabase()
+const roomService = new RoomService(roomRepository,coinRepository)
+const feedController = new FeedController(new FeedService(), new UserService(new UserRepositorySupabase(), membershipService, roomService), notificationService);
 const feedRouter = Router();
 const dreamNodeCommentController = new DreamNodeCommentController();
 

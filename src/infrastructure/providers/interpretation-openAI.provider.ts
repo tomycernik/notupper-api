@@ -53,7 +53,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         - Posibles emociones o conflictos internos
         - Reflexión sobre el estado emocional del soñante
         (3-4 oraciones completas y sustanciales)
-      3. La emoción dominante que transmite el sueño (${emotionsString})
+      3. La emoción principal y predominante que transmite el sueño (elige SOLO UNA de la lista: ${emotionsString}). La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada.
       4. Temas principales mencionados (máximo 3)
       5. Personas mencionadas (si las hay)
       6. Ubicaciones mencionadas (si las hay)
@@ -124,10 +124,23 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         interpretation = this.sanitizeText(aiResult.interpretation || interpretation);
         interpretation = this.limitSentences(interpretation, 4);
 
-        emotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
-        const allowedEmotions = new Set(emotions .map(e => e.toLowerCase()));
-        if (!allowedEmotions.has(emotion)) emotion = "tristeza";
-        emotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+        let aiEmotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
+        const allowedEmotions = new Set(emotions.map(e => e.toLowerCase()));
+        if (!allowedEmotions.has(aiEmotion)) aiEmotion = "tristeza";
+
+        const textToCheck = `${title} ${interpretation}`.toLowerCase();
+        let foundEmotion = null;
+        for (const emo of emotions) {
+          const emoLower = emo.toLowerCase();
+          if (textToCheck.includes(emoLower)) {
+            foundEmotion = emo;
+            break;
+          }
+        }
+        if ((aiEmotion === "tristeza" || !textToCheck.includes(aiEmotion)) && foundEmotion) {
+          aiEmotion = foundEmotion;
+        }
+        emotion = aiEmotion.charAt(0).toUpperCase() + aiEmotion.slice(1);
 
         const dreamAnalysis = {
           themes: Array.isArray(aiResult.themes) ? aiResult.themes : [],
@@ -149,7 +162,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
           const allowedDreamTypes = new Set(dreamTypes);
           let rawDreamType = aiResult.dreamType || 'Estandar';
           rawDreamType = rawDreamType
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .normalize('NFD').replace(/[ -\u036f]/g, '')
             .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
           dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
         }
@@ -160,7 +173,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         emotionsContext = Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : [];
 
       } catch (error) {
-        
+        // Error parseando la respuesta de la IA
       }
 
       return {
@@ -293,7 +306,7 @@ Responde EXACTAMENTE en este formato JSON:
             {
               role: "system",
               content:
-                `Eres un psicólogo especialista que debe dar interpretaciones RADICALMENTE OPUESTAS a las anteriores. Tu trabajo es CONTRADECIR y ofrecer el PUNTO DE VISTA CONTRARIO. Si la interpretación anterior fue positiva, sé más crítico. Si fue sobre libertad, habla de limitaciones. NUNCA coincidas con la interpretación previa. Responde SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. Crea títulos que reflejen la nueva perspectiva. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando la perspectiva opuesta.`,
+                `Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando el simbolismo y las emociones subyacentes.`,
             },
             {
               role: "user",

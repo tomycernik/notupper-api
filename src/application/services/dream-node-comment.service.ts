@@ -1,5 +1,4 @@
-
-
+// ...existing code...
 
 import { DreamNodeCommentRepositorySupabase } from "@infrastructure/repositories/dream-node-comment.repository.supabase";
 import { IDreamNodeCommentWithUser } from "@domain/interfaces/dream-node-comment.interface";
@@ -25,7 +24,9 @@ export class DreamNodeCommentService {
     try {
       const comments = await this.commentRepo.getCommentsByNodeWithUser(dreamNodeId);
       commentWithUser = comments.find(c => c.id === newComment.id) || null;
-    } catch {}
+    } catch {
+      // no-op
+    }
 
     if (!commentWithUser) {
       let username = "Usuario desconocido";
@@ -33,10 +34,12 @@ export class DreamNodeCommentService {
       try {
         const { data: userData, error: userError } = await (await import("@config/supabase")).supabase.auth.admin.getUserById(profileId);
         if (!userError && userData?.user) {
-          username = userData.user.user_metadata?.username || userData.user.user_metadata?.name || "Usuario desconocido";
+          username = userData.user.user_metadata?.username || "Usuario desconocido";
           avatar_url = userData.user.user_metadata?.avatar_url || "";
         }
-      } catch {}
+      } catch {
+        // no-op
+      }
       commentWithUser = {
         ...newComment,
         user: { username, avatar_url }

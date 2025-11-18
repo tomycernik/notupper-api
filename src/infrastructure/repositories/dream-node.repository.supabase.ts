@@ -9,6 +9,7 @@ import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
+ 
   async save(
     dreamNode: IDreamNode,
     userId: string,
@@ -518,6 +519,9 @@ async getAllEmotions(): Promise<EmotionOption[]> {
         // Contar likes y si el usuario autenticado dio like
         const likeCount = await this.countLikes(node.id);
         const likedByMe = currentUserId ? await this.isLikedByUser(node.id, currentUserId) : false;
+        const commentRepo = new (await import('./dream-node-comment.repository.supabase')).DreamNodeCommentRepositorySupabase();
+        const commentCount = await commentRepo.countComments(node.id);
+        const comments = (await commentRepo.getCommentsByNodeWithUser(node.id)).slice(-3); // últimos 3 comentarios con datos de usuario
         return {
           id: node.id,
           title: node.title,
@@ -530,7 +534,8 @@ async getAllEmotions(): Promise<EmotionOption[]> {
           fotoUser: userData?.user?.user_metadata?.avatar_url || null,
           likeCount,
           likedByMe,
-          // commentCount: 0
+          commentCount,
+          comments,
           colorEmotion: node.emotion?.color || null,
           emotion: node.emotion?.emotion || null,
           isOwner: currentUserId ? node.profile_id === currentUserId : false,

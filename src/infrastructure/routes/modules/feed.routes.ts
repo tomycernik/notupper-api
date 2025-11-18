@@ -1,4 +1,3 @@
-
 import { Router } from 'express';
 import { FeedController } from '@infrastructure/controllers/feed.controller';
 import { FeedService } from '@application/services/feed.service';

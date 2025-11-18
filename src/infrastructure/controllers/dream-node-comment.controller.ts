@@ -1,6 +1,6 @@
+
 import { Request, Response } from "express";
 import { DreamNodeCommentService } from "@application/services/dream-node-comment.service";
-import { IDreamNodeComment } from "@domain/interfaces/dream-node-comment.interface";
 import { CreateDreamNodeCommentDto } from "@infrastructure/dtos/dream-node/create-dream-node-comment.dto";
 import { DreamNodeService } from "@application/services/dream-node.service";
 import { DreamNodeRepositorySupabase } from "@infrastructure/repositories/dream-node.repository.supabase";
@@ -13,7 +13,7 @@ export class DreamNodeCommentController {
     try {
       const { nodeId } = req.params;
       if (!nodeId) return res.status(400).json({ success: false, message: "Falta nodeId" });
-      const comments: IDreamNodeComment[] = await commentService.getCommentsByNode(nodeId);
+      const comments = await commentService.getCommentsByNodeWithUser(nodeId);
       res.json({ success: true, comments });
     } catch (error) {
       res.status(500).json({ success: false, message: "Error al obtener comentarios", error: error instanceof Error ? error.message : error });
@@ -73,8 +73,8 @@ export class DreamNodeCommentController {
       if (!nodeId || !profileId || typeof content !== 'string' || !content.trim()) {
         return res.status(400).json({ success: false, message: "Faltan datos o el comentario es inválido" });
       }
-      const comment: IDreamNodeComment = await commentService.addComment(nodeId, profileId, content.trim());
-      res.status(201).json({ success: true, comment });
+      const commentWithUser = await commentService.addCommentWithUser(nodeId, profileId, content.trim());
+      res.status(201).json({ success: true, comment: commentWithUser });
     } catch (error) {
       res.status(500).json({ success: false, message: "Error al agregar comentario", error: error instanceof Error ? error.message : error });
     }

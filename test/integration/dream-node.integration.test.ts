@@ -1055,4 +1055,123 @@ describe("DreamNodeController Integration Tests", () => {
       expect(response.body.pagination.limit).toBe(10);
     });
   });
+
+  describe("GET /api/dreams/:id/comments - Get comments with user data", () => {
+    beforeEach(() => {
+      app.get("/api/dreams/:id/comments", (req, res) => {
+        const { id } = req.params;
+
+        // Mock dream data
+        const mockDreams: any = {
+          "123e4567-e89b-12d3-a456-426614174000": {
+            id: "123e4567-e89b-12d3-a456-426614174000",
+            title: "Public Dream",
+            privacy: "Publico",
+          },
+          "123e4567-e89b-12d3-a456-426614174001": {
+            id: "123e4567-e89b-12d3-a456-426614174001",
+            title: "Private Dream",
+            privacy: "Privado",
+          },
+        };
+
+        const dream = mockDreams[id];
+
+        if (!dream) {
+          return res.status(404).json({
+            success: false,
+            message: "Sueño no encontrado",
+          });
+        }
+
+        if (dream.privacy !== "Publico") {
+          return res.status(403).json({
+            success: false,
+            message: "Este sueño no es público. Los comentarios solo están disponibles para sueños públicos.",
+          });
+        }
+
+        // Mock comments
+        const mockComments = [
+          {
+            id: "comment-1",
+            dream_node_id: id,
+            profile_id: "user-1",
+            content: "Great dream!",
+            created_at: "2025-11-16T10:00:00Z",
+            user: {
+              username: "testuser",
+              avatar_url: "https://example.com/avatar.jpg",
+            },
+          },
+          {
+            id: "comment-2",
+            dream_node_id: id,
+            profile_id: "user-2",
+            content: "Amazing interpretation!",
+            created_at: "2025-11-16T11:00:00Z",
+            user: {
+              username: "anotheruser",
+              avatar_url: "https://example.com/avatar2.jpg",
+            },
+          },
+        ];
+
+        res.json({
+          success: true,
+          data: {
+            comments: mockComments,
+            total: mockComments.length,
+          },
+        });
+      });
+    });
+
+    it("should return comments with user data for public dream", async () => {
+      const response = await request(app)
+        .get("/api/dreams/123e4567-e89b-12d3-a456-426614174000/comments")
+        .expect(200);
+
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.comments).toHaveLength(2);
+      expect(response.body.data.total).toBe(2);
+      expect(response.body.data.comments[0]).toHaveProperty("user");
+      expect(response.body.data.comments[0].user).toHaveProperty("username");
+      expect(response.body.data.comments[0].user).toHaveProperty("avatar_url");
+    });
+
+    it("should return 404 if dream does not exist", async () => {
+      const response = await request(app)
+        .get("/api/dreams/nonexistent-id/comments")
+        .expect(404);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe("Sueño no encontrado");
+    });
+
+    it("should return 403 if dream is private", async () => {
+      const response = await request(app)
+        .get("/api/dreams/123e4567-e89b-12d3-a456-426614174001/comments")
+        .expect(403);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toBe("Este sueño no es público. Los comentarios solo están disponibles para sueños públicos.");
+    });
+
+    it("should include correct comment structure", async () => {
+      const response = await request(app)
+        .get("/api/dreams/123e4567-e89b-12d3-a456-426614174000/comments")
+        .expect(200);
+
+      const comment = response.body.data.comments[0];
+      expect(comment).toHaveProperty("id");
+      expect(comment).toHaveProperty("dream_node_id");
+      expect(comment).toHaveProperty("profile_id");
+      expect(comment).toHaveProperty("content");
+      expect(comment).toHaveProperty("created_at");
+      expect(comment).toHaveProperty("user");
+      expect(comment.user).toHaveProperty("username");
+      expect(comment.user).toHaveProperty("avatar_url");
+    });
+  });
 });

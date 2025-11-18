@@ -48,4 +48,44 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
 
     if (error) throw new Error(error.message);
   }
+
+  async getUserFeaturedBadges(profileId: string): Promise<Badge[]> {
+    const { data, error } = await supabase
+      .from('user_badge')
+      .select('badge:badge_id ( id, badge_description, badge_image, badge_code, coin_reward ), featured_order')
+      .eq('profile_id', profileId)
+      .not('featured_order', 'is', null)
+      .order('featured_order', { ascending: true })
+      .limit(3);
+
+    if (error) throw new Error(error.message);
+
+    return (data || []).map((row: any) => ({
+      id: row.badge.id,
+      description: row.badge.badge_description || undefined,
+      imageUrl: row.badge.badge_image || undefined,
+      code: row.badge.badge_code || undefined,
+      coin_reward: row.badge.coin_reward ?? undefined,
+    }));
+  }
+
+  async setUserFeaturedBadges(profileId: string, badgeIds: string[]): Promise<void> {
+    // Limpiar featured_order de todas las insignias del usuario
+    const { error: clearError } = await supabase
+      .from('user_badge')
+      .update({ featured_order: null })
+      .eq('profile_id', profileId);
+    if (clearError) throw new Error(clearError.message);
+
+    // Asignar featured_order a las seleccionadas
+    for (let i = 0; i < badgeIds.length; i++) {
+      const badgeId = badgeIds[i];
+      const { error } = await supabase
+        .from('user_badge')
+        .update({ featured_order: i + 1 })
+        .eq('profile_id', profileId)
+        .eq('badge_id', badgeId);
+      if (error) throw new Error(error.message);
+    }
+  }
 }

@@ -11,6 +11,7 @@ import { SaveDreamNodeRequestDto } from "@infrastructure/dtos/dream-node";
 import { MissionService } from "@application/services/mission.service";
 import { Badge } from "@domain/models/badge.model";
 import { IPublicDream } from "@domain/interfaces/public-dream.interface";
+import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeService {
   constructor(private dreamNodeRepository: IDreamNodeRepository, private missionService?: MissionService) {
@@ -252,6 +253,26 @@ export class DreamNodeService {
     } catch (error) {
       throw new Error(
         "Error obteniendo los sueños públicos: " + error
+      );
+    }
+  }
+
+  async getUserDreamMap(userId: string): Promise<DreamGraphResponse> {
+    try {
+      return this.dreamNodeRepository.getUserDreamMap(userId);
+    } catch (error) {
+      throw new Error(
+        "Error obteniendo el mapa de sueños del usuario: " + error
+      );
+    }
+  }
+
+  async getDreamNodeById(dreamNodeId: string): Promise<IDreamNode | null> {
+    try {
+      return this.dreamNodeRepository.getDreamNodeById(dreamNodeId);
+    } catch (error) {
+      throw new Error(
+        "Error obteniendo el nodo de sueño: " + error
       );
     }
   }

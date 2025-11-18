@@ -1,7 +1,23 @@
-export type DreamTypeName = "Lucido" | "Pesadilla" | "Recurrente" | "Estandar" | "Premonitorio" | "Vivido";
+export type DreamTypeName =
+  | "Lucido"
+  | "Pesadilla"
+  | "Recurrente"
+  | "Estandar"
+  | "Premonitorio"
+  | "Vivido";
 export type DreamPrivacy = "Publico" | "Privado" | "Anonimo";
 export type DreamState = "Activo" | "Archivado";
-export type Emotion = "Alegría" | "Tristeza" | "Miedo" | "Enojo" | "Frustracion" | "Verguenza" | "Sorpresa" | "Celos" | "Nostalgia" | "Confusion";
+export type Emotion =
+  | "Alegría"
+  | "Tristeza"
+  | "Miedo"
+  | "Enojo"
+  | "Frustracion"
+  | "Verguenza"
+  | "Sorpresa"
+  | "Celos"
+  | "Nostalgia"
+  | "Confusion";
 
 export interface IDreamNode {
   id?: string;
@@ -13,7 +29,14 @@ export interface IDreamNode {
   privacy: DreamPrivacy;
   state: DreamState;
   emotion: Emotion;
+  emotionColor?: string;
   type: DreamTypeName;
+  likeCount?: number;
+  likedByMe?: boolean;
+  emotion_context?: string[];
+  location_context?: string[];
+  people_context?: string[];
+  theme_context?: string[];
 }
 
 export type EmotionOption = { id: number; label: Emotion };
@@ -28,6 +51,8 @@ export class DreamNode implements IDreamNode {
   state: DreamState;
   emotion: Emotion;
   type: DreamTypeName;
+  likeCount?: number;
+  likedByMe?: boolean;
 
   private constructor(
     creationDate: Date,
@@ -38,7 +63,7 @@ export class DreamNode implements IDreamNode {
     state: DreamState,
     emotion: Emotion,
     type: DreamTypeName,
-    imageUrl?: string,
+    imageUrl?: string
   ) {
     this.creationDate = creationDate;
     this.title = title;

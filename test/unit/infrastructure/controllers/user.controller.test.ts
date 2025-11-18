@@ -15,12 +15,14 @@ import { SkinService } from '../../../../src/application/services/skin.service';
 import { RoomService } from '../../../../src/application/services/room.service';
 import { GetUserSkinsResponseDto } from '../../../../src/infrastructure/dtos/skin/get-user-skins.dto';
 import { GetUserRoomsResponseDto } from '../../../../src/infrastructure/dtos/room/get-user-rooms.dto';
+import { BadgeService } from '@/application/services/badge.service';
 
 describe('UserController', () => {
   let userController: UserController;
   let mockUserService: jest.Mocked<UserService>;
   let mockSkinService: jest.Mocked<SkinService>;
   let mockRoomService: jest.Mocked<RoomService>;
+  let mockBadgeService: jest.Mocked<BadgeService>;
   let mockRequest: Partial<Request>;
   let mockResponse: Partial<Response>;
   let jsonMock: jest.Mock;
@@ -41,13 +43,15 @@ describe('UserController', () => {
       getDefaultRooms: jest.fn()
     } as any;
 
+    mockBadgeService = {} as any;
+
     jsonMock = jest.fn();
     mockResponse = {
       json: jsonMock,
       status: jest.fn().mockReturnThis()
     };
 
-    userController = new UserController(mockUserService, mockSkinService, mockRoomService);
+    userController = new UserController(mockUserService, mockSkinService, mockRoomService, mockBadgeService);
   });
 
   describe('getUserSkins', () => {

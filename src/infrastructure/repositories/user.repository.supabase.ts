@@ -5,7 +5,20 @@ import { IUserRepository } from "@domain/repositories/user.repository";
 import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
 
 export class UserRepositorySupabase implements IUserRepository {
+  async findUserNameById(userId: string): Promise<string | null> {
+    const { data, error } = await supabase.auth.admin.getUserById(userId);
+    if (error) {
+      console.error("Error obteniendo usuario:", error);
+      return null;
+    }
+    const user = data.user;
+    if (!user) return null;
+    const name =
+      user.user_metadata?.name ||
+      null;
 
+    return name;
+  }
   async findByDreamNodeId(dreamNodeId: string): Promise<IUser | null> {
     const { data, error } = await supabase
       .from("dream_node")

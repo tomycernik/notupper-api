@@ -3,9 +3,15 @@ import { FeedService } from '@application/services/feed.service';
 import { UserService } from '@/application/services/user.service';
 import { INotification } from '../../domain/models/notification.model';
 import { NotificationService } from '@/application/services/notification.service';
+import { DreamNodeService } from '@/application/services/dream-node.service';
 
 export class FeedController {
-  constructor(private readonly feedService: FeedService, private readonly userService: UserService, private readonly notificationService: NotificationService) {}
+  constructor(
+    private readonly feedService: FeedService,
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
+    private readonly dreamNodeService: DreamNodeService
+  ) {}
 
   async getFeed(req: Request, res: Response) {
     try {
@@ -33,11 +39,18 @@ export class FeedController {
       }
       await this.feedService.likeNode(dreamNodeId, profileIdFrom);
       const profileIdTo = await this.userService.getUserIdByDreamNodeId(dreamNodeId);
+      const userName = await this.userService.getUserNameById(profileIdFrom)
+      const dreamNode = await this.dreamNodeService.getDreamNodeById(dreamNodeId)
+      if(!dreamNode){
+         res.status(400).json({ success: false, message: "No existe Dream Node" });
+        return;
+      }
+      const {title} = dreamNode
       const notification: INotification = {
         from_user: profileIdFrom,
         to_user: profileIdTo,
         title: "Tu publicación ha recibido un me gusta",
-        message: "",
+        message: userName + " le ha dado me gusta a tu nodo: " + title,
         delivered: false,
         read: false,
         metadata: {

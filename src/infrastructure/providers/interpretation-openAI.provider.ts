@@ -82,7 +82,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         "dreamType": ${dreamTypesString}
       }`;
 
-            // Siempre usa el modelo psicológico para la primera interpretación
+            // Siempre usa el modelo psicológico para la interpretación
             const modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
       console.log(
         "[InterpretationOpenAIProvider] Modelo usado para interpretación:",
@@ -293,7 +293,7 @@ Responde EXACTAMENTE en este formato JSON:
             {
               role: "system",
               content:
-                "Eres un psicólogo especialista que debe dar interpretaciones RADICALMENTE OPUESTAS a las anteriores. Tu trabajo es CONTRADECIR y ofrecer el PUNTO DE VISTA CONTRARIO. Si la interpretación anterior fue positiva, sé más crítico. Si fue sobre libertad, habla de limitaciones. NUNCA coincidas con la interpretación previa. Responde SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. Crea títulos que reflejen la nueva perspectiva. Las emociones válidas son: felicidad, tristeza, miedo, enojo. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando la perspectiva opuesta.",
+                `Eres un psicólogo especialista que debe dar interpretaciones RADICALMENTE OPUESTAS a las anteriores. Tu trabajo es CONTRADECIR y ofrecer el PUNTO DE VISTA CONTRARIO. Si la interpretación anterior fue positiva, sé más crítico. Si fue sobre libertad, habla de limitaciones. NUNCA coincidas con la interpretación previa. Responde SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. Crea títulos que reflejen la nueva perspectiva. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando la perspectiva opuesta.`,
             },
             {
               role: "user",

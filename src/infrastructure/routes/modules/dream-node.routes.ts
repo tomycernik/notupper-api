@@ -60,7 +60,7 @@ const userRepository = new UserRepositorySupabase()
 const roomRepository = new RoomRepositorySupabase()
 const roomService = new RoomService(roomRepository, coinRepository)
 const userService = new UserService(userRepository, membershipService, roomService)
-const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService);
+const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService);
 
 // Endpoints de interpretación
 dreamNodeRouter.post("/interpret", authenticateToken, validateBody(InterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.interpret(req, res));

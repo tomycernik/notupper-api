@@ -14,6 +14,8 @@ import { NotificationRepositorySupabase } from '@/infrastructure/repositories/no
 import { RoomRepositorySupabase } from '@/infrastructure/repositories/room.repository.supabase';
 import { RoomService } from '@/application/services/room.service';
 import { CoinRepositorySupabase } from '@/infrastructure/repositories/coin.repository.supabase';
+import { DreamNodeRepositorySupabase } from '@/infrastructure/repositories/dream-node.repository.supabase';
+import { DreamNodeService } from '@/application/services/dream-node.service';
 
 const notificationRepository = new NotificationRepositorySupabase()
 const notificationService = new NotificationService(notificationRepository)
@@ -22,11 +24,13 @@ const membershipService = new MembershipService(membershipRepository);
 const roomRepository = new RoomRepositorySupabase();
 const coinRepository = new CoinRepositorySupabase()
 const roomService = new RoomService(roomRepository,coinRepository)
-const feedController = new FeedController(new FeedService(), new UserService(new UserRepositorySupabase(), membershipService, roomService), notificationService);
+const dreamNodeRepository = new DreamNodeRepositorySupabase()
+const dreamNodeService = new DreamNodeService(dreamNodeRepository)
+const feedController = new FeedController(new FeedService(), new UserService(new UserRepositorySupabase(), membershipService, roomService), notificationService, dreamNodeService);
 const feedRouter = Router();
 const userRepository = new UserRepositorySupabase()
 const userService = new UserService(userRepository, membershipService, roomService)
-const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService);
+const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService);
 
 feedRouter.get('/', authenticateToken, (req, res) => feedController.getFeed(req, res));
 feedRouter.post("/like", authenticateToken, (req, res) => feedController.likeNode(req, res));

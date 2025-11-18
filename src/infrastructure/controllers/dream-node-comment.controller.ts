@@ -12,7 +12,11 @@ const commentService = new DreamNodeCommentService();
 const dreamNodeService = new DreamNodeService(new DreamNodeRepositorySupabase());
 
 export class DreamNodeCommentController {
-  constructor(private readonly userService: UserService, private readonly notificationService: NotificationService){}
+  constructor(
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
+    private readonly dreamNodeService: DreamNodeService
+  ){}
   async getComments(req: Request, res: Response) {
     try {
       const { nodeId } = req.params;
@@ -72,22 +76,33 @@ export class DreamNodeCommentController {
   async addComment(req: Request, res: Response) {
     try {
       const { nodeId } = req.params;
-      const profileId = (req as any).userId;
+      const profileIdFrom = (req as any).userId;
       const { content } = req.body as CreateDreamNodeCommentDto;
-      if (!nodeId || !profileId || typeof content !== 'string' || !content.trim()) {
+      if (!nodeId|| !profileIdFrom || typeof content !== 'string' || !content.trim()) {
         return res.status(400).json({ success: false, message: "Faltan datos o el comentario es inválido" });
       }
-      const commentWithUser = await commentService.addCommentWithUser(nodeId, profileId, content.trim());
+      const commentWithUser = await commentService.addCommentWithUser(nodeId, profileIdFrom, content.trim());
       const profileIdTo = await this.userService.getUserIdByDreamNodeId(nodeId);
+      const userNameFrom = await this.userService.getUserNameById(profileIdFrom)
+      const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)
+      const dreamNode = await this.dreamNodeService.getDreamNodeById(nodeId)
+      if(!dreamNode){
+         res.status(400).json({ success: false, message: "No existe Dream Node" });
+        return;
+      }
+      const {title} = dreamNode
       const notification: INotification = {
-              from_user: profileId,
+              from_user: profileIdFrom,
               to_user: profileIdTo,
               title: "Tu publicación ha recibido un comentario",
-              message: "",
+              message: userNameFrom + " ha comentado tu nodo: " + title,
               delivered: false,
               read: false,
               metadata: {
-                dreamNodeId: nodeId
+                dreamNodeId: nodeId,
+                dreamNodeTitle: title,
+                userNameFrom: userNameFrom,
+                avatar_url: avatar_url
               },
               type: "comment"
             }

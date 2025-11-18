@@ -15,6 +15,18 @@ export class UserService {
     return user.id!
   }
 
+  async getAvatarUrlById(userId: string): Promise<string>{
+    const avatarUrl = await this.userRepository.findUserAvatarUrlById(userId);
+    if(!avatarUrl) throw new Error("Usuario no encontrado");
+    return avatarUrl;
+  }
+
+  async getUserNameById(userId: string): Promise<string>{
+    const userName = await this.userRepository.findUserNameById(userId);
+    if(!userName) throw new Error("Usuario no encontrado");
+    return userName;
+  }
+
   constructor(
     private userRepository: IUserRepository,
     private membershipService: MembershipService,

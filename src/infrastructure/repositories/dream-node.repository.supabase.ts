@@ -9,6 +9,7 @@ import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
+  
   async save(
     dreamNode: IDreamNode,
     userId: string,

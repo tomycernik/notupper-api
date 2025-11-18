@@ -520,7 +520,7 @@ async getAllEmotions(): Promise<EmotionOption[]> {
         const likedByMe = currentUserId ? await this.isLikedByUser(node.id, currentUserId) : false;
         const commentRepo = new (await import('./dream-node-comment.repository.supabase')).DreamNodeCommentRepositorySupabase();
         const commentCount = await commentRepo.countComments(node.id);
-        const comments = (await commentRepo.getCommentsByNode(node.id)).slice(-3); // ultimos 3 comentarios
+        const comments = (await commentRepo.getCommentsByNodeWithUser(node.id)).slice(-3); // últimos 3 comentarios con datos de usuario
         return {
           id: node.id,
           title: node.title,

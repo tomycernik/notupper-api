@@ -24,7 +24,9 @@ const coinRepository = new CoinRepositorySupabase()
 const roomService = new RoomService(roomRepository,coinRepository)
 const feedController = new FeedController(new FeedService(), new UserService(new UserRepositorySupabase(), membershipService, roomService), notificationService);
 const feedRouter = Router();
-const dreamNodeCommentController = new DreamNodeCommentController();
+const userRepository = new UserRepositorySupabase()
+const userService = new UserService(userRepository, membershipService, roomService)
+const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService);
 
 feedRouter.get('/', authenticateToken, (req, res) => feedController.getFeed(req, res));
 feedRouter.post("/like", authenticateToken, (req, res) => feedController.likeNode(req, res));

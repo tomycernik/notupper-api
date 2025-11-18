@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import "express-session";
 import { InterpretationDreamService } from "@application/services/interpretation-dream.service";
 import { DreamNodeService } from "@application/services/dream-node.service";
 import { IllustrationDreamService } from "@application/services/illustration-dream.service";
@@ -135,12 +136,22 @@ export class DreamNodeController {
       }
 
       const userDreamContext = await this.contextService.getUserDreamContext(userId);
-      const reinterpretedDream = await this.interpretationDreamService.reinterpretDream(
-        description,
-        previousInterpretation,
-        userDreamContext,
-        approach // Puede ser "psychological", "spiritual" o "symbolic"
-      );
+      let reinterpretedDream;
+      try {
+        reinterpretedDream = await this.interpretationDreamService.reinterpretDream(
+          description,
+          previousInterpretation,
+          userDreamContext,
+          approach
+        );
+        console.log("[DreamNodeController] Reinterpretación exitosa:", reinterpretedDream);
+      } catch (err) {
+        console.error("[DreamNodeController] Error en reinterpretación:", err);
+        return res.status(500).json({
+          errors: "Error al reinterpretar el sueño (OpenAI)",
+          details: err instanceof Error ? err.message : err
+        });
+      }
 
       if (reinterpretedDream.context && req.session) {
         try {
@@ -161,13 +172,16 @@ export class DreamNodeController {
           console.error("Error handling session:", error);
         }
       }
-
-      const illustrationUrl = await this.illustrationService.generateIllustration(description);
-      const unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(userId);
+      
+      let unlockedBadges = null;
+      try {
+        unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(userId);
+      } catch (err) {
+        console.error("[DreamNodeController] Error generando badges:", err);
+      }
 
       res.json({
         description,
-        imageUrl: illustrationUrl,
         interpretation: reinterpretedDream.interpretation,
         emotion: reinterpretedDream.emotion,
         title: reinterpretedDream.title,
@@ -177,7 +191,8 @@ export class DreamNodeController {
     } catch (error: any) {
       console.error("Error en DreamNodeController reinterpret:", error);
       res.status(500).json({
-        errors: "Error al reinterpretar el sueño",
+        errors: "Error al reinterpretar el sueño (general)",
+        details: error instanceof Error ? error.message : error
       });
     }
   }

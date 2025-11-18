@@ -296,23 +296,31 @@ Responde EXACTAMENTE en este formato JSON:
         modelUsed = envs.OPENAI_MODEL_SYMBOLIC || modelUsed;
       }
       console.log("[InterpretationOpenAIProvider] Modelo usado para reinterpretación:", modelUsed);
-      const response = await this.openai.chat.completions.create({
-        model: modelUsed,
-        messages: [
-          {
-            role: "system",
-            content:
-              "Eres un psicólogo especialista que debe dar interpretaciones RADICALMENTE OPUESTAS a las anteriores. Tu trabajo es CONTRADECIR y ofrecer el PUNTO DE VISTA CONTRARIO. Si la interpretación anterior fue positiva, sé más crítico. Si fue sobre libertad, habla de limitaciones. NUNCA coincidas con la interpretación previa. Responde SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. Crea títulos que reflejen la nueva perspectiva. Las emociones válidas son: felicidad, tristeza, miedo, enojo. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando la perspectiva opuesta.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_tokens: 350,
-        temperature: 0.9,
-        response_format: { type: "json_object" } as any,
-      });
+      let response;
+      try {
+        console.log("[InterpretationOpenAIProvider] Llamando a OpenAI...");
+        response = await this.openai.chat.completions.create({
+          model: modelUsed,
+          messages: [
+            {
+              role: "system",
+              content:
+                "Eres un psicólogo especialista que debe dar interpretaciones RADICALMENTE OPUESTAS a las anteriores. Tu trabajo es CONTRADECIR y ofrecer el PUNTO DE VISTA CONTRARIO. Si la interpretación anterior fue positiva, sé más crítico. Si fue sobre libertad, habla de limitaciones. NUNCA coincidas con la interpretación previa. Responde SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. Crea títulos que reflejen la nueva perspectiva. Las emociones válidas son: felicidad, tristeza, miedo, enojo. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando la perspectiva opuesta.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          max_tokens: 350,
+          temperature: 0.9,
+          response_format: { type: "json_object" } as any,
+        });
+        console.log("[InterpretationOpenAIProvider] Respuesta recibida de OpenAI:", response);
+      } catch (err) {
+        console.error("[InterpretationOpenAIProvider] Error al llamar a OpenAI:", err);
+        throw err;
+      }
 
       const responseContent = response.choices[0]?.message?.content || "{}";
       let title = "Nueva Perspectiva";

@@ -1,3 +1,4 @@
+
 import { DreamNodeCommentRepositorySupabase } from "@infrastructure/repositories/dream-node-comment.repository.supabase";
 import { IDreamNodeCommentWithUser } from "@domain/interfaces/dream-node-comment.interface";
 
@@ -11,7 +12,6 @@ export class DreamNodeCommentService {
   async getCommentsByNodeWithUser(dreamNodeId: string): Promise<IDreamNodeCommentWithUser[]> {
     return this.commentRepo.getCommentsByNodeWithUser(dreamNodeId);
   }
-
   async addComment(dreamNodeId: string, profileId: string, content: string) {
     return this.commentRepo.addComment(dreamNodeId, profileId, content);
   }

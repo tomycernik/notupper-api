@@ -31,7 +31,7 @@ export const dreamTypeMap: Record<string, string> = {
   Vivido: "13063e93-931c-4309-bf0a-322a14744138"
 };
 
-export const notificationType: Record<string, string> = {
+export const notificationMap: Record<string, string> = {
   like: "4bdc07fd-fa6b-49f4-87dc-b6ba800aabb3",
   comment: "04393652-af52-47fa-9ef7-4c4450d54d9c"
 }

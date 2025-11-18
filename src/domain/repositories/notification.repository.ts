@@ -1,5 +1,6 @@
 import { INotification } from "@/domain/models/notification.model";
 
 export interface NotificationRepository{
-    save(notification: INotification): Promise<void>
+    update(id: string, fields: any): Promise<void>;
+    save(notification: INotification): Promise<INotification>
 }

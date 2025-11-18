@@ -33,16 +33,19 @@ export class FeedController {
       }
       await this.feedService.likeNode(dreamNodeId, profileIdFrom);
       const profileIdTo = await this.userService.getUserIdByDreamNodeId(dreamNodeId);
-      const notificationDto: INotification = {
+      const notification: INotification = {
         from_user: profileIdFrom,
         to_user: profileIdTo,
         title: "Tu publicación ha recibido un me gusta",
         message: "",
         delivered: false,
         read: false,
+        metadata: {
+          dreamNodeId: dreamNodeId
+        },
         type: "like"
       } 
-      await this.notificationService.saveNotification(notificationDto)
+      await this.notificationService.saveNotification(notification)
       res.status(200).json({ success: true });
     } catch (error) {
       console.error("Error en FeedController likeNode:", error);

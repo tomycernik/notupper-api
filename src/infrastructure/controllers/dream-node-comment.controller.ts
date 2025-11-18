@@ -73,10 +73,8 @@ export class DreamNodeCommentController {
       if (!nodeId || !profileId || typeof content !== 'string' || !content.trim()) {
         return res.status(400).json({ success: false, message: "Faltan datos o el comentario es inválido" });
       }
-      const newComment = await commentService.addComment(nodeId, profileId, content.trim());
-      const comments = await commentService.getCommentsByNodeWithUser(nodeId);
-      const commentWithUser = comments.find(c => c.id === newComment.id);
-      res.status(201).json({ success: true, comment: commentWithUser || newComment });
+      const commentWithUser = await commentService.addCommentWithUser(nodeId, profileId, content.trim());
+      res.status(201).json({ success: true, comment: commentWithUser });
     } catch (error) {
       res.status(500).json({ success: false, message: "Error al agregar comentario", error: error instanceof Error ? error.message : error });
     }

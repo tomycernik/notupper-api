@@ -5,7 +5,7 @@ import { notificationMap } from "@/config/mappings";
 
 export class NotificationRepositorySupabase implements NotificationRepository {
     async update(id: string, fields: any): Promise<void> {
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from("notification")
             .update(fields)
             .eq("id", id)
@@ -15,7 +15,7 @@ export class NotificationRepositorySupabase implements NotificationRepository {
             throw new Error("No se pudo actualizar notificación")
         }
     }
-    async save(notification: INotification): Promise<INotification> {
+    async save(notification: INotification): Promise<void> {
         const notificationEntity = {
             from_user: notification.from_user,
             to_user: notification.to_user,
@@ -26,7 +26,7 @@ export class NotificationRepositorySupabase implements NotificationRepository {
             read: notification.read,
             notification_type_id: notificationMap[notification.type],
         }
-        const { data, error } = await supabase
+        const { error } = await supabase
             .from("notification")
             .insert(notificationEntity)
             .select()
@@ -36,6 +36,5 @@ export class NotificationRepositorySupabase implements NotificationRepository {
             console.log(error)
             throw new Error("No se pudo crear notificación")
         }
-        return data;
     }
 }

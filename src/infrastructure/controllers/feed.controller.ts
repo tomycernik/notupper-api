@@ -44,7 +44,7 @@ export class FeedController {
           dreamNodeId: dreamNodeId
         },
         type: "like"
-      } 
+      }
       await this.notificationService.saveNotification(notification)
       res.status(200).json({ success: true });
     } catch (error) {

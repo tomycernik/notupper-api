@@ -5,7 +5,7 @@ export class NotificationService{
 
     constructor(private readonly notificationRepository: NotificationRepository){}
 
-    async saveNotification(notification: INotification): Promise<INotification>{
+    async saveNotification(notification: INotification): Promise<void>{
       return await this.notificationRepository.save(notification)
     }
 }

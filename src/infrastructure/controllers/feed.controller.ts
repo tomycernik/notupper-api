@@ -1,8 +1,11 @@
 import { Request, Response } from 'express';
 import { FeedService } from '@application/services/feed.service';
+import { UserService } from '@/application/services/user.service';
+import { INotification } from '../../domain/models/notification.model';
+import { NotificationService } from '@/application/services/notification.service';
 
 export class FeedController {
-  constructor(private readonly feedService: FeedService) {}
+  constructor(private readonly feedService: FeedService, private readonly userService: UserService, private readonly notificationService: NotificationService) {}
 
   async getFeed(req: Request, res: Response) {
     try {
@@ -22,13 +25,27 @@ export class FeedController {
 
   async likeNode(req: Request, res: Response) {
     try {
-      const profileId = (req as any).userId;
+      const profileIdFrom = (req as any).userId;
       const { dreamNodeId } = req.body;
-      if (!profileId || !dreamNodeId) {
+      if (!profileIdFrom || !dreamNodeId) {
         res.status(400).json({ success: false, message: "Faltan datos" });
         return;
       }
-      await this.feedService.likeNode(dreamNodeId, profileId);
+      await this.feedService.likeNode(dreamNodeId, profileIdFrom);
+      const profileIdTo = await this.userService.getUserIdByDreamNodeId(dreamNodeId);
+      const notification: INotification = {
+        from_user: profileIdFrom,
+        to_user: profileIdTo,
+        title: "Tu publicación ha recibido un me gusta",
+        message: "",
+        delivered: false,
+        read: false,
+        metadata: {
+          dreamNodeId: dreamNodeId
+        },
+        type: "like"
+      }
+      await this.notificationService.saveNotification(notification)
       res.status(200).json({ success: true });
     } catch (error) {
       console.error("Error en FeedController likeNode:", error);

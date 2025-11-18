@@ -8,6 +8,13 @@ import { RoomService } from "@application/services/room.service";
 import { supabase } from "@config/supabase";
 
 export class UserService {
+
+  async getUserIdByDreamNodeId(dreamNodeId: string): Promise<string> {
+    const user = await this.userRepository.findByDreamNodeId(dreamNodeId);
+    if (!user) throw new Error("Usuario no encontrado");
+    return user.id!
+  }
+
   constructor(
     private userRepository: IUserRepository,
     private membershipService: MembershipService,

@@ -21,8 +21,8 @@ export class AppRoutes {
     router.use("/api/statistics", statisticsRouter);
     router.use("/api/payments", paymentRouter);
     router.use("/api/rooms", roomRouter);
-  router.use("/api/skins", skinRouter);
-  router.use("/api/feed", feedRouter);
+    router.use("/api/skins", skinRouter);
+    router.use("/api/feed", feedRouter);
     return router;
   }
 }

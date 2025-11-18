@@ -4,11 +4,15 @@ import { DreamNodeCommentService } from "@application/services/dream-node-commen
 import { CreateDreamNodeCommentDto } from "@infrastructure/dtos/dream-node/create-dream-node-comment.dto";
 import { DreamNodeService } from "@application/services/dream-node.service";
 import { DreamNodeRepositorySupabase } from "@infrastructure/repositories/dream-node.repository.supabase";
+import { UserService } from "@/application/services/user.service";
+import { INotification } from "@/domain/models/notification.model";
+import { NotificationService } from "@/application/services/notification.service";
 
 const commentService = new DreamNodeCommentService();
 const dreamNodeService = new DreamNodeService(new DreamNodeRepositorySupabase());
 
 export class DreamNodeCommentController {
+  constructor(private readonly userService: UserService, private readonly notificationService: NotificationService){}
   async getComments(req: Request, res: Response) {
     try {
       const { nodeId } = req.params;
@@ -74,6 +78,20 @@ export class DreamNodeCommentController {
         return res.status(400).json({ success: false, message: "Faltan datos o el comentario es inválido" });
       }
       const commentWithUser = await commentService.addCommentWithUser(nodeId, profileId, content.trim());
+      const profileIdTo = await this.userService.getUserIdByDreamNodeId(nodeId);
+      const notification: INotification = {
+              from_user: profileId,
+              to_user: profileIdTo,
+              title: "Tu publicación ha recibido un comentario",
+              message: "",
+              delivered: false,
+              read: false,
+              metadata: {
+                dreamNodeId: nodeId
+              },
+              type: "comment"
+            }
+      await this.notificationService.saveNotification(notification)
       res.status(201).json({ success: true, comment: commentWithUser });
     } catch (error) {
       res.status(500).json({ success: false, message: "Error al agregar comentario", error: error instanceof Error ? error.message : error });

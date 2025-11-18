@@ -83,7 +83,8 @@ export class DreamNodeCommentController {
       }
       const commentWithUser = await commentService.addCommentWithUser(nodeId, profileIdFrom, content.trim());
       const profileIdTo = await this.userService.getUserIdByDreamNodeId(nodeId);
-      const userName = await this.userService.getUserNameById(profileIdFrom)
+      const userNameFrom = await this.userService.getUserNameById(profileIdFrom)
+      const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)
       const dreamNode = await this.dreamNodeService.getDreamNodeById(nodeId)
       if(!dreamNode){
          res.status(400).json({ success: false, message: "No existe Dream Node" });
@@ -94,11 +95,14 @@ export class DreamNodeCommentController {
               from_user: profileIdFrom,
               to_user: profileIdTo,
               title: "Tu publicación ha recibido un comentario",
-              message: userName + " ha comentado tu nodo: " + title,
+              message: userNameFrom + " ha comentado tu nodo: " + title,
               delivered: false,
               read: false,
               metadata: {
-                dreamNodeId: nodeId
+                dreamNodeId: nodeId,
+                dreamNodeTitle: title,
+                userNameFrom: userNameFrom,
+                avatar_url: avatar_url
               },
               type: "comment"
             }

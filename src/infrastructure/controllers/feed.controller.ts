@@ -39,7 +39,8 @@ export class FeedController {
       }
       await this.feedService.likeNode(dreamNodeId, profileIdFrom);
       const profileIdTo = await this.userService.getUserIdByDreamNodeId(dreamNodeId);
-      const userName = await this.userService.getUserNameById(profileIdFrom)
+      const userNameFrom = await this.userService.getUserNameById(profileIdFrom)
+      const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)
       const dreamNode = await this.dreamNodeService.getDreamNodeById(dreamNodeId)
       if(!dreamNode){
          res.status(400).json({ success: false, message: "No existe Dream Node" });
@@ -50,11 +51,14 @@ export class FeedController {
         from_user: profileIdFrom,
         to_user: profileIdTo,
         title: "Tu publicación ha recibido un me gusta",
-        message: userName + " le ha dado me gusta a tu nodo: " + title,
+        message: userNameFrom + " le ha dado me gusta a tu nodo: " + title,
         delivered: false,
         read: false,
         metadata: {
-          dreamNodeId: dreamNodeId
+          dreamNodeId: dreamNodeId,
+          dreamNodeTitle: title,
+          userNameFrom: userNameFrom,
+          avatar_url: avatar_url
         },
         type: "like"
       }

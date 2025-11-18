@@ -3,6 +3,7 @@ import { IMembership } from "@domain/interfaces/membership.interface";
 import { IRepositoryUser, IUser } from "@domain/interfaces/user.interface";
 
 export interface IUserRepository {
+  findUserAvatarUrlById(userId: string): Promise<string | null>;
   findUserNameById(userId: string): Promise<string | null>;
   findByDreamNodeId(dreamNodeId: string): Promise<IUser | null>;
   register(user: IUser): Promise<IRepositoryUser>;

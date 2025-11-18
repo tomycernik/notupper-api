@@ -120,12 +120,10 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
       try {
         const aiResult = JSON.parse(responseContent);
 
-        // Extract and sanitize basic info
         title = this.sanitizeText(aiResult.title || title);
         interpretation = this.sanitizeText(aiResult.interpretation || interpretation);
         interpretation = this.limitSentences(interpretation, 4);
 
-        // Process emotion
         emotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
         const allowedEmotions = new Set(emotions .map(e => e.toLowerCase()));
         if (!allowedEmotions.has(emotion)) emotion = "tristeza";
@@ -162,7 +160,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         emotionsContext = Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : [];
 
       } catch (error) {
-        console.error('Error al procesar la respuesta del modelo:', error);
+        
       }
 
       return {
@@ -178,7 +176,6 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         }
       };
     } catch (error: any) {
-      console.error("Error en InterpretationOpenIAProvider:", error);
       throw new Error(error.message || "Error al interpretar el sueño.");
     }
   }
@@ -281,24 +278,15 @@ Responde EXACTAMENTE en este formato JSON:
   "dreamType": ${dreamTypesString} 
 }`;
 
-      // LOGS DE DEPURACIÓN
-      console.log("[InterpretationOpenAIProvider] Approach recibido:", approach);
-      console.log("[InterpretationOpenAIProvider] Modelos configurados:", {
-        psychological: envs.OPENAI_MODEL_PSYCHOLOGICAL,
-        spiritual: envs.OPENAI_MODEL_SPIRITUAL,
-        symbolic: envs.OPENAI_MODEL_SYMBOLIC
-      });
-      // Selecciona el modelo según el enfoque
+      // Selecciona el modelo segun el enfoque
       let modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
       if (approach === "spiritual") {
         modelUsed = envs.OPENAI_MODEL_SPIRITUAL || modelUsed;
       } else if (approach === "symbolic") {
         modelUsed = envs.OPENAI_MODEL_SYMBOLIC || modelUsed;
       }
-      console.log("[InterpretationOpenAIProvider] Modelo usado para reinterpretación:", modelUsed);
       let response;
       try {
-        console.log("[InterpretationOpenAIProvider] Llamando a OpenAI...");
         response = await this.openai.chat.completions.create({
           model: modelUsed,
           messages: [
@@ -316,9 +304,7 @@ Responde EXACTAMENTE en este formato JSON:
           temperature: 0.9,
           response_format: { type: "json_object" } as any,
         });
-        console.log("[InterpretationOpenAIProvider] Respuesta recibida de OpenAI:", response);
       } catch (err) {
-        console.error("[InterpretationOpenAIProvider] Error al llamar a OpenAI:", err);
         throw err;
       }
 
@@ -374,10 +360,6 @@ Responde EXACTAMENTE en este formato JSON:
           dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
         }
       } catch (parseError) {
-        console.error(
-          "Error parseando JSON de OpenAI en reinterpretación:",
-          parseError
-        );
         interpretation = responseContent.trim() || interpretation;
       }
 
@@ -406,7 +388,6 @@ Responde EXACTAMENTE en este formato JSON:
         }
       };
     } catch (error: any) {
-      console.error("Error en reinterpretación OpenAI:", error);
       throw new Error(error.message || "Error al reinterpretar el sueño.");
     }
   }

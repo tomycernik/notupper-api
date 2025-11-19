@@ -126,7 +126,7 @@ export class DreamNodeController {
   async reinterpret(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-      const { description, previousInterpretation, approach, dreamNodeId } = req.body;
+      const { description, previousInterpretation, approach } = req.body;
 
       const userMembership = await this.membershipService.getUserMembership(userId);
       if (userMembership && userMembership.name !== "plus") {
@@ -134,8 +134,6 @@ export class DreamNodeController {
           errors: "No tienes permiso para reinterpretar el sueño",
         });
       }
-
-      // Ya no es necesario obtener el nodo de sueño original para la imagen
 
       const userDreamContext = await this.contextService.getUserDreamContext(userId);
       let reinterpretedDream;
@@ -176,9 +174,7 @@ export class DreamNodeController {
       }
       
       let unlockedBadges = null;
-      try {
-        unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(userId);
-      } catch (err) {}
+      unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(userId);
 
       res.json({
         description,

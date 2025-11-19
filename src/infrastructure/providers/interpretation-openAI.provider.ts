@@ -88,7 +88,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         "[InterpretationOpenAIProvider] Modelo usado para interpretación:",
         modelUsed
       );
-      const response = await this.openai.chat.completions.create({
+          const response = await this.openai.chat.completions.create({
         model: modelUsed,
         messages: [
           {
@@ -162,7 +162,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
           const allowedDreamTypes = new Set(dreamTypes);
           let rawDreamType = aiResult.dreamType || 'Estandar';
           rawDreamType = rawDreamType
-            .normalize('NFD').replace(/[ -\u036f]/g, '')
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
             .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
           dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
         }
@@ -172,7 +172,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         locations = Array.isArray(aiResult.locations) ? aiResult.locations : [];
         emotionsContext = Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : [];
 
-      } catch (error) {
+      } catch {
         // Error parseando la respuesta de la IA
       }
 
@@ -298,28 +298,23 @@ Responde EXACTAMENTE en este formato JSON:
       } else if (approach === "symbolic") {
         modelUsed = envs.OPENAI_MODEL_SYMBOLIC || modelUsed;
       }
-      let response;
-      try {
-        response = await this.openai.chat.completions.create({
-          model: modelUsed,
-          messages: [
-            {
-              role: "system",
-              content:
-                `Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando el simbolismo y las emociones subyacentes.`,
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          max_tokens: 350,
-          temperature: 0.9,
-          response_format: { type: "json_object" } as any,
-        });
-      } catch (err) {
-        throw err;
-      }
+      const response = await this.openai.chat.completions.create({
+        model: modelUsed,
+        messages: [
+          {
+            role: "system",
+            content:
+              `Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando el simbolismo y las emociones subyacentes.`,
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        max_tokens: 350,
+        temperature: 0.9,
+        response_format: { type: "json_object" } as any,
+      });
 
       const responseContent = response.choices[0]?.message?.content || "{}";
       let title = "Nueva Perspectiva";
@@ -372,7 +367,7 @@ Responde EXACTAMENTE en este formato JSON:
             .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
           dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
         }
-      } catch (parseError) {
+      } catch {
         interpretation = responseContent.trim() || interpretation;
       }
 

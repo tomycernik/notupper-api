@@ -186,9 +186,7 @@ export class DreamNodeController {
       let unlockedBadges = null;
       try {
         unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(userId);
-      } catch (err) {
-        console.error("[DreamNodeController] Error generando badges:", err);
-      }
+      } catch (err) {}
 
       res.json({
         description,
@@ -196,7 +194,6 @@ export class DreamNodeController {
         emotion: reinterpretedDream.emotion,
         title: reinterpretedDream.title,
         dreamType: reinterpretedDream.dreamType,
-        imageUrl: originalDreamNode?.imageUrl || null,
         unlockedBadges,
       });
     } catch (error: any) {

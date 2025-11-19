@@ -135,15 +135,7 @@ export class DreamNodeController {
         });
       }
 
-      // Obtener el nodo de sueño original para traer la imagen
-      let originalDreamNode = null;
-      if (dreamNodeId) {
-        try {
-          originalDreamNode = await this.dreamNodeService.getDreamNodeById(dreamNodeId);
-        } catch (e) {
-          console.error("No se pudo obtener el nodo original para la imagen:", e);
-        }
-      }
+      // Ya no es necesario obtener el nodo de sueño original para la imagen
 
       const userDreamContext = await this.contextService.getUserDreamContext(userId);
       let reinterpretedDream;

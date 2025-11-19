@@ -265,7 +265,6 @@ describe("Dream API Integration Tests", () => {
         unlockedBadges: expect.any(Array)
       }));
     });
-             approach: "psychological"
   });
 
   describe("POST /api/dreams/interpret", () => {

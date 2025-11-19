@@ -244,10 +244,11 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
   async reinterpretDream(
     dreamText: string,
     previousInterpretation: string,
-    dreamContext?: IDreamContext | null,
-    approach: DreamApproach = "psychological"
+    dreamContext: IDreamContext | null,
+    approach: DreamApproach
   ): Promise<Interpretation> {
     try {
+      console.log(`[InterpretationOpenAIProvider] Approach usado para reinterpretación:`, approach);
       const contextSection = this.buildContextSection(dreamContext);
       const emotions = await this.emotionRepository.getAllByName()
       const emotionsString = emotions.join('|');

@@ -23,6 +23,20 @@ const mockGetDreamNodeById = jest.fn();
 const mockGetCommentsByNodeWithUser = jest.fn();
 const mockCountComments = jest.fn();
 
+jest.mock('../../../../src/application/services/user.service', () => ({
+  UserService: jest.fn().mockImplementation(() => ({
+    getUserIdByDreamNodeId: jest.fn(),
+    getUserNameById: jest.fn(),
+    getAvatarUrlById: jest.fn(),
+  })),
+}));
+
+jest.mock('../../../../src/application/services/notification.service', () => ({
+  NotificationService: jest.fn().mockImplementation(() => ({
+    saveNotification: jest.fn(),
+  })),
+}));
+
 jest.mock('../../../../src/application/services/dream-node.service', () => ({
   DreamNodeService: jest.fn().mockImplementation(() => ({
     getDreamNodeById: mockGetDreamNodeById,
@@ -41,6 +55,9 @@ jest.mock('../../../../src/infrastructure/repositories/dream-node.repository.sup
 import { Request, Response } from 'express';
 import { DreamNodeCommentController } from '../../../../src/infrastructure/controllers/dream-node-comment.controller';
 import { IDreamNodeCommentWithUser } from '../../../../src/domain/interfaces/dream-node-comment.interface';
+import { UserService } from '../../../../src/application/services/user.service';
+import { NotificationService } from '../../../../src/application/services/notification.service';
+import { DreamNodeService } from '../../../../src/application/services/dream-node.service';
 
 describe('DreamNodeCommentController - getCommentsWithUser', () => {
   let controller: DreamNodeCommentController;
@@ -48,11 +65,18 @@ describe('DreamNodeCommentController - getCommentsWithUser', () => {
   let mockResponse: Partial<Response>;
   let mockJson: jest.Mock;
   let mockStatus: jest.Mock;
+  let mockUserService: UserService;
+  let mockNotificationService: NotificationService;
+  let mockDreamNodeService: DreamNodeService;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    controller = new DreamNodeCommentController();
+    mockUserService = new UserService({} as any, {} as any, {} as any);
+    mockNotificationService = new NotificationService({} as any);
+    mockDreamNodeService = new DreamNodeService({} as any);
+
+    controller = new DreamNodeCommentController(mockUserService, mockNotificationService, mockDreamNodeService);
 
     mockJson = jest.fn();
     mockStatus = jest.fn().mockReturnThis();

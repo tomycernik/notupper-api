@@ -35,7 +35,7 @@ const dreamNodeCommentController = new DreamNodeCommentController(userService, n
 feedRouter.get('/', authenticateToken, (req, res) => feedController.getFeed(req, res));
 feedRouter.post("/like", authenticateToken, (req, res) => feedController.likeNode(req, res));
 feedRouter.post("/unlike", authenticateToken, (req, res) => feedController.unlikeNode(req, res));
-feedRouter.get("/node/:nodeId/comments", (req, res) => dreamNodeCommentController.getComments(req, res));
+feedRouter.get("/node/:nodeId/comments", authenticateToken, (req, res) => dreamNodeCommentController.getComments(req, res));
 feedRouter.post("/node/:nodeId/comments", authenticateToken, validateBody(CreateDreamNodeCommentDto), (req, res) => dreamNodeCommentController.addComment(req, res));
 
 export { feedRouter };

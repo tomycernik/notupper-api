@@ -19,8 +19,8 @@ export class InterpretationDreamService {
   async reinterpretDream(
     dreamText: string,
     previousInterpretation: string,
-    dreamContext?: IDreamContext | null,
-    approach: "psychological" | "spiritual" | "symbolic" = "psychological"
+    dreamContext: IDreamContext | null,
+    approach: "psychological" | "spiritual" | "symbolic"
   ): Promise<Interpretation> {
     try {
       return await this.interpretationProvider.reinterpretDream(

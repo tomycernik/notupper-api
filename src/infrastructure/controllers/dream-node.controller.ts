@@ -128,6 +128,12 @@ export class DreamNodeController {
       const userId = (req as any).userId;
       const { description, previousInterpretation, approach } = req.body;
 
+      if (!approach || !["psychological", "spiritual", "symbolic"].includes(approach)) {
+        return res.status(400).json({
+          errors: "El parámetro 'approach' es obligatorio y debe ser uno de: psychological, spiritual, symbolic."
+        });
+      }
+
       const userMembership = await this.membershipService.getUserMembership(userId);
       if (userMembership && userMembership.name !== "plus") {
         return res.status(403).json({

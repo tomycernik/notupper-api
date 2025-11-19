@@ -324,7 +324,9 @@ describe("InterpretationOpenAIProvider", () => {
       // Act
       const result = await provider.reinterpretDream(
         dreamText,
-        previousInterpretation
+        previousInterpretation,
+        null,
+        "psychological"
       );
 
       // Assert
@@ -381,7 +383,7 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation);
+      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
 
       // Assert
       const callArgs = mockChatCompletions.mock.calls[0][0];
@@ -410,7 +412,7 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation);
+      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
 
       // Assert
       expect(mockChatCompletions).toHaveBeenCalledWith(
@@ -437,7 +439,9 @@ describe("InterpretationOpenAIProvider", () => {
       // Act
       const result = await provider.reinterpretDream(
         dreamText,
-        previousInterpretation
+        previousInterpretation,
+        null,
+        "psychological"
       );
 
       // Assert
@@ -462,7 +466,7 @@ describe("InterpretationOpenAIProvider", () => {
 
       // Act & Assert
       try {
-        await provider.reinterpretDream(dreamText, previousInterpretation);
+        await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
       } catch (err) {
         console.log('Test error:', err);
         const msg = (err as Error).message;
@@ -479,7 +483,7 @@ describe("InterpretationOpenAIProvider", () => {
 
       // Act & Assert
       try {
-        await provider.reinterpretDream(dreamText, previousInterpretation);
+        await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
       } catch (err) {
         // Log para ver el error real
         console.log('Test error:', err);
@@ -508,7 +512,9 @@ describe("InterpretationOpenAIProvider", () => {
       // Act
       const result = await provider.reinterpretDream(
         dreamText,
-        previousInterpretation
+        previousInterpretation,
+        null,
+        "psychological"
       );
 
       // Assert
@@ -739,7 +745,7 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation);
+      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
 
       // Assert
       expect(mockChatCompletions).toHaveBeenCalledWith(

@@ -115,7 +115,7 @@ describe('InterpretationDreamService', () => {
       mockInterpretationProvider.reinterpretDream.mockResolvedValue(expectedResult);
 
       // Act
-      const result = await service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext);
+      const result = await service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext, 'psychological');
 
       // Assert
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith(
@@ -144,7 +144,7 @@ describe('InterpretationDreamService', () => {
 
       // Act & Assert
       await expect(
-        service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext)
+        service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext, 'psychological')
       ).rejects.toThrow('Error reinterpretando el sueño: Provider unavailable');
 
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith(
@@ -176,7 +176,7 @@ describe('InterpretationDreamService', () => {
       mockInterpretationProvider.reinterpretDream.mockResolvedValue(expectedResult);
 
       // Act
-      const result = await service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext);
+      const result = await service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext, 'psychological');
 
       // Assert
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith(
@@ -209,7 +209,7 @@ describe('InterpretationDreamService', () => {
       mockInterpretationProvider.reinterpretDream.mockResolvedValue(expectedResult);
 
       // Act
-      const result = await service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext);
+      const result = await service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext, 'psychological');
 
       // Assert
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith('', '', dreamContext, 'psychological');

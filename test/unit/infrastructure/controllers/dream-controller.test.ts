@@ -115,7 +115,8 @@ describe('DreamNodeController Integration Tests', () => {
         body: {
           dreamId: 'test-dream-id',
           description: 'Test dream description',
-          previousInterpretation: 'Previous interpretation'
+          previousInterpretation: 'Previous interpretation',
+          approach: 'psychological'
         },
         session: mockSession,
       } as any;
@@ -142,7 +143,7 @@ describe('DreamNodeController Integration Tests', () => {
           locations: [],
           emotions_context: [],
         },
-        undefined
+        'psychological'
       );
       expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Reinterpreted Dream',
@@ -160,6 +161,17 @@ describe('DreamNodeController Integration Tests', () => {
       await controller.reinterpret(mockReq as Request, mockRes as Response);
 
       // Assert
+      expect(mockInterpretationService.reinterpretDream).toHaveBeenCalledWith(
+        'Test dream description',
+        'Previous interpretation',
+        {
+          themes: [],
+          people: [],
+          locations: [],
+          emotions_context: [],
+        },
+        'psychological'
+      );
       expect(mockRes.status).toHaveBeenCalledWith(500);
       expect(mockRes.json).toHaveBeenCalledWith({
         errors: 'Error al reinterpretar el sueño (OpenAI)',
@@ -174,6 +186,17 @@ describe('DreamNodeController Integration Tests', () => {
 
       await controller.reinterpret(mockReq as Request, mockRes as Response);
 
+      expect(mockInterpretationService.reinterpretDream).toHaveBeenCalledWith(
+        'Test dream description',
+        'Previous interpretation',
+        {
+          themes: [],
+          people: [],
+          locations: [],
+          emotions_context: [],
+        },
+        'psychological'
+      );
       expect(mockRes.status).toHaveBeenCalledWith(500);
       expect(mockRes.json).toHaveBeenCalledWith({
         errors: 'Error al reinterpretar el sueño (OpenAI)',

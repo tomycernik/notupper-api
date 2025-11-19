@@ -12,7 +12,7 @@ export class DreamNodeCommentRepositorySupabase {
     return data || [];
   }
 
-  async getCommentsByNodeWithUser(dreamNodeId: string, /* currentUserId?: string */): Promise<IDreamNodeCommentWithUser[]> {
+  async getCommentsByNodeWithUser(dreamNodeId: string): Promise<IDreamNodeCommentWithUser[]> {
     const { data, error } = await supabase
       .from("dream_node_comment")
       .select("*")

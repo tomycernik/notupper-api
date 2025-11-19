@@ -8,7 +8,7 @@ export class DreamNodeCommentService {
     return this.commentRepo.getCommentsByNode(dreamNodeId);
   }
 
-  async getCommentsByNodeWithUser(dreamNodeId: string, /* currentUserId?: string */): Promise<IDreamNodeCommentWithUser[]> {
+  async getCommentsByNodeWithUser(dreamNodeId: string): Promise<IDreamNodeCommentWithUser[]> {
     return this.commentRepo.getCommentsByNodeWithUser(dreamNodeId);
   }
 

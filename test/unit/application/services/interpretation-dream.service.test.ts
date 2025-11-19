@@ -121,7 +121,8 @@ describe('InterpretationDreamService', () => {
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith(
         dreamDescription,
         previousInterpretation,
-        dreamContext
+        dreamContext,
+        'psychological'
       );
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledTimes(1);
       expect(result).toEqual(expectedResult);
@@ -149,7 +150,8 @@ describe('InterpretationDreamService', () => {
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith(
         dreamDescription,
         previousInterpretation,
-        dreamContext
+        dreamContext,
+        'psychological'
       );
     });
 
@@ -180,7 +182,8 @@ describe('InterpretationDreamService', () => {
       expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith(
         dreamDescription,
         previousInterpretation,
-        dreamContext
+        dreamContext,
+        'psychological'
       );
       expect(result).toEqual(expectedResult);
     });
@@ -209,7 +212,7 @@ describe('InterpretationDreamService', () => {
       const result = await service.reinterpretDream(dreamDescription, previousInterpretation, dreamContext);
 
       // Assert
-      expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith('', '', dreamContext);
+      expect(mockInterpretationProvider.reinterpretDream).toHaveBeenCalledWith('', '', dreamContext, 'psychological');
       expect(result).toEqual(expectedResult);
     });
   });

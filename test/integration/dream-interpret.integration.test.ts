@@ -158,7 +158,8 @@ describe("Dream API Integration Tests", () => {
       expect(mockInterpretationService.reinterpretDream).toHaveBeenCalledWith(
         requestBody.description,
         requestBody.previousInterpretation,
-        expect.any(Object)
+        expect.any(Object),
+        undefined
       );
     });
 

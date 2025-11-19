@@ -126,13 +126,23 @@ export class DreamNodeController {
   async reinterpret(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-      const { description, previousInterpretation, approach } = req.body;
+      const { description, previousInterpretation, approach, dreamNodeId } = req.body;
 
       const userMembership = await this.membershipService.getUserMembership(userId);
       if (userMembership && userMembership.name !== "plus") {
         return res.status(403).json({
           errors: "No tienes permiso para reinterpretar el sueño",
         });
+      }
+
+      // Obtener el nodo de sueño original para traer la imagen
+      let originalDreamNode = null;
+      if (dreamNodeId) {
+        try {
+          originalDreamNode = await this.dreamNodeService.getDreamNodeById(dreamNodeId);
+        } catch (e) {
+          console.error("No se pudo obtener el nodo original para la imagen:", e);
+        }
       }
 
       const userDreamContext = await this.contextService.getUserDreamContext(userId);
@@ -186,6 +196,7 @@ export class DreamNodeController {
         emotion: reinterpretedDream.emotion,
         title: reinterpretedDream.title,
         dreamType: reinterpretedDream.dreamType,
+        imageUrl: originalDreamNode?.imageUrl || null,
         unlockedBadges,
       });
     } catch (error: any) {

@@ -53,7 +53,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         - Posibles emociones o conflictos internos
         - Reflexión sobre el estado emocional del soñante
         (3-4 oraciones completas y sustanciales)
-      3. La emoción principal y predominante que transmite el sueño (elige SOLO UNA de la lista: ${emotionsString}). La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada.
+      3. La emoción principal y predominante que transmite el sueño (elige SOLO UNA de la lista: ${emotionsString}). IMPORTANTE: La emoción debe deducirse únicamente del texto literal del sueño, no de la interpretación ni de inferencias externas. SOLO asigna emociones negativas (como enojo, miedo, tristeza, frustración, etc.) si en el texto del sueño aparecen palabras, frases o situaciones explícitamente negativas (por ejemplo: "me enojé", "sentí miedo", "estaba triste", "me sentí frustrado", "fue horrible", "me asusté", etc.). Si no hay indicios claros y literales de emociones negativas, prioriza emociones neutras o positivas según el contenido. Las presiones o responsabilidades no deben tomarse siempre como algo negativo
       4. Temas principales mencionados (máximo 3)
       5. Personas mencionadas (si las hay)
       6. Ubicaciones mencionadas (si las hay)

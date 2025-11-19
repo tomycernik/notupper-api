@@ -141,7 +141,8 @@ describe('DreamNodeController Integration Tests', () => {
           people: [],
           locations: [],
           emotions_context: [],
-        }
+        },
+        undefined
       );
       expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Reinterpreted Dream',
@@ -161,7 +162,8 @@ describe('DreamNodeController Integration Tests', () => {
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500);
       expect(mockRes.json).toHaveBeenCalledWith({
-        errors: 'Error al reinterpretar el sueño'
+        errors: 'Error al reinterpretar el sueño (OpenAI)',
+        details: 'Reinterpretation failed'
       });
     });
 
@@ -173,8 +175,9 @@ describe('DreamNodeController Integration Tests', () => {
       await controller.reinterpret(mockReq as Request, mockRes as Response);
 
       expect(mockRes.status).toHaveBeenCalledWith(500);
-expect(mockRes.json).toHaveBeenCalledWith({
-        errors: 'Error al reinterpretar el sueño',
+      expect(mockRes.json).toHaveBeenCalledWith({
+        errors: 'Error al reinterpretar el sueño (OpenAI)',
+        details: 'Error simulado'
       });
     });
   });

@@ -178,7 +178,7 @@ export class DreamNodeController {
           console.error("Error handling session:", error);
         }
       }
-      
+
       let unlockedBadges = null;
       unlockedBadges = await this.dreamNodeService.onDreamReinterpreted(userId);
 

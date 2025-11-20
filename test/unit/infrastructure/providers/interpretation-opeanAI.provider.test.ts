@@ -793,6 +793,5 @@ describe("InterpretationOpenAIProvider", () => {
       consoleSpy.mockRestore();
     });
 
-
   });
 });

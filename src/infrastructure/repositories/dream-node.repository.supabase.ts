@@ -9,6 +9,7 @@ import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
+
   async save(
     dreamNode: IDreamNode,
     userId: string,
@@ -46,7 +47,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   ): Promise<IDreamNode[]> {
     let query = supabase
       .from("dream_node")
-      .select("*, dream_type:dream_type_id(*), emotion:emotion_id(*)")
+      .select("*, dream_type:dream_type_id(*), emotion:emotion_id(*),privacy:privacy_id(privacy_description),state:state_id(state_description)")
       .eq("profile_id", userId);
 
     if (filters?.state) {
@@ -153,8 +154,8 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       interpretation: node.interpretation,
       imageUrl: node.image_url,
       creationDate: new Date(node.creation_date),
-      privacy: node.privacy,
-      state: node.state,
+      privacy: node.privacy?.privacy_description || node.privacy_id,
+      state: node.state?.state_description || node.state_id,
       emotion: node.emotion?.emotion || null,
       emotionColor: node.emotion?.color || null,
       type: node.dream_type?.dream_type_name || node.type,

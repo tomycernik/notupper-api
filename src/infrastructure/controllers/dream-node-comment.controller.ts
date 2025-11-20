@@ -21,8 +21,21 @@ export class DreamNodeCommentController {
     try {
       const { nodeId } = req.params;
       if (!nodeId) return res.status(400).json({ success: false, message: "Falta nodeId" });
+      const currentUserId = (req as any).userId;
       const comments = await commentService.getCommentsByNodeWithUser(nodeId);
-      res.json({ success: true, comments });
+
+      const dreamNodeRepository = new DreamNodeRepositorySupabase();
+      const likeCount = await dreamNodeRepository.countLikes(nodeId);
+      const likedByMe = currentUserId ? await dreamNodeRepository.isLikedByUser(nodeId, currentUserId) : false;
+
+      res.json({
+        success: true,
+        comments,
+        node: {
+          likeCount,
+          likedByMe
+        }
+      });
     } catch (error) {
       res.status(500).json({ success: false, message: "Error al obtener comentarios", error: error instanceof Error ? error.message : error });
     }

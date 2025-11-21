@@ -14,7 +14,7 @@ export class DreamNodeController {
     private readonly illustrationService: IllustrationDreamService,
     private readonly contextService: DreamContextService,
     private readonly membershipService: MembershipService
-  ) {}
+  ) { }
 
   async interpret(req: Request, res: Response): Promise<void> {
     try {
@@ -69,6 +69,8 @@ export class DreamNodeController {
     try {
       const { description } = req.body;
 
+      console.log(description)
+
       const illustrationUrl =
         await this.illustrationService.generateIllustration(description);
 
@@ -89,11 +91,11 @@ export class DreamNodeController {
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))
         : {
-            themes: [],
-            people: [],
-            locations: [],
-            emotions_context: [],
-          };
+          themes: [],
+          people: [],
+          locations: [],
+          emotions_context: [],
+        };
 
       if (session.dreamContext) {
         session.dreamContext = null;

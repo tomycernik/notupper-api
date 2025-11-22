@@ -1,3 +1,4 @@
+import { envs } from "@/config/envs";
 import { supabase } from "@config/supabase";
 import { IllustrationProvider } from "@domain/providers/illustration.provider";
 
@@ -5,24 +6,43 @@ export class IllustrationDreamService {
   constructor(private illustrationProvider: IllustrationProvider) {}
 
   async generateIllustration(dreamText: string): Promise<string> {
-    const buffer = await this.illustrationProvider.generateIllustration(
+    const resultUrl = await this.illustrationProvider.generateIllustration(
       dreamText
     );
-    const fileName = `dream${Date.now()}.jpg`;
+    return resultUrl;
+  }
 
-    const { error } = await supabase.storage
-      .from("dreams")
-      .upload(`dreams/${fileName}`, buffer, {
+  async saveIllustrationFromUrl(imageUrl: string): Promise<string> {
+    try {
+      const timestamp = Date.now();
+      const fileName = `dream_${timestamp}.jpg`;
+      const filePath = `dreams/${fileName}`;
+
+      const finalUrl = `${envs.SUPABASE_URL}/storage/v1/object/public/dreams/${filePath}`;
+
+      const response = await fetch(imageUrl, {
+        redirect: "follow",
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error descargando imagen: ${response.statusText}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      supabase.storage.from("dreams").upload(filePath, buffer, {
         contentType: "image/jpeg",
         upsert: true,
       });
 
-    if (error) throw error;
-
-    const { data: publicUrlData } = supabase.storage
-      .from("dreams")
-      .getPublicUrl(`dreams/${fileName}`);
-
-    return publicUrlData.publicUrl;
+      return finalUrl;
+    } catch (error) {
+      console.error("Error en saveIllustrationFromUrl:", error);
+      throw error;
+    }
   }
 }

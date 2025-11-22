@@ -11,12 +11,13 @@ export class FeedController {
     private readonly userService: UserService,
     private readonly notificationService: NotificationService,
     private readonly dreamNodeService: DreamNodeService
-  ) {}
+  ) { }
 
   async getFeed(req: Request, res: Response) {
     try {
       const pagination = req.query;
-      const feed = await this.feedService.getFeed(pagination);
+      const profileId = (req as any).userId || undefined;
+      const feed = await this.feedService.getFeed(pagination, profileId);
       res.json(feed);
     } catch (error) {
       console.error("Error en FeedController getFeed:", error);
@@ -41,11 +42,11 @@ export class FeedController {
       const userNameFrom = await this.userService.getUserNameById(profileIdFrom)
       const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)
       const dreamNode = await this.dreamNodeService.getDreamNodeById(dreamNodeId)
-      if(!dreamNode){
-         res.status(400).json({ success: false, message: "No existe Dream Node" });
+      if (!dreamNode) {
+        res.status(400).json({ success: false, message: "No existe Dream Node" });
         return;
       }
-      const {title} = dreamNode
+      const { title } = dreamNode
       const notification: INotification = {
         from_user: profileIdFrom,
         to_user: profileIdTo,

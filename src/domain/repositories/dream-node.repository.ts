@@ -23,4 +23,6 @@ export interface IDreamNodeRepository {
     getPublicDreams(pagination: IPaginationOptions): Promise<IPublicDream[]>;
     countPublicDreams(): Promise<number>;
     getUserDreamMap(userId: string): Promise<DreamGraphResponse>;
+
+    getUserDreamNodes(userId: string): Promise<{id: string, creationDate: Date}[]>;
 }

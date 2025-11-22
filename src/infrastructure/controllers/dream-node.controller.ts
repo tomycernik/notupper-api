@@ -90,11 +90,11 @@ export class DreamNodeController {
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))
         : {
-            themes: [],
-            people: [],
-            locations: [],
-            emotions_context: [],
-          };
+          themes: [],
+          people: [],
+          locations: [],
+          emotions_context: [],
+        };
 
       if (session.dreamContext) {
         session.dreamContext = null;
@@ -368,6 +368,24 @@ export class DreamNodeController {
       res.status(500).json({
         message: "Error interno del servidor",
         errors: [error.message || "Error al obtener el mapa de sueños del usuario"],
+      });
+    }
+  }
+
+  async getMyStats(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      if (!userId) {
+        return res.status(400).json({ errors: "Usuario no autenticado" });
+      }
+
+      const stats = await this.dreamNodeService.getUserDreamStats(userId);
+
+      return res.json(stats);
+    } catch (error) {
+      console.error("Error en DreamNodeController getMyStats:", error);
+      return res.status(500).json({
+        errors: "Error al obtener estadísticas del usuario",
       });
     }
   }

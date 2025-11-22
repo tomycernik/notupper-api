@@ -17,7 +17,7 @@ export class DreamNodeService {
   constructor(private dreamNodeRepository: IDreamNodeRepository, private missionService?: MissionService) {
     this.dreamNodeRepository = dreamNodeRepository;
   }
-   async saveDreamNode(
+  async saveDreamNode(
     userId: string,
     dream: SaveDreamNodeRequestDto,
     dreamContext: DreamContext
@@ -55,8 +55,8 @@ export class DreamNodeService {
     }
 
     if (!data?.id) {
-    throw new Error("No se pudo crear el nodo de sueño");
-  }
+      throw new Error("No se pudo crear el nodo de sueño");
+    }
     await this.dreamNodeRepository.addDreamContext(
       data.id,
       userId,
@@ -275,5 +275,18 @@ export class DreamNodeService {
         "Error obteniendo el nodo de sueño: " + error
       );
     }
+  }
+
+  async getUserDreamStats(userId: string) {
+    const nodes = await this.dreamNodeRepository.getUserDreamNodes(userId);
+
+    const dreamCount = nodes.length;
+
+    const lastDream = nodes[0];
+
+    return {
+      dreamCount,
+      lastDreamAt: lastDream ? lastDream.creationDate : null,
+    };
   }
 }

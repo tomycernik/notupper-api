@@ -724,7 +724,6 @@ describe('DreamNodeController Integration Tests', () => {
       });
     });
   });
-  
   describe("DreamNodeController.getMyStats", () => {
     let mockReq: any;
     let mockRes: any;

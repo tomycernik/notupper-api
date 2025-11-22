@@ -326,7 +326,7 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
       );
     });
   });
-  
+
   describe("DreamNodeService - getUserDreamStats", () => {
     let service: DreamNodeService;
     let mockRepository: jest.Mocked<IDreamNodeRepository>;
@@ -358,7 +358,6 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
         lastDreamAt: new Date("2025-01-01T10:00:00Z"),
       });
     });
-
     it("should return dreamCount = 0 and lastDreamAt = null when user has no dreams", async () => {
       const userId = "user123";
 

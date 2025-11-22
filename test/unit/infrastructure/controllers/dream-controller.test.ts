@@ -76,9 +76,9 @@ describe('DreamNodeController Integration Tests', () => {
         total: 0,
         page: 1,
         limit: 10
-        } as unknown as IPaginatedResult<IDreamNode>),
-        onDreamSaved: jest.fn().mockResolvedValue([]),
-        onDreamReinterpreted: jest.fn().mockResolvedValue([])
+      } as unknown as IPaginatedResult<IDreamNode>),
+      onDreamSaved: jest.fn().mockResolvedValue([]),
+      onDreamReinterpreted: jest.fn().mockResolvedValue([])
     } as any;
 
     mockIllustrationService = {
@@ -721,6 +721,65 @@ describe('DreamNodeController Integration Tests', () => {
       expect(mockResponse.json).toHaveBeenCalledWith({
         message: 'Error interno del servidor',
         errors: ['DB Error'],
+      });
+    });
+  });
+  
+  describe("DreamNodeController.getMyStats", () => {
+    let mockReq: any;
+    let mockRes: any;
+
+    beforeEach(() => {
+      mockReq = {
+        userId: "test-user-id",
+      };
+
+      mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+    });
+
+    it("should return user stats successfully", async () => {
+      const mockStats = {
+        dreamCount: 10,
+        lastDreamAt: "2025-11-22T05:39:39.512Z",
+      };
+
+      mockDreamNodeService.getUserDreamStats = jest
+        .fn()
+        .mockResolvedValue(mockStats);
+
+      await controller.getMyStats(mockReq as Request, mockRes as Response);
+
+      expect(mockDreamNodeService.getUserDreamStats).toHaveBeenCalledWith(
+        "test-user-id"
+      );
+
+      expect(mockRes.json).toHaveBeenCalledWith(mockStats);
+    });
+
+    it("should return 400 when user is not authenticated", async () => {
+      mockReq.userId = null;
+
+      await controller.getMyStats(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        errors: "Usuario no autenticado",
+      });
+    });
+
+    it("should return 500 when an error happens in service", async () => {
+      mockDreamNodeService.getUserDreamStats = jest
+        .fn()
+        .mockRejectedValue(new Error("Service exploded"));
+
+      await controller.getMyStats(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith({
+        errors: "Error al obtener estadísticas del usuario",
       });
     });
   });

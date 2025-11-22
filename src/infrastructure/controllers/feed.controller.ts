@@ -11,7 +11,7 @@ export class FeedController {
     private readonly userService: UserService,
     private readonly notificationService: NotificationService,
     private readonly dreamNodeService: DreamNodeService
-  ) { }
+  ) {}
 
   async getFeed(req: Request, res: Response) {
     try {
@@ -41,11 +41,11 @@ export class FeedController {
       const userNameFrom = await this.userService.getUserNameById(profileIdFrom)
       const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)
       const dreamNode = await this.dreamNodeService.getDreamNodeById(dreamNodeId)
-      if (!dreamNode) {
-        res.status(400).json({ success: false, message: "No existe Dream Node" });
+      if(!dreamNode){
+         res.status(400).json({ success: false, message: "No existe Dream Node" });
         return;
       }
-      const { title } = dreamNode
+      const {title} = dreamNode
       const notification: INotification = {
         from_user: profileIdFrom,
         to_user: profileIdTo,

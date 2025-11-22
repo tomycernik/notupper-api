@@ -86,6 +86,13 @@ export class DreamNodeController {
     try {
       const userId = (req as any).userId;
       const dreamNode: SaveDreamNodeRequestDto = req.body;
+      dreamNode.imageUrl =
+        dreamNode.imageUrl && dreamNode.imageUrl.includes("blockadelabs.com")
+          ? await this.illustrationService.saveIllustrationFromUrl(
+              dreamNode.imageUrl
+            )
+          : "";
+
       const session = req.session as any;
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))
@@ -128,34 +135,46 @@ export class DreamNodeController {
       const userId = (req as any).userId;
       const { description, previousInterpretation, approach } = req.body;
 
-      if (!approach || !["psychological", "spiritual", "symbolic"].includes(approach)) {
+      if (
+        !approach ||
+        !["psychological", "spiritual", "symbolic"].includes(approach)
+      ) {
         return res.status(400).json({
-          errors: "El parámetro 'approach' es obligatorio y debe ser uno de: psychological, spiritual, symbolic."
+          errors:
+            "El parámetro 'approach' es obligatorio y debe ser uno de: psychological, spiritual, symbolic.",
         });
       }
 
-      const userMembership = await this.membershipService.getUserMembership(userId);
+      const userMembership = await this.membershipService.getUserMembership(
+        userId
+      );
       if (userMembership && userMembership.name !== "plus") {
         return res.status(403).json({
           errors: "No tienes permiso para reinterpretar el sueño",
         });
       }
 
-      const userDreamContext = await this.contextService.getUserDreamContext(userId);
+      const userDreamContext = await this.contextService.getUserDreamContext(
+        userId
+      );
       let reinterpretedDream;
       try {
-        reinterpretedDream = await this.interpretationDreamService.reinterpretDream(
-          description,
-          previousInterpretation,
-          userDreamContext,
-          approach
+        reinterpretedDream =
+          await this.interpretationDreamService.reinterpretDream(
+            description,
+            previousInterpretation,
+            userDreamContext,
+            approach
+          );
+        console.log(
+          "[DreamNodeController] Reinterpretación exitosa:",
+          reinterpretedDream
         );
-        console.log("[DreamNodeController] Reinterpretación exitosa:", reinterpretedDream);
       } catch (err) {
         console.error("[DreamNodeController] Error en reinterpretación:", err);
         return res.status(500).json({
           errors: "Error al reinterpretar el sueño (OpenAI)",
-          details: err instanceof Error ? err.message : err
+          details: err instanceof Error ? err.message : err,
         });
       }
 
@@ -194,7 +213,7 @@ export class DreamNodeController {
       console.error("Error en DreamNodeController reinterpret:", error);
       res.status(500).json({
         errors: "Error al reinterpretar el sueño (general)",
-        details: error instanceof Error ? error.message : error
+        details: error instanceof Error ? error.message : error,
       });
     }
   }
@@ -202,8 +221,17 @@ export class DreamNodeController {
   async getUserNodes(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-      const { state, privacy, emotion, dreamType, search, page, limit, from, to } =
-        (req as any).validatedQuery || {};
+      const {
+        state,
+        privacy,
+        emotion,
+        dreamType,
+        search,
+        page,
+        limit,
+        from,
+        to,
+      } = (req as any).validatedQuery || {};
       const filters: any = {};
       if (state) filters.state = state;
       if (privacy) filters.privacy = privacy;
@@ -323,7 +351,10 @@ export class DreamNodeController {
         });
       }
 
-      const unsharedDream = await this.dreamNodeService.unshareDream(userId, id);
+      const unsharedDream = await this.dreamNodeService.unshareDream(
+        userId,
+        id
+      );
 
       res.json({
         message: "Sueño descompartido exitosamente",
@@ -346,7 +377,9 @@ export class DreamNodeController {
 
       const pagination = { page, limit };
 
-      const paginatedResult = await this.dreamNodeService.getPublicDreams(pagination);
+      const paginatedResult = await this.dreamNodeService.getPublicDreams(
+        pagination
+      );
 
       res.json(paginatedResult);
     } catch (error: any) {
@@ -367,7 +400,9 @@ export class DreamNodeController {
       console.error("Error en DreamNodeController getUserMap:", error);
       res.status(500).json({
         message: "Error interno del servidor",
-        errors: [error.message || "Error al obtener el mapa de sueños del usuario"],
+        errors: [
+          error.message || "Error al obtener el mapa de sueños del usuario",
+        ],
       });
     }
   }

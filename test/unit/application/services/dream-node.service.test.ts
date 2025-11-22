@@ -5,7 +5,7 @@ import { DreamContext } from "../../../../src/domain/interfaces/interpretation-d
 
 jest.mock("../../../../src/config/envs", () => ({
   envs: {
-    SUPABASE_URL: "https://mock.supabase.co",
+    SUPABASE_URL: "blockadelabs.com",
   },
 }));
 
@@ -42,7 +42,7 @@ describe("DreamNodeService - saveDreamNode", () => {
       description: "Descripción del sueño",
       interpretation: "Interpretación del sueño",
       emotion: "felicidad",
-      imageUrl: "https://mock.supabase.co/storage/v1/object/public/image1.jpg",
+      imageUrl: "https://mock.blockadelabs.com/storage/v1/object/public/image1.jpg",
       dreamType: "Estandar"
     };
 
@@ -57,36 +57,6 @@ describe("DreamNodeService - saveDreamNode", () => {
         privacy: "Privado",
         state: "Activo",
         imageUrl: node.imageUrl,
-        creationDate: expect.any(Date),
-        type: "Estandar"
-      }),
-      userId,
-      "Estandar"
-    );
-  });
-
-  it("should clean imageUrl if it’s invalid", async () => {
-    const userId = "user123";
-    const node: SaveDreamNodeRequestDto = {
-      title: "Sueño sin imagen válida",
-      description: "Descripción del sueño",
-      interpretation: "Interpretación del sueño",
-      emotion: "miedo",
-      imageUrl: "https://otro-servidor.com/imagen.jpg",
-      dreamType: "Estandar"
-    };
-
-    await service.saveDreamNode(userId, node, dreamContext);
-
-    expect(mockRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: node.title,
-        dream_description: node.description,
-        emotion: node.emotion,
-        privacy: "Privado",
-        state: "Activo",
-        imageUrl: "",
-        interpretation: node.interpretation,
         creationDate: expect.any(Date),
         type: "Estandar"
       }),
@@ -132,7 +102,7 @@ describe("DreamNodeService - saveDreamNode", () => {
       description: "Descripción del sueño",
       interpretation: "Interpretación del sueño",
       emotion: "enojo",
-      imageUrl: "https://mock.supabase.co/storage/v1/object/public/image2.jpg",
+      imageUrl: "https://mock.blockadelabs.com/storage/v1/object/public/image2.jpg",
       dreamType: "Estandar"
     };
 

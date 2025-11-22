@@ -326,4 +326,74 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
       );
     });
   });
+
+  describe("DreamNodeService - getUserDreamStats", () => {
+    let service: DreamNodeService;
+    let mockRepository: jest.Mocked<IDreamNodeRepository>;
+
+    beforeEach(() => {
+      mockRepository = {
+        getUserDreamNodes: jest.fn(),
+      } as unknown as jest.Mocked<IDreamNodeRepository>;
+
+      service = new DreamNodeService(mockRepository);
+    });
+
+    it("should return stats correctly when user has dreams", async () => {
+      const userId = "user123";
+
+      const nodes = [
+        { id: "1", creationDate: new Date("2025-01-01T10:00:00Z") },
+        { id: "2", creationDate: new Date("2024-12-31T10:00:00Z") },
+      ];
+
+      mockRepository.getUserDreamNodes.mockResolvedValue(nodes as any);
+
+      const result = await service.getUserDreamStats(userId);
+
+      expect(mockRepository.getUserDreamNodes).toHaveBeenCalledWith(userId);
+
+      expect(result).toEqual({
+        dreamCount: 2,
+        lastDreamAt: new Date("2025-01-01T10:00:00Z"),
+      });
+    });
+    it("should return dreamCount = 0 and lastDreamAt = null when user has no dreams", async () => {
+      const userId = "user123";
+
+      mockRepository.getUserDreamNodes.mockResolvedValue([]);
+
+      const result = await service.getUserDreamStats(userId);
+
+      expect(result).toEqual({
+        dreamCount: 0,
+        lastDreamAt: null,
+      });
+    });
+
+    it("should return lastDreamAt = null if list is not empty but first item is undefined (edge case)", async () => {
+      const userId = "user123";
+
+      mockRepository.getUserDreamNodes.mockResolvedValue([undefined] as any);
+
+      const result = await service.getUserDreamStats(userId);
+
+      expect(result).toEqual({
+        dreamCount: 1,
+        lastDreamAt: null,
+      });
+    });
+
+    it("should throw if repository fails", async () => {
+      const userId = "user123";
+
+      mockRepository.getUserDreamNodes.mockRejectedValue(
+        new Error("DB exploded")
+      );
+
+      await expect(service.getUserDreamStats(userId)).rejects.toThrow(
+        "DB exploded"
+      );
+    });
+  });
 });

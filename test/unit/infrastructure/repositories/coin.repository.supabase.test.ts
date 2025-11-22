@@ -34,7 +34,6 @@ describe('CoinRepositorySupabase Integration Tests', () => {
     supabase = supa.supabase;
   });
 
-
   describe('getUserCoins', () => {
     it('should return the coin amount if found', async () => {
       supabase.from = jest.fn().mockReturnValue({
@@ -64,7 +63,6 @@ describe('CoinRepositorySupabase Integration Tests', () => {
       await expect(repo.getUserCoins(profileId)).rejects.toThrow('Profile not found');
     });
   });
-
 
   describe('addCoins', () => {
     it('should add coins successfully', async () => {

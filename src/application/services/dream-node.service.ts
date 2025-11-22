@@ -55,9 +55,11 @@ export class DreamNodeService {
     if (!data?.id) {
       throw new Error("No se pudo crear el nodo de sueño");
     }
-
-    console.log("[DreamNodeService] Nuevo sueño guardado:", data.id);
-    this.dreamNodeRepository.addDreamContext(data.id, userId, dreamContext);
+    await this.dreamNodeRepository.addDreamContext(
+      data.id,
+      userId,
+      dreamContext
+    );
 
     let unlockedBadges: Badge[] = [];
     if (this.missionService) {
@@ -273,5 +275,18 @@ export class DreamNodeService {
     } catch (error) {
       throw new Error("Error obteniendo el nodo de sueño: " + error);
     }
+  }
+
+  async getUserDreamStats(userId: string) {
+    const nodes = await this.dreamNodeRepository.getUserDreamNodes(userId);
+
+    const dreamCount = nodes.length;
+
+    const lastDream = nodes[0];
+
+    return {
+      dreamCount,
+      lastDreamAt: lastDream ? lastDream.creationDate : null,
+    };
   }
 }

@@ -76,7 +76,7 @@ describe("DreamNodeController Integration Tests", () => {
           dream =>
             dream.title.toLowerCase().includes(searchTerm) ||
             (dream.dream_description &&
-             dream.dream_description.toLowerCase().includes(searchTerm))
+              dream.dream_description.toLowerCase().includes(searchTerm))
         );
       }
 
@@ -1172,6 +1172,90 @@ describe("DreamNodeController Integration Tests", () => {
       expect(comment).toHaveProperty("user");
       expect(comment.user).toHaveProperty("username");
       expect(comment.user).toHaveProperty("avatar_url");
+    });
+  });
+
+  describe("GET /api/dreams/stats", () => {
+    let storedDreams: any[] = [];
+
+    beforeEach(() => {
+      storedDreams = [];
+
+      app.use("/api/dreams/stats", (req, res, next) => {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          const token = authHeader.substring(7);
+          if (token === "mock-jwt-token") {
+            (req as any).userId = testUser.id;
+          } else if (token === "mock-other-user-token") {
+            (req as any).userId = "other-user-id";
+          } else {
+            return res.status(401).json({ message: "Unauthorized" });
+          }
+        } else {
+          return res.status(401).json({ message: "Unauthorized" });
+        }
+        next();
+      });
+
+      app.get("/api/dreams/stats", (req, res) => {
+        const userId = (req as any).userId;
+
+        const dreams = storedDreams
+          .filter((d) => d.userId === userId)
+          .sort(
+            (a, b) =>
+              new Date(b.creationDate).getTime() -
+              new Date(a.creationDate).getTime()
+          );
+
+        const dreamCount = dreams.length;
+        const lastDreamAt = dreams.length ? dreams[0].creationDate : null;
+
+        return res.json({
+          dreamCount,
+          lastDreamAt,
+        });
+      });
+    });
+
+    it("should return dreamCount and lastDreamAt for user with dreams", async () => {
+      storedDreams.push(
+        {
+          id: "1",
+          userId: testUser.id,
+          creationDate: "2025-02-01T10:30:00.000Z",
+        },
+        {
+          id: "2",
+          userId: testUser.id,
+          creationDate: "2025-02-01T15:30:00.000Z",
+        }
+      );
+
+      const response = await request(app)
+        .get("/api/dreams/stats")
+        .set("Authorization", "Bearer mock-jwt-token")
+        .expect(200);
+
+      expect(response.body.dreamCount).toBe(2);
+      expect(response.body.lastDreamAt).toBe("2025-02-01T15:30:00.000Z");
+    });
+
+    it("should return 0 count and null lastDreamAt when user has no dreams", async () => {
+      const response = await request(app)
+        .get("/api/dreams/stats")
+        .set("Authorization", "Bearer mock-other-user-token")
+        .expect(200);
+
+      expect(response.body.dreamCount).toBe(0);
+      expect(response.body.lastDreamAt).toBeNull();
+    });
+
+    it("should return 401 when no token provided", async () => {
+      const response = await request(app).get("/api/dreams/stats").expect(401);
+
+      expect(response.body.message).toBe("Unauthorized");
     });
   });
 });

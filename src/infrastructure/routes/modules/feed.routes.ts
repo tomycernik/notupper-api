@@ -26,7 +26,12 @@ const coinRepository = new CoinRepositorySupabase()
 const roomService = new RoomService(roomRepository,coinRepository)
 const dreamNodeRepository = new DreamNodeRepositorySupabase()
 const dreamNodeService = new DreamNodeService(dreamNodeRepository)
-const feedController = new FeedController(new FeedService(), new UserService(new UserRepositorySupabase(), membershipService, roomService), notificationService, dreamNodeService);
+const feedController = new FeedController(
+	new FeedService(dreamNodeRepository),
+	new UserService(new UserRepositorySupabase(), membershipService, roomService),
+	notificationService,
+	dreamNodeService
+);
 const feedRouter = Router();
 const userRepository = new UserRepositorySupabase()
 const userService = new UserService(userRepository, membershipService, roomService)

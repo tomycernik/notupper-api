@@ -253,7 +253,7 @@ describe('DreamNodeController Integration Tests', () => {
         description: 'Test description',
         interpretation: 'Test interpretation',
         emotion: 'happy',
-        imageUrl: 'https://example.com/image.jpg'
+        imageUrl: ''
       };
 
       // Act
@@ -306,7 +306,7 @@ describe('DreamNodeController Integration Tests', () => {
           title: 'Test Dream',
           description: 'Test description',
           emotion: 'happy',
-          imageUrl: 'https://example.com/image.jpg',
+          imageUrl: '',
           interpretation: 'Test interpretation'
         },
         expectedDreamContext

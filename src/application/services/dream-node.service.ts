@@ -1,4 +1,3 @@
-import { envs } from "@config/envs";
 import { IDreamNodeFilters } from "@domain/interfaces/dream-node-filters.interface";
 import { DreamContext } from "@domain/interfaces/interpretation-dream.interface";
 import {
@@ -56,7 +55,7 @@ export class DreamNodeService {
     if (!data?.id) {
       throw new Error("No se pudo crear el nodo de sueño");
     }
-    
+
     console.log("[DreamNodeService] Nuevo sueño guardado:", data.id);
     this.dreamNodeRepository.addDreamContext(data.id, userId, dreamContext);
 

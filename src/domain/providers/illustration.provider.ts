@@ -1,3 +1,3 @@
 export interface IllustrationProvider {
-    generateIllustration(dreamText: string): Promise<Buffer>;
+    generateIllustration(dreamText: string): Promise<string>;
 }

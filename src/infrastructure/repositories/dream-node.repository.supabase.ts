@@ -28,7 +28,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       image_url: dreamNode.imageUrl ?? '',
       dream_type_id: dreamTypeMap[dreamType]!,
     };
-    const { data,  error  } = await supabase
+    const { data, error } = await supabase
       .from("dream_node")
       .insert(dreamNodeEntity)
       .select()
@@ -40,7 +40,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     return { data, error: null };
   }
 
- async getUserNodes(
+  async getUserNodes(
     userId: string,
     filters?: IDreamNodeFilters,
     pagination?: IPaginationOptions
@@ -253,7 +253,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     return result;
   }
 
-   async getUserDreamContext(userId: string): Promise<IDreamContext> {
+  async getUserDreamContext(userId: string): Promise<IDreamContext> {
     const { data, error } = await supabase.rpc("get_user_context", {
       params: { user_id: userId },
     });
@@ -405,60 +405,60 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
   }
 
   async updateDreamNode(
-  nodeId: string,
-  userId: string,
-  updates: Partial<Pick<IDreamNode, 'state' | 'privacy'>>
-): Promise<{ data: any; error: Error | null }> {
-  try {
-    const updateData: any = {};
+    nodeId: string,
+    userId: string,
+    updates: Partial<Pick<IDreamNode, 'state' | 'privacy'>>
+  ): Promise<{ data: any; error: Error | null }> {
+    try {
+      const updateData: any = {};
 
-    if (updates.state !== undefined) {
-      updateData.state_id = stateMap[updates.state];
+      if (updates.state !== undefined) {
+        updateData.state_id = stateMap[updates.state];
+      }
+
+      if (updates.privacy !== undefined) {
+        updateData.privacy_id = privacyMap[updates.privacy];
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        return { data: null, error: new Error('No fields to update') };
+      }
+
+      const { data, error } = await supabase
+        .from('dream_node')
+        .update(updateData)
+        .eq('id', nodeId)
+        .eq('profile_id', userId)
+        .select('id, state_id, privacy_id')
+        .single();
+
+      if (error) {
+        return { data: null, error };
+      }
+
+      return {
+        data: {
+          id: data.id,
+          state: Object.keys(stateMap).find(key => stateMap[key] === data.state_id),
+          privacy: Object.keys(privacyMap).find(key => privacyMap[key] === data.privacy_id),
+        },
+        error: null
+      };
+    } catch (error) {
+      return { data: null, error: error as Error };
     }
-
-    if (updates.privacy !== undefined) {
-      updateData.privacy_id = privacyMap[updates.privacy];
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return { data: null, error: new Error('No fields to update') };
-    }
-
-    const { data, error } = await supabase
-      .from('dream_node')
-      .update(updateData)
-      .eq('id', nodeId)
-      .eq('profile_id', userId)
-      .select('id, state_id, privacy_id')
-      .single();
-
-    if (error) {
-      return { data: null, error };
-    }
-
-    return {
-      data: {
-        id: data.id,
-        state: Object.keys(stateMap).find(key => stateMap[key] === data.state_id),
-        privacy: Object.keys(privacyMap).find(key => privacyMap[key] === data.privacy_id),
-      },
-      error: null
-    };
-  } catch (error) {
-    return { data: null, error: error as Error };
   }
-}
 
-async getAllEmotions(): Promise<EmotionOption[]> {
-  const { data, error } = await supabase
-    .from("emotion")
-    .select("id, emotion, color")
-    .order("emotion", { ascending: true });
+  async getAllEmotions(): Promise<EmotionOption[]> {
+    const { data, error } = await supabase
+      .from("emotion")
+      .select("id, emotion, color")
+      .order("emotion", { ascending: true });
     if (error) {
       console.error("Error fetching emotions:", error);
       throw new Error(error.message);
     }
-    return (data ?? []).map((row: any) => ({id: row.id, label: row.emotion as Emotion}));
+    return (data ?? []).map((row: any) => ({ id: row.id, label: row.emotion as Emotion }));
   }
 
   async countLikes(dreamNodeId: string): Promise<number> {
@@ -568,5 +568,23 @@ async getAllEmotions(): Promise<EmotionOption[]> {
     } catch (error: any) {
       throw new Error(`Error al obtener el mapa de sueños: ${error.message}`);
     }
+  }
+
+  async getUserDreamNodes(userId: string): Promise<{ id: string; creationDate: Date }[]> {
+    const { data, error } = await supabase
+      .from("dream_node")
+      .select("id, creation_date")
+      .eq("profile_id", userId)
+      .order("creation_date", { ascending: false });
+
+    if (error) {
+      console.error("Error en getUserDreamNodes:", error);
+      throw error;
+    }
+
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      creationDate: new Date(row.creation_date),
+    }));
   }
 }

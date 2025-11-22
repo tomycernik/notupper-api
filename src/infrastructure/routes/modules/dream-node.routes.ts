@@ -78,3 +78,4 @@ dreamNodeRouter.patch("/:id/unshare", authenticateToken, (req, res) => dreamNode
 dreamNodeRouter.get("/public", (req, res) => dreamNodeController.getPublicDreams(req, res));
 dreamNodeRouter.get("/:id/comments", (req, res) => dreamNodeCommentController.getCommentsWithUser(req, res));
 dreamNodeRouter.get("/map", authenticateToken, (req, res) => dreamNodeController.getUserMap(req, res));
+dreamNodeRouter.get("/stats", authenticateToken, (req, res) => dreamNodeController.getMyStats(req, res));

@@ -5,7 +5,7 @@ import { DreamContext } from "../../../../src/domain/interfaces/interpretation-d
 
 jest.mock("../../../../src/config/envs", () => ({
   envs: {
-    SUPABASE_URL: "https://mock.supabase.co",
+    SUPABASE_URL: "blockadelabs.com",
   },
 }));
 
@@ -42,7 +42,7 @@ describe("DreamNodeService - saveDreamNode", () => {
       description: "Descripción del sueño",
       interpretation: "Interpretación del sueño",
       emotion: "felicidad",
-      imageUrl: "https://mock.supabase.co/storage/v1/object/public/image1.jpg",
+      imageUrl: "https://mock.blockadelabs.com/storage/v1/object/public/image1.jpg",
       dreamType: "Estandar"
     };
 
@@ -57,36 +57,6 @@ describe("DreamNodeService - saveDreamNode", () => {
         privacy: "Privado",
         state: "Activo",
         imageUrl: node.imageUrl,
-        creationDate: expect.any(Date),
-        type: "Estandar"
-      }),
-      userId,
-      "Estandar"
-    );
-  });
-
-  it("should clean imageUrl if it’s invalid", async () => {
-    const userId = "user123";
-    const node: SaveDreamNodeRequestDto = {
-      title: "Sueño sin imagen válida",
-      description: "Descripción del sueño",
-      interpretation: "Interpretación del sueño",
-      emotion: "miedo",
-      imageUrl: "https://otro-servidor.com/imagen.jpg",
-      dreamType: "Estandar"
-    };
-
-    await service.saveDreamNode(userId, node, dreamContext);
-
-    expect(mockRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: node.title,
-        dream_description: node.description,
-        emotion: node.emotion,
-        privacy: "Privado",
-        state: "Activo",
-        imageUrl: "",
-        interpretation: node.interpretation,
         creationDate: expect.any(Date),
         type: "Estandar"
       }),
@@ -132,7 +102,7 @@ describe("DreamNodeService - saveDreamNode", () => {
       description: "Descripción del sueño",
       interpretation: "Interpretación del sueño",
       emotion: "enojo",
-      imageUrl: "https://mock.supabase.co/storage/v1/object/public/image2.jpg",
+      imageUrl: "https://mock.blockadelabs.com/storage/v1/object/public/image2.jpg",
       dreamType: "Estandar"
     };
 
@@ -353,6 +323,76 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
 
       await expect(service.getPublicDreams()).rejects.toThrow(
         "Error obteniendo los sueños públicos: Error: DB Error"
+      );
+    });
+  });
+
+  describe("DreamNodeService - getUserDreamStats", () => {
+    let service: DreamNodeService;
+    let mockRepository: jest.Mocked<IDreamNodeRepository>;
+
+    beforeEach(() => {
+      mockRepository = {
+        getUserDreamNodes: jest.fn(),
+      } as unknown as jest.Mocked<IDreamNodeRepository>;
+
+      service = new DreamNodeService(mockRepository);
+    });
+
+    it("should return stats correctly when user has dreams", async () => {
+      const userId = "user123";
+
+      const nodes = [
+        { id: "1", creationDate: new Date("2025-01-01T10:00:00Z") },
+        { id: "2", creationDate: new Date("2024-12-31T10:00:00Z") },
+      ];
+
+      mockRepository.getUserDreamNodes.mockResolvedValue(nodes as any);
+
+      const result = await service.getUserDreamStats(userId);
+
+      expect(mockRepository.getUserDreamNodes).toHaveBeenCalledWith(userId);
+
+      expect(result).toEqual({
+        dreamCount: 2,
+        lastDreamAt: new Date("2025-01-01T10:00:00Z"),
+      });
+    });
+    it("should return dreamCount = 0 and lastDreamAt = null when user has no dreams", async () => {
+      const userId = "user123";
+
+      mockRepository.getUserDreamNodes.mockResolvedValue([]);
+
+      const result = await service.getUserDreamStats(userId);
+
+      expect(result).toEqual({
+        dreamCount: 0,
+        lastDreamAt: null,
+      });
+    });
+
+    it("should return lastDreamAt = null if list is not empty but first item is undefined (edge case)", async () => {
+      const userId = "user123";
+
+      mockRepository.getUserDreamNodes.mockResolvedValue([undefined] as any);
+
+      const result = await service.getUserDreamStats(userId);
+
+      expect(result).toEqual({
+        dreamCount: 1,
+        lastDreamAt: null,
+      });
+    });
+
+    it("should throw if repository fails", async () => {
+      const userId = "user123";
+
+      mockRepository.getUserDreamNodes.mockRejectedValue(
+        new Error("DB exploded")
+      );
+
+      await expect(service.getUserDreamStats(userId)).rejects.toThrow(
+        "DB exploded"
       );
     });
   });

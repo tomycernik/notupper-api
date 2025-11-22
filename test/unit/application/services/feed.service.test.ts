@@ -21,7 +21,10 @@ describe('FeedService', () => {
 
     const result = await service.getFeed({ page: 1, limit: 10 });
 
-    expect(mockRepo.getPublicDreams).toHaveBeenCalledWith({ page: 1, limit: 10 });
+    expect(mockRepo.getPublicDreams).toHaveBeenCalledWith(
+      { page: 1, limit: 10 },
+      undefined
+    );
     expect(result.data).toEqual([{ id: 'n1' }]);
     expect(result.pagination.total).toBe(1);
   });

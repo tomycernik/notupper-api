@@ -8,6 +8,25 @@ import { RoomService } from "@application/services/room.service";
 import { supabase } from "@config/supabase";
 
 export class UserService {
+
+  async getUserIdByDreamNodeId(dreamNodeId: string): Promise<string> {
+    const user = await this.userRepository.findByDreamNodeId(dreamNodeId);
+    if (!user) throw new Error("Usuario no encontrado");
+    return user.id!
+  }
+
+  async getAvatarUrlById(userId: string): Promise<string>{
+    const avatarUrl = await this.userRepository.findUserAvatarUrlById(userId);
+    if(!avatarUrl) throw new Error("Usuario no encontrado");
+    return avatarUrl;
+  }
+
+  async getUserNameById(userId: string): Promise<string>{
+    const userName = await this.userRepository.findUserNameById(userId);
+    if(!userName) throw new Error("Usuario no encontrado");
+    return userName;
+  }
+
   constructor(
     private userRepository: IUserRepository,
     private membershipService: MembershipService,
@@ -47,10 +66,12 @@ export class UserService {
     if (!user) throw new Error("Usuario no encontrado");
 
     let avatar_url: string | undefined = undefined;
+    let username: string | undefined = undefined;
     try {
       const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
       if (!authError && authUser?.user) {
         avatar_url = authUser.user.user_metadata?.avatar_url || undefined;
+        username = authUser.user.user_metadata?.username || (authUser.user.email ? authUser.user.email.split('@')[0] : "Usuario") || "Usuario";
       }
     } catch {/* no-op */ }
 
@@ -63,6 +84,7 @@ export class UserService {
       id: user.id!,
       email: user.email,
       name: user.name,
+      username: username ?? null,
       coin_amount: user.coin_amount,
       avatar_url: avatar_url ?? null,
       membership: {

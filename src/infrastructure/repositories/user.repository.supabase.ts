@@ -5,6 +5,54 @@ import { IUserRepository } from "@domain/repositories/user.repository";
 import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
 
 export class UserRepositorySupabase implements IUserRepository {
+
+  async findUserAvatarUrlById(userId: string): Promise<string | null> {
+     const { data, error } = await supabase.auth.admin.getUserById(userId);
+    if (error) {
+      console.error("Error obteniendo usuario:", error);
+      return null;
+    }
+    const user = data.user;
+    if (!user) return null;
+    const avatarUrl =
+      user.user_metadata?.avatar_url ||
+      null;
+
+    return avatarUrl;
+  }
+
+  async findUserNameById(userId: string): Promise<string | null> {
+    const { data, error } = await supabase.auth.admin.getUserById(userId);
+    if (error) {
+      console.error("Error obteniendo usuario:", error);
+      return null;
+    }
+    const user = data.user;
+    if (!user) return null;
+    const name =
+      user.user_metadata?.name ||
+      null;
+
+    return name;
+  }
+  async findByDreamNodeId(dreamNodeId: string): Promise<IUser | null> {
+    const { data, error } = await supabase
+      .from("dream_node")
+      .select("profile:profile(*)")
+      .eq("id", dreamNodeId)
+      .single();
+
+    if (error) {
+      console.error("Error buscando usuario:", error);
+      return null;
+    }
+
+    const profile = Array.isArray(data.profile)
+      ? data.profile[0]
+      : data.profile;
+
+    return profile as IUser;
+  }
   async register(user: IUser): Promise<IRepositoryUser> {
     const { email, password, date_of_birth: dateOfBirth } = user;
 

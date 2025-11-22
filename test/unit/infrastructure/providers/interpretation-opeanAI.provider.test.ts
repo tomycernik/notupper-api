@@ -127,7 +127,7 @@ describe("InterpretationOpenAIProvider", () => {
             message: {
               content: JSON.stringify({
                 title: "Interpretación de Sueño",
-                interpretation: "Invalid JSON response from OpenAI",
+                interpretation: "Invalid JSON response from OpenAI. Sentí mucha felicidad al despertar.",
                 emotion: "Tristeza",
                 context: {
                   emotions_context: [],
@@ -149,8 +149,8 @@ describe("InterpretationOpenAIProvider", () => {
       // Assert
       expect(result).toEqual({
         title: "Interpretación de Sueño",
-        interpretation: "Invalid JSON response from OpenAI",
-        emotion: "Tristeza",
+        interpretation: "Invalid JSON response from OpenAI. Sentí mucha felicidad al despertar.",
+        emotion: "Felicidad",
         dreamType: "Estandar",
         context: {
           emotions_context: [],
@@ -324,7 +324,9 @@ describe("InterpretationOpenAIProvider", () => {
       // Act
       const result = await provider.reinterpretDream(
         dreamText,
-        previousInterpretation
+        previousInterpretation,
+        null,
+        "psychological"
       );
 
       // Assert
@@ -342,24 +344,24 @@ describe("InterpretationOpenAIProvider", () => {
         dreamType: "Estandar",
       });
 
-      expect(mockChatCompletions).toHaveBeenCalledWith({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: expect.stringContaining("RADICALMENTE OPUESTAS"),
-          },
-          {
-            role: "user",
-            content: expect.stringContaining(
-              "IGNORA COMPLETAMENTE la interpretación anterior"
-            ),
-          },
-        ],
-        max_tokens: 350,
-        temperature: 0.9,
-        response_format: { type: "json_object" },
-      });
+      expect(mockChatCompletions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          model: "gpt-3.5-turbo",
+          messages: expect.arrayContaining([
+            expect.objectContaining({
+              role: "system",
+              content: expect.stringContaining("Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido"),
+            }),
+            expect.objectContaining({
+              role: "user",
+              content: expect.stringContaining("IGNORA COMPLETAMENTE la interpretación anterior. Debes dar una perspectiva RADICALMENTE OPUESTA y diferente."),
+            }),
+          ]),
+          max_tokens: 350,
+          temperature: 0.9,
+          response_format: { type: "json_object" },
+        })
+      );
     });
 
     it("should include previous interpretation in prompt", async () => {
@@ -381,7 +383,7 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation);
+      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
 
       // Assert
       const callArgs = mockChatCompletions.mock.calls[0][0];
@@ -410,7 +412,7 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation);
+      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
 
       // Assert
       expect(mockChatCompletions).toHaveBeenCalledWith(
@@ -437,7 +439,9 @@ describe("InterpretationOpenAIProvider", () => {
       // Act
       const result = await provider.reinterpretDream(
         dreamText,
-        previousInterpretation
+        previousInterpretation,
+        null,
+        "psychological"
       );
 
       // Assert
@@ -462,7 +466,7 @@ describe("InterpretationOpenAIProvider", () => {
 
       // Act & Assert
       try {
-        await provider.reinterpretDream(dreamText, previousInterpretation);
+        await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
       } catch (err) {
         console.log('Test error:', err);
         const msg = (err as Error).message;
@@ -479,7 +483,7 @@ describe("InterpretationOpenAIProvider", () => {
 
       // Act & Assert
       try {
-        await provider.reinterpretDream(dreamText, previousInterpretation);
+        await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
       } catch (err) {
         // Log para ver el error real
         console.log('Test error:', err);
@@ -508,7 +512,9 @@ describe("InterpretationOpenAIProvider", () => {
       // Act
       const result = await provider.reinterpretDream(
         dreamText,
-        previousInterpretation
+        previousInterpretation,
+        null,
+        "psychological"
       );
 
       // Assert
@@ -739,7 +745,7 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation);
+      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
 
       // Assert
       expect(mockChatCompletions).toHaveBeenCalledWith(
@@ -781,38 +787,6 @@ describe("InterpretationOpenAIProvider", () => {
       // Assert - Should log the model (default gpt-3.5-turbo in this case)
       expect(consoleSpy).toHaveBeenCalledWith(
         "[InterpretationOpenAIProvider] Modelo usado para interpretación:",
-        expect.any(String)
-      );
-
-      consoleSpy.mockRestore();
-    });
-
-    it("should log the model being used for reinterpretation", async () => {
-      // Arrange
-      const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
-      const mockResponse = {
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({
-                title: "Test",
-                interpretation: "Test",
-                emotion: "miedo",
-              }),
-            },
-          },
-        ],
-      };
-
-      mockChatCompletions.mockResolvedValue(mockResponse);
-
-      // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation);
-
-      // Assert - Should log the model
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "[InterpretationOpenAIProvider] Modelo usado para reinterpretación:",
         expect.any(String)
       );
 

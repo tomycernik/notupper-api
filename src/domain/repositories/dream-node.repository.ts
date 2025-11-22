@@ -20,7 +20,9 @@ export interface IDreamNodeRepository {
     like(dreamNodeId: string, profileId: string): Promise<void>;
     unlike(dreamNodeId: string, profileId: string): Promise<void>;
 
-    getPublicDreams(pagination: IPaginationOptions): Promise<IPublicDream[]>;
+    getPublicDreams(pagination: IPaginationOptions, profileId?: string): Promise<IPublicDream[]>;
     countPublicDreams(): Promise<number>;
     getUserDreamMap(userId: string): Promise<DreamGraphResponse>;
+
+    getUserDreamNodes(userId: string): Promise<{id: string, creationDate: Date}[]>;
 }

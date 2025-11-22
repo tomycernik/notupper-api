@@ -123,6 +123,7 @@ describe("Dream API Integration Tests", () => {
       const requestBody = {
         description: "Soñé que volaba sobre montañas",
         previousInterpretation: "Representa tu deseo de libertad",
+        approach: "psychological"
       };
 
       const expectedResponse: Interpretation = {
@@ -158,7 +159,8 @@ describe("Dream API Integration Tests", () => {
       expect(mockInterpretationService.reinterpretDream).toHaveBeenCalledWith(
         requestBody.description,
         requestBody.previousInterpretation,
-        expect.any(Object)
+        expect.any(Object),
+        "psychological"
       );
     });
 
@@ -166,6 +168,7 @@ describe("Dream API Integration Tests", () => {
       const requestBody = {
         description: "Soñé que volaba sobre montañas",
         previousInterpretation: "Representa tu deseo de libertad",
+        approach: "psychological"
       };
 
       mockInterpretationService.reinterpretDream.mockRejectedValue(
@@ -188,6 +191,7 @@ describe("Dream API Integration Tests", () => {
       const requestBody = {
         description: largeDescription,
         previousInterpretation: "Representa tu deseo de libertad",
+        approach: "psychological"
       };
 
       const expectedResponseService: Interpretation = {
@@ -226,6 +230,7 @@ describe("Dream API Integration Tests", () => {
         description:
           "Soñé con símbolos extraños: ñáéíóú, emojis 🌟🌙, y caracteres especiales @#$%",
         previousInterpretation: "Representa confusión en tu vida",
+        approach: "psychological"
       };
 
       const expectedResponse: Interpretation = {
@@ -459,6 +464,7 @@ describe("Dream API Integration Tests", () => {
       const requestBody = {
         description: "Sueño de prueba para concurrencia",
         previousInterpretation: "Interpretación previa",
+        approach: "psychological"
       };
 
       const expectedResponseService: Interpretation = {
@@ -508,6 +514,7 @@ describe("Dream API Integration Tests", () => {
         const requestBody = {
           description: "Soñé que volaba sobre montañas",
           previousInterpretation: "Representa tu deseo de libertad",
+          approach: "psychological"
         };
 
         mockInterpretationService.reinterpretDream.mockImplementation(

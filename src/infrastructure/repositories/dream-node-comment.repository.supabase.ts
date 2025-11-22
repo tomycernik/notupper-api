@@ -29,11 +29,11 @@ export class DreamNodeCommentRepositorySupabase {
       data.map(async (comment) => {
         const { data: userData, error: userError } = await supabase.auth.admin.getUserById(comment.profile_id);
 
-        let username = "Usuario desconocido";
+        let username = "Usuario";
         let avatar_url = "";
 
         if (!userError && userData?.user) {
-          username = userData.user.user_metadata?.username || "Usuario desconocido";
+          username = userData.user.user_metadata?.username || (userData.user.email ? userData.user.email.split('@')[0] : "Usuario") || "Usuario";
           avatar_url = userData.user.user_metadata?.avatar_url || "";
         }
 

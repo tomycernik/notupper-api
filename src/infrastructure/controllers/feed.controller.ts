@@ -1,8 +1,17 @@
 import { Request, Response } from 'express';
 import { FeedService } from '@application/services/feed.service';
+import { UserService } from '@/application/services/user.service';
+import { INotification } from '../../domain/models/notification.model';
+import { NotificationService } from '@/application/services/notification.service';
+import { DreamNodeService } from '@/application/services/dream-node.service';
 
 export class FeedController {
-  constructor(private readonly feedService: FeedService) {}
+  constructor(
+    private readonly feedService: FeedService,
+    private readonly userService: UserService,
+    private readonly notificationService: NotificationService,
+    private readonly dreamNodeService: DreamNodeService
+  ) { }
 
   async getFeed(req: Request, res: Response) {
     try {
@@ -22,13 +31,38 @@ export class FeedController {
 
   async likeNode(req: Request, res: Response) {
     try {
-      const profileId = (req as any).userId;
+      const profileIdFrom = (req as any).userId;
       const { dreamNodeId } = req.body;
-      if (!profileId || !dreamNodeId) {
+      if (!profileIdFrom || !dreamNodeId) {
         res.status(400).json({ success: false, message: "Faltan datos" });
         return;
       }
-      await this.feedService.likeNode(dreamNodeId, profileId);
+      await this.feedService.likeNode(dreamNodeId, profileIdFrom);
+      const profileIdTo = await this.userService.getUserIdByDreamNodeId(dreamNodeId);
+      const userNameFrom = await this.userService.getUserNameById(profileIdFrom)
+      const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)
+      const dreamNode = await this.dreamNodeService.getDreamNodeById(dreamNodeId)
+      if (!dreamNode) {
+        res.status(400).json({ success: false, message: "No existe Dream Node" });
+        return;
+      }
+      const { title } = dreamNode
+      const notification: INotification = {
+        from_user: profileIdFrom,
+        to_user: profileIdTo,
+        title: "Tu publicación ha recibido un me gusta",
+        message: userNameFrom + " le ha dado me gusta a tu nodo: " + title,
+        delivered: false,
+        read: false,
+        metadata: {
+          dreamNodeId: dreamNodeId,
+          dreamNodeTitle: title,
+          userNameFrom: userNameFrom,
+          avatar_url: avatar_url
+        },
+        type: "like"
+      }
+      await this.notificationService.saveNotification(notification)
       res.status(200).json({ success: true });
     } catch (error) {
       console.error("Error en FeedController likeNode:", error);

@@ -1,6 +1,8 @@
 import { InterpretationProvider } from "@domain/providers/interpretation.provider";
 import { OpenAI } from "openai";
 import { envs } from "@config/envs";
+
+type DreamApproach = "psychological" | "spiritual" | "symbolic";
 import { Interpretation } from "@domain/interfaces/interpretation-dream.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
 import { isRecurringDream } from '@domain/utils/dream-utils';
@@ -51,7 +53,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         - Posibles emociones o conflictos internos
         - Reflexión sobre el estado emocional del soñante
         (3-4 oraciones completas y sustanciales)
-      3. La emoción dominante que transmite el sueño (${emotionsString})
+      3. La emoción principal y predominante que transmite el sueño (elige SOLO UNA de la lista: ${emotionsString}). IMPORTANTE: La emoción debe deducirse únicamente del texto literal del sueño, no de la interpretación ni de inferencias externas. SOLO asigna emociones negativas (como enojo, miedo, tristeza, frustración, etc.) si en el texto del sueño aparecen palabras, frases o situaciones explícitamente negativas (por ejemplo: "me enojé", "sentí miedo", "estaba triste", "me sentí frustrado", "fue horrible", "me asusté", etc.). Si no hay indicios claros y literales de emociones negativas, prioriza emociones neutras o positivas según el contenido. Las presiones o responsabilidades no deben tomarse siempre como algo negativo
       4. Temas principales mencionados (máximo 3)
       5. Personas mencionadas (si las hay)
       6. Ubicaciones mencionadas (si las hay)
@@ -80,13 +82,13 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         "dreamType": ${dreamTypesString}
       }`;
 
-            const modelUsed =
-        envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
+            // Siempre usa el modelo psicológico para la interpretación
+            const modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
       console.log(
         "[InterpretationOpenAIProvider] Modelo usado para interpretación:",
         modelUsed
       );
-      const response = await this.openai.chat.completions.create({
+          const response = await this.openai.chat.completions.create({
         model: modelUsed,
         messages: [
           {
@@ -118,16 +120,27 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
       try {
         const aiResult = JSON.parse(responseContent);
 
-        // Extract and sanitize basic info
         title = this.sanitizeText(aiResult.title || title);
         interpretation = this.sanitizeText(aiResult.interpretation || interpretation);
         interpretation = this.limitSentences(interpretation, 4);
 
-        // Process emotion
-        emotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
-        const allowedEmotions = new Set(emotions .map(e => e.toLowerCase()));
-        if (!allowedEmotions.has(emotion)) emotion = "tristeza";
-        emotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+        let aiEmotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
+        const allowedEmotions = new Set(emotions.map(e => e.toLowerCase()));
+        if (!allowedEmotions.has(aiEmotion)) aiEmotion = "tristeza";
+
+        const textToCheck = `${title} ${interpretation}`.toLowerCase();
+        let foundEmotion = null;
+        for (const emo of emotions) {
+          const emoLower = emo.toLowerCase();
+          if (textToCheck.includes(emoLower)) {
+            foundEmotion = emo;
+            break;
+          }
+        }
+        if ((aiEmotion === "tristeza" || !textToCheck.includes(aiEmotion)) && foundEmotion) {
+          aiEmotion = foundEmotion;
+        }
+        emotion = aiEmotion.charAt(0).toUpperCase() + aiEmotion.slice(1);
 
         const dreamAnalysis = {
           themes: Array.isArray(aiResult.themes) ? aiResult.themes : [],
@@ -159,8 +172,8 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         locations = Array.isArray(aiResult.locations) ? aiResult.locations : [];
         emotionsContext = Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : [];
 
-      } catch (error) {
-        console.error('Error al procesar la respuesta del modelo:', error);
+      } catch {
+        // Error parseando la respuesta de la IA
       }
 
       return {
@@ -176,7 +189,6 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         }
       };
     } catch (error: any) {
-      console.error("Error en InterpretationOpenIAProvider:", error);
       throw new Error(error.message || "Error al interpretar el sueño.");
     }
   }
@@ -232,9 +244,11 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
   async reinterpretDream(
     dreamText: string,
     previousInterpretation: string,
-    dreamContext?: IDreamContext | null
+    dreamContext: IDreamContext | null,
+    approach: DreamApproach
   ): Promise<Interpretation> {
     try {
+      console.log(`[InterpretationOpenAIProvider] Approach usado para reinterpretación:`, approach);
       const contextSection = this.buildContextSection(dreamContext);
       const emotions = await this.emotionRepository.getAllByName()
       const emotionsString = emotions.join('|');
@@ -278,19 +292,20 @@ Responde EXACTAMENTE en este formato JSON:
   "dreamType": ${dreamTypesString} 
 }`;
 
-      const modelUsed =
-        envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
-      console.log(
-        "[InterpretationOpenAIProvider] Modelo usado para reinterpretación:",
-        modelUsed
-      );
+      // Selecciona el modelo segun el enfoque
+      let modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
+      if (approach === "spiritual") {
+        modelUsed = envs.OPENAI_MODEL_SPIRITUAL || modelUsed;
+      } else if (approach === "symbolic") {
+        modelUsed = envs.OPENAI_MODEL_SYMBOLIC || modelUsed;
+      }
       const response = await this.openai.chat.completions.create({
         model: modelUsed,
         messages: [
           {
             role: "system",
             content:
-              "Eres un psicólogo especialista que debe dar interpretaciones RADICALMENTE OPUESTAS a las anteriores. Tu trabajo es CONTRADECIR y ofrecer el PUNTO DE VISTA CONTRARIO. Si la interpretación anterior fue positiva, sé más crítico. Si fue sobre libertad, habla de limitaciones. NUNCA coincidas con la interpretación previa. Responde SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. Crea títulos que reflejen la nueva perspectiva. Las emociones válidas son: felicidad, tristeza, miedo, enojo. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando la perspectiva opuesta.",
+              `Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando el simbolismo y las emociones subyacentes.`,
           },
           {
             role: "user",
@@ -353,11 +368,7 @@ Responde EXACTAMENTE en este formato JSON:
             .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
           dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
         }
-      } catch (parseError) {
-        console.error(
-          "Error parseando JSON de OpenAI en reinterpretación:",
-          parseError
-        );
+      } catch {
         interpretation = responseContent.trim() || interpretation;
       }
 
@@ -386,7 +397,6 @@ Responde EXACTAMENTE en este formato JSON:
         }
       };
     } catch (error: any) {
-      console.error("Error en reinterpretación OpenAI:", error);
       throw new Error(error.message || "Error al reinterpretar el sueño.");
     }
   }

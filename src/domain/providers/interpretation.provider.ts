@@ -9,6 +9,7 @@ export interface InterpretationProvider {
   reinterpretDream(
     dreamText: string,
     previousInterpretation: string,
-    dreamContext?: IDreamContext | null
+    dreamContext: IDreamContext | null,
+    approach: "psychological" | "spiritual" | "symbolic"
   ): Promise<Interpretation>;
 }

@@ -1,9 +1,8 @@
 import { IllustrationProvider } from "@domain/providers/illustration.provider";
 import { envs } from "@config/envs";
-import { BlockadeLabsSdk } from '@blockadelabs/sdk';
+import { BlockadeLabsSdk } from "@blockadelabs/sdk";
 
 export class IllustrationSkyboxProvider implements IllustrationProvider {
-
   private client: BlockadeLabsSdk;
 
   constructor() {
@@ -12,34 +11,37 @@ export class IllustrationSkyboxProvider implements IllustrationProvider {
     });
   }
 
-  async generateIllustration(dreamText: string): Promise<Buffer> {
-
+  async generateIllustration(dreamText: string): Promise<string> {
     const request = {
       prompt: dreamText,
-      skybox_style_id: 11, //DreamLike style
+      skybox_style_id: 11, // DreamLike style
     };
     console.log(request)
     const createResponse = await this.client.generateSkybox(request);
 
-    console.log(createResponse)
     const taskId = createResponse.id;
     if (!taskId) {
       throw new Error("No se obtuvo un task ID del SDK de BlockadeLabs");
     }
 
     let resultUrl: string | undefined;
+
     while (!resultUrl) {
       const status = await this.client.getImagineById({ id: taskId });
-      console.log("status", status)
       if (status.status === "complete" && status.file_url) {
         resultUrl = status.file_url;
         break;
       }
+
+      if (status.status === "error") {
+        throw new Error(
+          status.error_message || "Error generando imagen en Blockade Labs"
+        );
+      }
+
       await new Promise((r) => setTimeout(r, 2000));
     }
 
-    const response = await fetch(resultUrl!);
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+    return resultUrl;
   }
 }

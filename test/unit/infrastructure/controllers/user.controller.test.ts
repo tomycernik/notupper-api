@@ -185,4 +185,89 @@ describe('UserController', () => {
       expect(mockRoomService.getUserRooms).not.toHaveBeenCalled();
     });
   });
+
+  describe('getPublicProfile', () => {
+    beforeEach(() => {
+      mockRequest = {
+        params: { userId: 'public-user-id' }
+      } as any;
+      mockBadgeService.getUserFeaturedBadges = jest.fn().mockResolvedValue([{ id: 'badge1' }]);
+      mockBadgeService.getUserBadges = jest.fn().mockResolvedValue([{ id: 'badge1' }, { id: 'badge2' }]);
+      mockUserService.getUserInfo = jest.fn().mockResolvedValue({ id: 'public-user-id', username: 'publicuser' });
+    });
+
+    it('should return public profile data successfully', async () => {
+      await userController.getPublicProfile(mockRequest as Request, mockResponse as Response);
+      expect(mockUserService.getUserInfo).toHaveBeenCalledWith('public-user-id');
+      expect(mockBadgeService.getUserFeaturedBadges).toHaveBeenCalledWith('public-user-id');
+      expect(mockBadgeService.getUserBadges).toHaveBeenCalledWith('public-user-id');
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'public-user-id',
+        username: 'publicuser',
+        badges: expect.any(Array),
+        featuredBadges: expect.any(Array)
+      }));
+    });
+
+    it('should return 400 if userId param is missing', async () => {
+      mockRequest.params = {};
+      await userController.getPublicProfile(mockRequest as Request, mockResponse as Response);
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith({
+        success: false,
+        message: 'ID de usuario no proporcionado',
+      });
+    });
+
+    it('should handle errors and return 500', async () => {
+      mockUserService.getUserInfo = jest.fn().mockRejectedValue(new Error('DB error'));
+      await userController.getPublicProfile(mockRequest as Request, mockResponse as Response);
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith(expect.objectContaining({
+        success: false,
+        message: 'Error al obtener el perfil público del usuario',
+        error: 'DB error'
+      }));
+    });
+  });
+
+  describe('setFeaturedBadges', () => {
+    beforeEach(() => {
+      mockRequest = {
+        userId: 'user-123',
+        body: { badgeIds: ['badge1', 'badge2', 'badge3'] }
+      } as any;
+      mockBadgeService.setUserFeaturedBadges = jest.fn().mockResolvedValue(undefined);
+    });
+
+    it('should update featured badges successfully', async () => {
+      await userController.setFeaturedBadges(mockRequest as Request, mockResponse as Response);
+      expect(mockBadgeService.setUserFeaturedBadges).toHaveBeenCalledWith('user-123', ['badge1', 'badge2', 'badge3']);
+      expect(mockResponse.status).toHaveBeenCalledWith(200);
+      expect(jsonMock).toHaveBeenCalledWith({ success: true, message: 'Insignias destacadas actualizadas' });
+    });
+
+    it('should return 400 if badgeIds is not an array of length 3', async () => {
+      mockRequest.body.badgeIds = ['badge1'];
+      await userController.setFeaturedBadges(mockRequest as Request, mockResponse as Response);
+      expect(mockResponse.status).toHaveBeenCalledWith(400);
+      expect(jsonMock).toHaveBeenCalledWith({
+        success: false,
+        message: 'Debes enviar exactamente 3 badgeIds',
+      });
+      expect(mockBadgeService.setUserFeaturedBadges).not.toHaveBeenCalled();
+    });
+
+    it('should handle errors and return 500', async () => {
+      mockBadgeService.setUserFeaturedBadges = jest.fn().mockRejectedValue(new Error('DB error'));
+      await userController.setFeaturedBadges(mockRequest as Request, mockResponse as Response);
+      expect(mockResponse.status).toHaveBeenCalledWith(500);
+      expect(jsonMock).toHaveBeenCalledWith(expect.objectContaining({
+        success: false,
+        message: 'Error al actualizar insignias destacadas',
+        error: 'DB error'
+      }));
+    });
+  });
 });

@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { DreamNodeCommentService } from "@application/services/dream-node-comment.service";
 import { CreateDreamNodeCommentDto } from "@infrastructure/dtos/dream-node/create-dream-node-comment.dto";
 import { DreamNodeService } from "@application/services/dream-node.service";
-import { DreamNodeRepositorySupabase } from "@infrastructure/repositories/dream-node.repository.supabase";
 import { UserService } from "@/application/services/user.service";
 import { INotification } from "@/domain/models/notification.model";
 import { NotificationService } from "@/application/services/notification.service";
@@ -97,8 +96,7 @@ export class DreamNodeCommentController {
       const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)
       const dreamNode = await this.dreamNodeService.getDreamNodeById(nodeId)
       if(!dreamNode){
-         res.status(400).json({ success: false, message: "No existe Dream Node" });
-        return;
+         return res.status(400).json({ success: false, message: "No existe Dream Node" });
       }
       const {title} = dreamNode
       const notification: INotification = {

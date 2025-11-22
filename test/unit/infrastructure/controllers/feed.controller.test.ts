@@ -39,17 +39,17 @@ describe('FeedController', () => {
   });
 
   it('getFeed returns json on success', async () => {
-    const req: Partial<Request> = { query: { page: '1' } };
+    const req: Partial<Request> = { query: { limit: '10', offset: '0' } };
     (req as any).userId = 'user-1';
     const mockRes: Partial<Response> = {
       json: jest.fn()
     };
 
-    mockFeedService.getFeed.mockResolvedValue({ data: [], pagination: {} });
+    mockFeedService.getFeed.mockResolvedValue([]);
 
     await controller.getFeed(req as Request, mockRes as Response);
 
-    expect(mockFeedService.getFeed).toHaveBeenCalledWith({ page: '1' }, 'user-1');
+    expect(mockFeedService.getFeed).toHaveBeenCalledWith('user-1', 10, 0);
     expect(mockRes.json).toHaveBeenCalled();
   });
 

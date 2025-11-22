@@ -516,7 +516,6 @@ async getAllEmotions(): Promise<EmotionOption[]> {
     return await Promise.all(
       (data ?? []).map(async (node: any) => {
         const { data: userData } = await supabase.auth.admin.getUserById(node.profile_id);
-        // Contar likes y si el usuario autenticado dio like
         const likeCount = await this.countLikes(node.id);
         const likedByMe = currentUserId ? await this.isLikedByUser(node.id, currentUserId) : false;
         const commentRepo = new (await import('./dream-node-comment.repository.supabase')).DreamNodeCommentRepositorySupabase();

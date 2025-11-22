@@ -4,6 +4,7 @@ import { IDreamNodeCommentWithUser } from "@domain/interfaces/dream-node-comment
 export class DreamNodeCommentService {
   private commentRepo = new DreamNodeCommentRepositorySupabase();
 
+  //no se usa
   async getCommentsByNode(dreamNodeId: string) {
     return this.commentRepo.getCommentsByNode(dreamNodeId);
   }
@@ -12,6 +13,7 @@ export class DreamNodeCommentService {
     return this.commentRepo.getCommentsByNodeWithUser(dreamNodeId);
   }
 
+  //no se usa
   async addComment(dreamNodeId: string, profileId: string, content: string) {
     return this.commentRepo.addComment(dreamNodeId, profileId, content);
   }
@@ -19,6 +21,7 @@ export class DreamNodeCommentService {
   async addCommentWithUser(dreamNodeId: string, profileId: string, content: string) {
     const newComment = await this.commentRepo.addComment(dreamNodeId, profileId, content);
     let commentWithUser = null;
+    //busca el comentario recien creado para mostrarlo con los demas comentarios y los datos del usuario
     try {
       const comments = await this.commentRepo.getCommentsByNodeWithUser(dreamNodeId);
       commentWithUser = comments.find(c => c.id === newComment.id) || null;
@@ -26,6 +29,7 @@ export class DreamNodeCommentService {
       // no-op
     }
 
+    //si no encuentra el usuario, lo busca directo en supabase
     if (!commentWithUser) {
       let username = "Usuario desconocido";
       let avatar_url = "";

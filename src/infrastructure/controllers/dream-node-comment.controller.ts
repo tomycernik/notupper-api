@@ -1,4 +1,3 @@
-
 import { Request, Response } from "express";
 import { DreamNodeCommentService } from "@application/services/dream-node-comment.service";
 import { CreateDreamNodeCommentDto } from "@infrastructure/dtos/dream-node/create-dream-node-comment.dto";
@@ -8,25 +7,23 @@ import { UserService } from "@/application/services/user.service";
 import { INotification } from "@/domain/models/notification.model";
 import { NotificationService } from "@/application/services/notification.service";
 
-const commentService = new DreamNodeCommentService();
-const dreamNodeService = new DreamNodeService(new DreamNodeRepositorySupabase());
 
 export class DreamNodeCommentController {
   constructor(
     private readonly userService: UserService,
     private readonly notificationService: NotificationService,
-    private readonly dreamNodeService: DreamNodeService
+    private readonly dreamNodeService: DreamNodeService,
+    private readonly commentService: DreamNodeCommentService
   ){}
+  
   async getComments(req: Request, res: Response) {
     try {
       const { nodeId } = req.params;
       if (!nodeId) return res.status(400).json({ success: false, message: "Falta nodeId" });
       const currentUserId = (req as any).userId;
-      const comments = await commentService.getCommentsByNodeWithUser(nodeId);
+      const comments = await this.commentService.getCommentsByNodeWithUser(nodeId);
 
-      const dreamNodeRepository = new DreamNodeRepositorySupabase();
-      const likeCount = await dreamNodeRepository.countLikes(nodeId);
-      const likedByMe = currentUserId ? await dreamNodeRepository.isLikedByUser(nodeId, currentUserId) : false;
+      const { likeCount, likedByMe } = await this.dreamNodeService.getNodeLikeInfo(nodeId, currentUserId);
 
       res.json({
         success: true,
@@ -51,7 +48,7 @@ export class DreamNodeCommentController {
         });
       }
 
-      const dreamNode = await dreamNodeService.getDreamNodeById(id);
+      const dreamNode = await this.dreamNodeService.getDreamNodeById(id);
 
       if (!dreamNode) {
         return res.status(404).json({
@@ -67,8 +64,8 @@ export class DreamNodeCommentController {
         });
       }
 
-      const comments = await commentService.getCommentsByNodeWithUser(id);
-      const totalComments = await commentService.countComments(id);
+      const comments = await this.commentService.getCommentsByNodeWithUser(id);
+      const totalComments = await this.commentService.countComments(id);
 
       res.json({
         success: true,
@@ -94,7 +91,7 @@ export class DreamNodeCommentController {
       if (!nodeId|| !profileIdFrom || typeof content !== 'string' || !content.trim()) {
         return res.status(400).json({ success: false, message: "Faltan datos o el comentario es inválido" });
       }
-      const commentWithUser = await commentService.addCommentWithUser(nodeId, profileIdFrom, content.trim());
+      const commentWithUser = await this.commentService.addCommentWithUser(nodeId, profileIdFrom, content.trim());
       const profileIdTo = await this.userService.getUserIdByDreamNodeId(nodeId);
       const userNameFrom = await this.userService.getUserNameById(profileIdFrom)
       const avatar_url = await this.userService.getAvatarUrlById(profileIdFrom)

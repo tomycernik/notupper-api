@@ -14,9 +14,11 @@ import { IPublicDream } from "@domain/interfaces/public-dream.interface";
 import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeService {
+   
   constructor(private dreamNodeRepository: IDreamNodeRepository, private missionService?: MissionService) {
     this.dreamNodeRepository = dreamNodeRepository;
   }
+  
    async saveDreamNode(
     userId: string,
     dream: SaveDreamNodeRequestDto,
@@ -276,4 +278,10 @@ export class DreamNodeService {
       );
     }
   }
+
+async getNodeLikeInfo(nodeId: string, userId?: string) {
+      const likeCount = await this.dreamNodeRepository.countLikes(nodeId);
+      const likedByMe = userId ? await this.dreamNodeRepository.isLikedByUser(nodeId, userId) : false;
+      return { likeCount, likedByMe };
+    }
 }

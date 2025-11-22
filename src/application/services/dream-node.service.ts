@@ -5,7 +5,11 @@ import {
   IPaginationOptions,
   IPaginatedResult,
 } from "@domain/interfaces/pagination.interface";
-import { IDreamNode, Emotion, DreamTypeName } from "@domain/models/dream-node.model";
+import {
+  IDreamNode,
+  Emotion,
+  DreamTypeName,
+} from "@domain/models/dream-node.model";
 import { IDreamNodeRepository } from "@domain/repositories/dream-node.repository";
 import { SaveDreamNodeRequestDto } from "@infrastructure/dtos/dream-node";
 import { MissionService } from "@application/services/mission.service";
@@ -14,30 +18,25 @@ import { IPublicDream } from "@domain/interfaces/public-dream.interface";
 import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
 
 export class DreamNodeService {
-  constructor(private dreamNodeRepository: IDreamNodeRepository, private missionService?: MissionService) {
+  constructor(
+    private dreamNodeRepository: IDreamNodeRepository,
+    private missionService?: MissionService
+  ) {
     this.dreamNodeRepository = dreamNodeRepository;
   }
-   async saveDreamNode(
+  async saveDreamNode(
     userId: string,
     dream: SaveDreamNodeRequestDto,
     dreamContext: DreamContext
   ): Promise<Badge[]> {
-    const {
-      title,
-      description,
-      interpretation,
-      emotion,
-      imageUrl = "",
-    } = dream;
-
-    const finalImageUrl = imageUrl?.startsWith(envs.SUPABASE_URL) ? imageUrl : "";
+    const { title, description, interpretation, emotion, imageUrl } = dream;
 
     const dreamNode: IDreamNode = {
       creationDate: new Date(),
       title,
       dream_description: description,
       interpretation,
-      imageUrl: finalImageUrl,
+      imageUrl: imageUrl,
       privacy: "Privado",
       state: "Activo",
       emotion: emotion as Emotion,
@@ -47,7 +46,7 @@ export class DreamNodeService {
     const { data, error } = await this.dreamNodeRepository.save(
       dreamNode,
       userId,
-      dream.dreamType as DreamTypeName,
+      dream.dreamType as DreamTypeName
     );
 
     if (error) {
@@ -55,20 +54,18 @@ export class DreamNodeService {
     }
 
     if (!data?.id) {
-    throw new Error("No se pudo crear el nodo de sueño");
-  }
-    await this.dreamNodeRepository.addDreamContext(
-      data.id,
-      userId,
-      dreamContext
-    );
+      throw new Error("No se pudo crear el nodo de sueño");
+    }
+    
+    console.log("[DreamNodeService] Nuevo sueño guardado:", data.id);
+    this.dreamNodeRepository.addDreamContext(data.id, userId, dreamContext);
 
     let unlockedBadges: Badge[] = [];
     if (this.missionService) {
       try {
         unlockedBadges = await this.missionService.onDreamSaved(userId);
       } catch (e) {
-        console.error('MissionService onDreamSaved error:', e);
+        console.error("MissionService onDreamSaved error:", e);
       }
     }
 
@@ -81,7 +78,7 @@ export class DreamNodeService {
       const badges = await this.missionService.onDreamReinterpreted(userId);
       return badges || [];
     } catch (e) {
-      console.error('MissionService onDreamReinterpreted error:', e);
+      console.error("MissionService onDreamReinterpreted error:", e);
       return [];
     }
   }
@@ -137,12 +134,12 @@ export class DreamNodeService {
     userId: string,
     nodeId: string,
     updates: {
-      state?: 'Activo' | 'Archivado' | undefined;
+      state?: "Activo" | "Archivado" | undefined;
       privacy?: "Publico" | "Privado" | "Anonimo" | undefined;
     }
   ): Promise<IDreamNode> {
     try {
-      const updateData: Partial<Pick<IDreamNode, 'state' | 'privacy'>> = {};
+      const updateData: Partial<Pick<IDreamNode, "state" | "privacy">> = {};
 
       if (updates.state !== undefined) {
         updateData.state = updates.state;
@@ -163,7 +160,9 @@ export class DreamNodeService {
       }
 
       if (!data) {
-        throw new Error('No se encontró el nodo de sueño o no se pudo actualizar');
+        throw new Error(
+          "No se encontró el nodo de sueño o no se pudo actualizar"
+        );
       }
 
       return data;
@@ -185,7 +184,9 @@ export class DreamNodeService {
       }
 
       if (!data) {
-        throw new Error('No se encontró el nodo de sueño o no tienes permisos para compartirlo');
+        throw new Error(
+          "No se encontró el nodo de sueño o no tienes permisos para compartirlo"
+        );
       }
 
       return data;
@@ -207,7 +208,9 @@ export class DreamNodeService {
       }
 
       if (!data) {
-        throw new Error('No se encontró el nodo de sueño o no tienes permisos para descompartirlo');
+        throw new Error(
+          "No se encontró el nodo de sueño o no tienes permisos para descompartirlo"
+        );
       }
 
       return data;
@@ -251,9 +254,7 @@ export class DreamNodeService {
         },
       };
     } catch (error) {
-      throw new Error(
-        "Error obteniendo los sueños públicos: " + error
-      );
+      throw new Error("Error obteniendo los sueños públicos: " + error);
     }
   }
 
@@ -271,9 +272,7 @@ export class DreamNodeService {
     try {
       return this.dreamNodeRepository.getDreamNodeById(dreamNodeId);
     } catch (error) {
-      throw new Error(
-        "Error obteniendo el nodo de sueño: " + error
-      );
+      throw new Error("Error obteniendo el nodo de sueño: " + error);
     }
   }
 }

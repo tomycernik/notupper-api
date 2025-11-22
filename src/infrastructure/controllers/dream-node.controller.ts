@@ -7,6 +7,7 @@ import { SaveDreamNodeRequestDto } from "@infrastructure/dtos/dream-node";
 import { DreamContextService } from "@application/services/dream-context.service";
 import { UpdateDreamNodeRequestDto } from "@infrastructure/dtos/dream-node/update-dream-node.dto";
 import { MembershipService } from "@application/services/membership.service";
+import { envs } from "@/config/envs";
 
 export class DreamNodeController {
   constructor(
@@ -86,6 +87,9 @@ export class DreamNodeController {
     try {
       const userId = (req as any).userId;
       const dreamNode: SaveDreamNodeRequestDto = req.body;
+      if(dreamNode.imageUrl && (dreamNode.imageUrl.includes("blockadelabs.com") || dreamNode.imageUrl.includes(envs.SUPABASE_URL))){
+        dreamNode.imageUrl = await this.illustrationService.saveIllustrationFromUrl(dreamNode.imageUrl);
+      }
       const session = req.session as any;
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))

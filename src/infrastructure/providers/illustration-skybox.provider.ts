@@ -11,7 +11,7 @@ export class IllustrationSkyboxProvider implements IllustrationProvider {
     });
   }
 
-  async generateIllustration(dreamText: string): Promise<Buffer> {
+  async generateIllustration(dreamText: string): Promise<string> {
     const request = {
       prompt: dreamText,
       skybox_style_id: 11, // DreamLike style
@@ -34,17 +34,15 @@ export class IllustrationSkyboxProvider implements IllustrationProvider {
         break;
       }
 
+      if (status.status === "error") {
+        throw new Error(
+          status.error_message || "Error generando imagen en Blockade Labs"
+        );
+      }
+
       await new Promise((r) => setTimeout(r, 2000));
     }
 
-    const response = await fetch(resultUrl!, {
-      redirect: "follow",
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-    });
-
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
+    return resultUrl;
   }
 }

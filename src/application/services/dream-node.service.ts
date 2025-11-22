@@ -55,7 +55,6 @@ export class DreamNodeService {
     if (!data?.id) {
       throw new Error("No se pudo crear el nodo de sueño");
     }
-    
     await this.dreamNodeRepository.addDreamContext(
       data.id,
       userId,

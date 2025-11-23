@@ -15,9 +15,10 @@ export class FeedController {
 
   async getFeed(req: Request, res: Response) {
     try {
-      const pagination = req.query;
       const profileId = (req as any).userId || undefined;
-      const feed = await this.feedService.getFeed(pagination, profileId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 20;
+      const offset = req.query.offset ? parseInt(req.query.offset as string, 10) : 0;
+      const feed = await this.feedService.getFeed(profileId, limit, offset);
       res.json(feed);
     } catch (error) {
       console.error("Error en FeedController getFeed:", error);

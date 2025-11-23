@@ -289,4 +289,10 @@ export class DreamNodeService {
       lastDreamAt: lastDream ? lastDream.creationDate : null,
     };
   }
+
+  async getNodeLikeInfo(nodeId: string, currentUserId?: string): Promise<{ likeCount: number, likedByMe: boolean }> {
+    const likeCount = await this.dreamNodeRepository.countLikes(nodeId);
+    const likedByMe = currentUserId ? await this.dreamNodeRepository.isLikedByUser(nodeId, currentUserId) : false;
+    return { likeCount, likedByMe };
+  }
 }

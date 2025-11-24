@@ -19,34 +19,41 @@ describe('FeedService', () => {
     mockRepo.getPublicDreams.mockResolvedValueOnce([{ id: 'n1' }]);
     mockRepo.countPublicDreams.mockResolvedValueOnce(1);
 
-    const result = await service.getFeed({ page: 1, limit: 10 });
+    const result = await service.getFeed(undefined, 10, 0);
 
     expect(mockRepo.getPublicDreams).toHaveBeenCalledWith(
-      { page: 1, limit: 10 },
+      { limit: 10, offset: 0 },
       undefined
     );
-    expect(result.data).toEqual([{ id: 'n1' }]);
-    expect(result.pagination.total).toBe(1);
+    expect(result).toEqual([{ id: 'n1' }]);
   });
 
-  it('getFeed should handle repository error in getPublicDreams', async () => {
+  it('getFeed returns the correct number of nodes for limit and offset', async () => {
+    mockRepo.getPublicDreams.mockResolvedValueOnce([
+      { id: 'n1' }, { id: 'n2' }, { id: 'n3' }
+    ]);
+    const result = await service.getFeed(undefined, 3, 0);
+    expect(result.length).toBe(3);
+    expect(result[0].id).toBe('n1');
+    expect(result[2].id).toBe('n3');
+  });
+
+  it('getFeed returns an empty array if there are no nodes', async () => {
+    mockRepo.getPublicDreams.mockResolvedValueOnce([]);
+    const result = await service.getFeed(undefined, 10, 0);
+    expect(result).toEqual([]);
+  });
+
+  it('getFeed filters by user if profileId is provided', async () => {
+    mockRepo.getPublicDreams.mockResolvedValueOnce([{ id: 'n1', user: 'u1' }]);
+    const result = await service.getFeed('u1', 1, 0);
+    expect(mockRepo.getPublicDreams).toHaveBeenCalledWith({ limit: 1, offset: 0 }, 'u1');
+    expect(result[0].user).toBe('u1');
+  });
+
+  it('getFeed handles repository errors correctly', async () => {
     mockRepo.getPublicDreams.mockRejectedValueOnce(new Error('DB error'));
-    mockRepo.countPublicDreams.mockResolvedValueOnce(0);
-    await expect(service.getFeed({ page: 1, limit: 10 })).rejects.toThrow('DB error');
-  });
-
-  it('getFeed should handle repository error in countPublicDreams', async () => {
-    mockRepo.getPublicDreams.mockResolvedValueOnce([]);
-    mockRepo.countPublicDreams.mockRejectedValueOnce(new Error('Count error'));
-    await expect(service.getFeed({ page: 1, limit: 10 })).rejects.toThrow('Count error');
-  });
-
-  it('getFeed should return empty data if no dreams', async () => {
-    mockRepo.getPublicDreams.mockResolvedValueOnce([]);
-    mockRepo.countPublicDreams.mockResolvedValueOnce(0);
-    const result = await service.getFeed({ page: 1, limit: 10 });
-    expect(result.data).toEqual([]);
-    expect(result.pagination.total).toBe(0);
+    await expect(service.getFeed(undefined, 10, 0)).rejects.toThrow('DB error');
   });
 
   it('likeNode should call repository like', async () => {

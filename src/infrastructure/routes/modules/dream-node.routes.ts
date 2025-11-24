@@ -32,6 +32,7 @@ import { UserService } from "@/application/services/user.service";
 import { UserRepositorySupabase } from "@/infrastructure/repositories/user.repository.supabase";
 import { RoomRepositorySupabase } from "@/infrastructure/repositories/room.repository.supabase";
 import { RoomService } from "@/application/services/room.service";
+import { DreamNodeCommentService } from "@application/services/dream-node-comment.service";
 
 export const dreamNodeRouter = Router();
 
@@ -60,7 +61,8 @@ const userRepository = new UserRepositorySupabase()
 const roomRepository = new RoomRepositorySupabase()
 const roomService = new RoomService(roomRepository, coinRepository)
 const userService = new UserService(userRepository, membershipService, roomService)
-const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService);
+const dreamNodeCommentService = new DreamNodeCommentService();
+const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService, dreamNodeCommentService);
 
 // Endpoints de interpretación
 dreamNodeRouter.post("/interpret", authenticateToken, validateBody(InterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.interpret(req, res));
@@ -77,3 +79,4 @@ dreamNodeRouter.get("/public", (req, res) => dreamNodeController.getPublicDreams
 dreamNodeRouter.get("/:id/comments", (req, res) => dreamNodeCommentController.getCommentsWithUser(req, res));
 dreamNodeRouter.get("/map", authenticateToken, (req, res) => dreamNodeController.getUserMap(req, res));
 dreamNodeRouter.get("/stats", authenticateToken, (req, res) => dreamNodeController.getMyStats(req, res));
+dreamNodeRouter.get("/:id", (req, res) => dreamNodeController.getById(req, res));

@@ -84,6 +84,35 @@ export class DreamNodeController {
     }
   }
 
+      async getById(req: Request, res: Response) {
+        try {
+          const { id } = req.params;
+          if (!id) {
+            return res.status(400).json({
+              message: "ID del nodo es requerido",
+              errors: ["El parámetro 'id' es obligatorio"],
+            });
+          }
+          const dreamNode = await this.dreamNodeService.getDreamNodeById(id);
+          if (!dreamNode) {
+            return res.status(404).json({
+              message: "Nodo no encontrado",
+              errors: ["No existe un nodo con ese ID"],
+            });
+          }
+          res.json({
+            message: "Nodo obtenido exitosamente",
+            data: dreamNode,
+            errors: [],
+          });
+        } catch (error: any) {
+          console.error("Error en DreamNodeController getById:", error);
+          res.status(500).json({
+            message: "Error interno del servidor",
+            errors: [error.message || "Error al obtener el nodo"],
+          });
+        }
+      }
   async save(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;

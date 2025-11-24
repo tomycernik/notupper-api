@@ -68,6 +68,7 @@ describe('DreamNodeCommentController - getCommentsWithUser', () => {
   let mockUserService: UserService;
   let mockNotificationService: NotificationService;
   let mockDreamNodeService: DreamNodeService;
+  let mockCommentService: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -75,8 +76,17 @@ describe('DreamNodeCommentController - getCommentsWithUser', () => {
     mockUserService = new UserService({} as any, {} as any, {} as any);
     mockNotificationService = new NotificationService({} as any);
     mockDreamNodeService = new DreamNodeService({} as any);
+    mockCommentService = {
+      getCommentsByNodeWithUser: mockGetCommentsByNodeWithUser,
+      countComments: mockCountComments,
+    };
 
-    controller = new DreamNodeCommentController(mockUserService, mockNotificationService, mockDreamNodeService);
+    controller = new DreamNodeCommentController(
+      mockUserService,
+      mockNotificationService,
+      mockDreamNodeService,
+      mockCommentService
+    );
 
     mockJson = jest.fn();
     mockStatus = jest.fn().mockReturnThis();

@@ -3,7 +3,7 @@ import { IBadgeRepository } from "@domain/repositories/badge.repository";
 import { Badge } from "@domain/models/badge.model";
 
 export class BadgeRepositorySupabase implements IBadgeRepository {
-  
+
   async getAllBadgesWithUser(profileId: string): Promise<Array<Badge & { acquired: boolean }>> {
     const { data: allBadges, error: allError } = await supabase
       .from('badge')
@@ -27,7 +27,7 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
       acquired: acquiredIds.has(row.id)
     }));
   }
-  
+
   async getAllBadges(): Promise<Badge[]> {
     const { data, error } = await supabase
       .from('badge')

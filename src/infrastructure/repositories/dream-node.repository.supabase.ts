@@ -529,7 +529,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
           creationDate: node.creation_date,
           imageUrl: node.image_url,
           profile_id: node.profile_id,
-          userName: userData?.user?.user_metadata?.username || userData?.user?.email?.split('@')[0] || 'Usuario',
+          userName: userData?.user?.user_metadata?.full_name || userData?.user?.email?.split('@')[0] || 'Usuario',
           fotoUser: userData?.user?.user_metadata?.avatar_url || null,
           likeCount,
           likedByMe,

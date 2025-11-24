@@ -27,7 +27,7 @@ export class DreamNodeService {
     userId: string,
     dream: SaveDreamNodeRequestDto,
     dreamContext: DreamContext
-  ): Promise<Badge[]> {
+  ): Promise<{ id: string; unlockedBadges: Badge[] }> {
     const { title, description, interpretation, emotion, imageUrl } = dream;
 
     const dreamNode: IDreamNode = {
@@ -69,8 +69,7 @@ export class DreamNodeService {
         console.error("MissionService onDreamSaved error:", e);
       }
     }
-
-    return unlockedBadges;
+    return { id: data.id, unlockedBadges};
   }
 
   async onDreamReinterpreted(userId: string): Promise<Badge[]> {

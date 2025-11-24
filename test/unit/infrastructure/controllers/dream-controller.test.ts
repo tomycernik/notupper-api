@@ -243,8 +243,10 @@ describe('DreamNodeController Integration Tests', () => {
       };
 
       // Mock the service method
-      mockDreamNodeService.saveDreamNode.mockResolvedValue([]);
-    });
+mockDreamNodeService.saveDreamNode.mockResolvedValue({
+  id: 'mock-dream-id',
+  unlockedBadges: []
+});    });
 
     it('should save a dream node successfully', async () => {
       // Arrange
@@ -276,13 +278,14 @@ describe('DreamNodeController Integration Tests', () => {
           people: expect.any(Array),
           locations: expect.any(Array),
           emotions_context: expect.any(Array)
-        })
+        }),
       );
       expect(mockRes.status).toHaveBeenCalledWith(201);
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Nodo de sueño guardado exitosamente',
         errors: [],
-        unlockedBadges: []
+        unlockedBadges: [],
+        data: {id: "mock-dream-id"}
       });
     });
 

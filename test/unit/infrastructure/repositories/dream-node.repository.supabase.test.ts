@@ -77,32 +77,75 @@ describe('DreamNodeRepositorySupabase Integration Tests', () => {
     });
   });
 
-  describe('getPublicDreams', () => {
-    it('should query only public dreams with pagination', async () => {
-      const rangeMock = jest.fn(() => Promise.resolve({ data: [dreamNodeMock], error: null }));
-      const orderMock = jest.fn(() => ({ range: rangeMock }));
-      const eqMock = jest.fn(() => ({ order: orderMock }));
-      const selectMock = jest.fn(() => ({ eq: eqMock }));
-      supabase.from = jest.fn().mockReturnValue({ select: selectMock });
-      supabase.auth = { admin: { getUserById: jest.fn().mockResolvedValue({ data: { user: { user_metadata: {}, email: 'test@example.com' } }, error: null }) } } as any;
-      repo.countLikes = jest.fn().mockResolvedValue(3);
-      repo.isLikedByUser = jest.fn().mockResolvedValue(false);
-      const MockCommentRepo = jest.fn().mockImplementation(() => ({
-        countComments: jest.fn().mockResolvedValue(0),
-        getCommentsByNodeWithUser: jest.fn().mockResolvedValue([]),
-        getCommentsByNode: jest.fn().mockResolvedValue([]),
-        addComment: jest.fn(),
-      }));
-      jest.spyOn(await import('../../../../src/infrastructure/repositories/dream-node-comment.repository.supabase'), 'DreamNodeCommentRepositorySupabase').mockImplementation(MockCommentRepo);
-      const result = await repo.getPublicDreams({ offset: 0, limit: 1 });
-      expect(supabase.from).toHaveBeenCalledWith('dream_node');
-      expect(selectMock).toHaveBeenCalledWith(`*, emotion:emotion_id(id, emotion, color)`);
-      expect(eqMock).toHaveBeenCalledWith('privacy_id', expect.any(String));
-      expect(orderMock).toHaveBeenCalledWith('creation_date', { ascending: false });
-      expect(rangeMock).toHaveBeenCalledWith(0, 0);
-      expect(Array.isArray(result)).toBe(true);
+  describe('getDreamsForFeed', () => {
+  it('should query public and anonymous dreams with pagination', async () => {
+
+    const rangeMock = jest.fn(() =>
+      Promise.resolve({ data: [dreamNodeMock], error: null })
+    );
+
+    const orderMock = jest.fn(() => ({
+      range: rangeMock
+    }));
+
+    const eqMock = jest.fn(() => ({
+      order: orderMock
+    }));
+
+    const inMock = jest.fn(() => ({
+      eq: eqMock
+    }));
+
+    const selectMock = jest.fn(() => ({
+      in: inMock
+    }));
+
+    supabase.from = jest.fn().mockReturnValue({
+      select: selectMock
     });
+
+    supabase.auth = {
+      admin: {
+        getUserById: jest.fn().mockResolvedValue({
+          data: {
+            user: {
+              user_metadata: {},
+              email: 'test@example.com'
+            }
+          },
+          error: null
+        })
+      }
+    } as any;
+
+    repo.countLikes = jest.fn().mockResolvedValue(3);
+    repo.isLikedByUser = jest.fn().mockResolvedValue(false);
+
+    const MockCommentRepo = jest.fn().mockImplementation(() => ({
+      countComments: jest.fn().mockResolvedValue(0),
+      getCommentsByNodeWithUser: jest.fn().mockResolvedValue([]),
+      getCommentsByNode: jest.fn().mockResolvedValue([]),
+      addComment: jest.fn(),
+    }));
+
+    jest
+      .spyOn(
+        await import('../../../../src/infrastructure/repositories/dream-node-comment.repository.supabase'),
+        'DreamNodeCommentRepositorySupabase'
+      )
+      .mockImplementation(MockCommentRepo);
+
+    const result = await repo.getDreamsForFeed({ offset: 0, limit: 1 });
+
+    expect(supabase.from).toHaveBeenCalledWith('dream_node');
+    expect(selectMock).toHaveBeenCalledWith(`*, emotion:emotion_id(id, emotion, color)`);
+    expect(inMock).toHaveBeenCalledWith('privacy_id', expect.any(Array));
+    expect(eqMock).toHaveBeenCalledWith('state_id', expect.any(String));
+    expect(orderMock).toHaveBeenCalledWith('creation_date', { ascending: false });
+    expect(rangeMock).toHaveBeenCalledWith(0, 0);
+    expect(Array.isArray(result)).toBe(true);
   });
+});
 
   describe('countPublicDreams', () => {
     it('should count only public dreams', async () => {

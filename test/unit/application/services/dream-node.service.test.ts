@@ -124,7 +124,7 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
       countUserNodes: jest.fn(),
       addDreamContext: jest.fn(),
       updateDreamNode: jest.fn(),
-      getPublicDreams: jest.fn(),
+      getDreamsForFeed: jest.fn(),
       countPublicDreams: jest.fn(),
     } as unknown as jest.Mocked<IDreamNodeRepository>;
 
@@ -237,7 +237,7 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
     });
   });
 
-  describe("getPublicDreams", () => {
+  describe("getDreamsForFeed", () => {
     it("should return paginated public dreams", async () => {
       const mockPublicDreams = [
         {
@@ -262,12 +262,12 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
         },
       ];
 
-      mockRepository.getPublicDreams.mockResolvedValue(mockPublicDreams as any);
+      mockRepository.getDreamsForFeed.mockResolvedValue(mockPublicDreams as any);
       mockRepository.countPublicDreams.mockResolvedValue(2);
 
-      const result = await service.getPublicDreams({ page: 1, limit: 10 });
+      const result = await service.getDreamsForFeed({ page: 1, limit: 10 });
 
-      expect(mockRepository.getPublicDreams).toHaveBeenCalledWith({
+      expect(mockRepository.getDreamsForFeed).toHaveBeenCalledWith({
         page: 1,
         limit: 10,
         offset: 0,
@@ -285,12 +285,12 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
     });
 
     it("should handle pagination correctly", async () => {
-      mockRepository.getPublicDreams.mockResolvedValue([]);
+      mockRepository.getDreamsForFeed.mockResolvedValue([]);
       mockRepository.countPublicDreams.mockResolvedValue(25);
 
-      const result = await service.getPublicDreams({ page: 2, limit: 10 });
+      const result = await service.getDreamsForFeed({ page: 2, limit: 10 });
 
-      expect(mockRepository.getPublicDreams).toHaveBeenCalledWith({
+      expect(mockRepository.getDreamsForFeed).toHaveBeenCalledWith({
         page: 2,
         limit: 10,
         offset: 10,
@@ -306,12 +306,12 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
     });
 
     it("should use default pagination if not provided", async () => {
-      mockRepository.getPublicDreams.mockResolvedValue([]);
+      mockRepository.getDreamsForFeed.mockResolvedValue([]);
       mockRepository.countPublicDreams.mockResolvedValue(0);
 
-      await service.getPublicDreams();
+      await service.getDreamsForFeed();
 
-      expect(mockRepository.getPublicDreams).toHaveBeenCalledWith({
+      expect(mockRepository.getDreamsForFeed).toHaveBeenCalledWith({
         page: 1,
         limit: 10,
         offset: 0,
@@ -319,9 +319,9 @@ describe("DreamNodeService - shareDream and unshareDream", () => {
     });
 
     it("should throw error if repository fails", async () => {
-      mockRepository.getPublicDreams.mockRejectedValue(new Error("DB Error"));
+      mockRepository.getDreamsForFeed.mockRejectedValue(new Error("DB Error"));
 
-      await expect(service.getPublicDreams()).rejects.toThrow(
+      await expect(service.getDreamsForFeed()).rejects.toThrow(
         "Error obteniendo los sueños públicos: Error: DB Error"
       );
     });

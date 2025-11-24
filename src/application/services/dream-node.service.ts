@@ -219,7 +219,7 @@ export class DreamNodeService {
     }
   }
 
-  async getPublicDreams(
+  async getDreamsForFeed(
     pagination?: IPaginationOptions
   ): Promise<IPaginatedResult<IPublicDream>> {
     try {
@@ -234,7 +234,7 @@ export class DreamNodeService {
       };
 
       const [dreams, total] = await Promise.all([
-        this.dreamNodeRepository.getPublicDreams(paginationData),
+        this.dreamNodeRepository.getDreamsForFeed(paginationData),
         this.dreamNodeRepository.countPublicDreams(),
       ]);
 

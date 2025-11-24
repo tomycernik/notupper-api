@@ -496,52 +496,74 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     if (error) throw new Error(error.message);
   }
 
-  async getPublicDreams(pagination: IPaginationOptions, currentUserId?: string): Promise<any[]> {
-    let query = supabase
-      .from("dream_node")
-      .select(`*, emotion:emotion_id(id, emotion, color)`)
-      .eq("privacy_id", privacyMap["Publico"])
-      .order("creation_date", { ascending: false });
+async getDreamsForFeed(
+  pagination: IPaginationOptions,
+  currentUserId?: string
+): Promise<any[]> {
+  let query = supabase
+    .from("dream_node")
+    .select(`*, emotion:emotion_id(id, emotion, color)`)
+    .in("privacy_id", [privacyMap["Publico"], privacyMap["Anonimo"]])
+    .eq("state_id", stateMap["Activo"])
+    .order("creation_date", { ascending: false });
 
-    if (pagination?.offset !== undefined && pagination?.limit !== undefined) {
-      const to = pagination.offset + pagination.limit - 1;
-      query = query.range(pagination.offset, to);
-    }
-
-    const { data, error } = await query;
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return await Promise.all(
-      (data ?? []).map(async (node: any) => {
-        const { data: userData } = await supabase.auth.admin.getUserById(node.profile_id);
-        const likeCount = await this.countLikes(node.id);
-        const likedByMe = currentUserId ? await this.isLikedByUser(node.id, currentUserId) : false;
-        const commentRepo = new (await import('./dream-node-comment.repository.supabase')).DreamNodeCommentRepositorySupabase();
-        const commentCount = await commentRepo.countComments(node.id);
-        const comments = (await commentRepo.getCommentsByNodeWithUser(node.id)).slice(-3); // últimos 3 comentarios con datos de usuario
-        return {
-          id: node.id,
-          title: node.title,
-          dream_description: node.dream_description,
-          interpretation: node.interpretation,
-          creationDate: node.creation_date,
-          imageUrl: node.image_url,
-          profile_id: node.profile_id,
-          userName: userData?.user?.user_metadata?.full_name || userData?.user?.email?.split('@')[0] || 'Usuario',
-          fotoUser: userData?.user?.user_metadata?.avatar_url || null,
-          likeCount,
-          likedByMe,
-          commentCount,
-          comments,
-          colorEmotion: node.emotion?.color || null,
-          emotion: node.emotion?.emotion || null,
-          isOwner: currentUserId ? node.profile_id === currentUserId : false,
-        };
-      })
-    );
+  if (pagination?.offset !== undefined && pagination?.limit !== undefined) {
+    const to = pagination.offset + pagination.limit - 1;
+    query = query.range(pagination.offset, to);
   }
+
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return await Promise.all(
+    (data ?? []).map(async (node: any) => {
+      const isAnonymous = node.privacy_id === privacyMap["Anonimo"];
+
+      const { data: userData } = isAnonymous
+        ? { data: null }
+        : await supabase.auth.admin.getUserById(node.profile_id);
+
+      const likeCount = await this.countLikes(node.id);
+      const likedByMe = currentUserId
+        ? await this.isLikedByUser(node.id, currentUserId)
+        : false;
+
+      const commentRepo = new (
+        await import("./dream-node-comment.repository.supabase")
+      ).DreamNodeCommentRepositorySupabase();
+      const commentCount = await commentRepo.countComments(node.id);
+      const comments = (
+        await commentRepo.getCommentsByNodeWithUser(node.id)
+      ).slice(-3);
+      return {
+        id: node.id,
+        title: node.title,
+        dream_description: node.dream_description,
+        interpretation: node.interpretation,
+        creationDate: node.creation_date,
+        imageUrl: node.image_url,
+        profile_id: isAnonymous ? undefined : node.profile_id,
+        userName: isAnonymous
+          ? undefined
+          : userData?.user?.user_metadata?.full_name ||
+            userData?.user?.email?.split("@")[0] ||
+            "Usuario",
+        fotoUser: isAnonymous
+          ? undefined
+          : userData?.user?.user_metadata?.avatar_url || null,
+        likeCount,
+        likedByMe,
+        commentCount,
+        comments,
+        colorEmotion: node.emotion?.color || null,
+        emotion: node.emotion?.emotion || null,
+        isOwner: currentUserId ? node.profile_id === currentUserId : false,
+      };
+    })
+  );
+}
 
   async countPublicDreams(): Promise<number> {
     const { count, error } = await supabase

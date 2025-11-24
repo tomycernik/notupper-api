@@ -16,7 +16,7 @@ export class BadgeController {
       res.status(500).json({ errors: 'Error al obtener insignias' });
     }
   }
-  
+
   async allBadges(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;

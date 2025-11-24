@@ -139,7 +139,7 @@ export class DreamNodeController {
         });
       }
 
-      const unlockedBadges = await this.dreamNodeService.saveDreamNode(
+      const { id, unlockedBadges } = await this.dreamNodeService.saveDreamNode(
         userId,
         dreamNode,
         dreamContext
@@ -148,6 +148,7 @@ export class DreamNodeController {
       return res.status(201).json({
         message: "Nodo de sueño guardado exitosamente",
         errors: [],
+        data:{id},
         unlockedBadges: unlockedBadges,
       });
     } catch (error: any) {

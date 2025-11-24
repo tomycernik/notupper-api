@@ -9,3 +9,4 @@ const badgeRepository = new BadgeRepositorySupabase();
 const controller = new BadgeController(badgeRepository);
 
 badgeRouter.get('/my', authenticateToken, (req, res) => controller.myBadges(req, res));
+badgeRouter.get('/all', authenticateToken, (req, res) => controller.allBadges(req, res));

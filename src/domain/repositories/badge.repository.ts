@@ -6,4 +6,6 @@ export interface IBadgeRepository {
   awardBadge(profileId: string, badgeId: string): Promise<void>;
   getUserFeaturedBadges(profileId: string): Promise<Badge[]>;
   setUserFeaturedBadges(profileId: string, badgeIds: string[]): Promise<void>;
+  getAllBadges(): Promise<Badge[]>;
+  getAllBadgesWithUser(profileId: string): Promise<Array<Badge & { acquired: boolean }>>;
 }

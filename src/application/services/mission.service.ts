@@ -120,7 +120,6 @@ export class MissionService {
     }
     return null;
   }
-
   //calcula la racha antes de guardar el sueño actual (evalua si el usuario acaba de aumentar su racha o si ya tenia sueños guardados en el dia)
   private async estimatePreviousStreak(profileId: string, currentStreak: number): Promise<number> {
     const now = new Date();

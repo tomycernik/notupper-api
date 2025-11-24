@@ -16,4 +16,16 @@ export class BadgeController {
       res.status(500).json({ errors: 'Error al obtener insignias' });
     }
   }
+  
+  async allBadges(req: Request, res: Response) {
+    try {
+      const userId = (req as any).userId;
+      if (!userId) return res.status(401).json({ errors: 'Unauthorized' });
+      const badges = await this.badgeRepository.getAllBadgesWithUser(userId);
+      res.json({ badges });
+    } catch (e: any) {
+      console.error('BadgeController allBadges error:', e);
+      res.status(500).json({ errors: 'Error al obtener todas las insignias' });
+    }
+  }
 }

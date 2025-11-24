@@ -8,4 +8,5 @@ export const missionRouter = Router();
 const missionRepository = new MissionRepositorySupabase();
 const controller = new MissionController(missionRepository);
 
+missionRouter.get('/all', (req, res) => controller.allMissions(req, res));
 missionRouter.get('/my', authenticateToken, (req, res) => controller.myMissions(req, res));

@@ -3,6 +3,44 @@ import { IBadgeRepository } from "@domain/repositories/badge.repository";
 import { Badge } from "@domain/models/badge.model";
 
 export class BadgeRepositorySupabase implements IBadgeRepository {
+  
+  async getAllBadgesWithUser(profileId: string): Promise<Array<Badge & { acquired: boolean }>> {
+    const { data: allBadges, error: allError } = await supabase
+      .from('badge')
+      .select('id, badge_description, badge_image, badge_code, coin_reward');
+    if (allError) throw new Error(allError.message);
+
+    const { data: userBadges, error: userError } = await supabase
+      .from('user_badge')
+      .select('badge_id')
+      .eq('profile_id', profileId);
+    if (userError) throw new Error(userError.message);
+
+    const acquiredIds = new Set((userBadges || []).map((row: any) => row.badge_id));
+
+    return (allBadges || []).map((row: any) => ({
+      id: row.id,
+      description: row.badge_description || undefined,
+      imageUrl: row.badge_image || undefined,
+      code: row.badge_code || undefined,
+      coin_reward: row.coin_reward ?? undefined,
+      acquired: acquiredIds.has(row.id)
+    }));
+  }
+  
+  async getAllBadges(): Promise<Badge[]> {
+    const { data, error } = await supabase
+      .from('badge')
+      .select('id, badge_description, badge_image, badge_code, coin_reward');
+    if (error) throw new Error(error.message);
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      description: row.badge_description || undefined,
+      imageUrl: row.badge_image || undefined,
+      code: row.badge_code || undefined,
+      coin_reward: row.coin_reward ?? undefined,
+    }));
+  }
 
   async getUserBadges(profileId: string): Promise<Badge[]> {
     const { data, error } = await supabase

@@ -33,7 +33,7 @@ export class DreamNodeCommentRepositorySupabase {
         let avatar_url = "";
 
         if (!userError && userData?.user) {
-          username = userData.user.user_metadata?.username || (userData.user.email ? userData.user.email.split('@')[0] : "Usuario") || "Usuario";
+          username = userData.user.user_metadata?.full_name || (userData.user.email ? userData.user.email.split('@')[0] : "Usuario") || "Usuario";
           avatar_url = userData.user.user_metadata?.avatar_url || "";
         }
 

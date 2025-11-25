@@ -26,6 +26,7 @@ export interface IDreamNode {
   dream_description: string;
   interpretation: string;
   imageUrl?: string | undefined;
+  thumbUrl?: string | undefined;
   privacy: DreamPrivacy;
   state: DreamState;
   emotion: Emotion;

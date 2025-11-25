@@ -27,6 +27,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       emotion_id: emotionMap[dreamNode.emotion]!,
       image_url: dreamNode.imageUrl ?? '',
       dream_type_id: dreamTypeMap[dreamType]!,
+      thumb_url: dreamNode.thumbUrl ?? '',
     };
     const { data, error } = await supabase
       .from("dream_node")

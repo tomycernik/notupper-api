@@ -28,8 +28,11 @@ export class SaveDreamNodeRequestDto {
   emotion!: string;
 
   @IsOptional()
-  @IsString({ message: 'La imagen debe ser una cadena válida.' })
+  @IsString({ message: 'El URL de la imagen debe ser una cadena válida.' })
   imageUrl?: string;
+  @IsOptional()
+  @IsString({ message: 'El URL de la miniatura debe ser una cadena válida.' })
+  thumbUrl?: string;
   @IsString({ message: 'El tipo debe ser una cadena válida.' })
   @IsNotEmpty({ message: 'El tipo no puede estar vacío.' })
   @IsIn(

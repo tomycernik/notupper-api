@@ -28,7 +28,8 @@ export class DreamNodeService {
     dream: SaveDreamNodeRequestDto,
     dreamContext: DreamContext
   ): Promise<{ id: string; unlockedBadges: Badge[] }> {
-    const { title, description, interpretation, emotion, imageUrl } = dream;
+    const { title, description, interpretation, emotion, imageUrl, thumbUrl } =
+      dream;
 
     const dreamNode: IDreamNode = {
       creationDate: new Date(),
@@ -40,6 +41,7 @@ export class DreamNodeService {
       state: "Activo",
       emotion: emotion as Emotion,
       type: dream.dreamType as DreamTypeName,
+      thumbUrl,
     };
 
     const { data, error } = await this.dreamNodeRepository.save(
@@ -69,7 +71,7 @@ export class DreamNodeService {
         console.error("MissionService onDreamSaved error:", e);
       }
     }
-    return { id: data.id, unlockedBadges};
+    return { id: data.id, unlockedBadges };
   }
 
   async onDreamReinterpreted(userId: string): Promise<Badge[]> {
@@ -289,9 +291,14 @@ export class DreamNodeService {
     };
   }
 
-  async getNodeLikeInfo(nodeId: string, currentUserId?: string): Promise<{ likeCount: number, likedByMe: boolean }> {
+  async getNodeLikeInfo(
+    nodeId: string,
+    currentUserId?: string
+  ): Promise<{ likeCount: number; likedByMe: boolean }> {
     const likeCount = await this.dreamNodeRepository.countLikes(nodeId);
-    const likedByMe = currentUserId ? await this.dreamNodeRepository.isLikedByUser(nodeId, currentUserId) : false;
+    const likedByMe = currentUserId
+      ? await this.dreamNodeRepository.isLikedByUser(nodeId, currentUserId)
+      : false;
     return { likeCount, likedByMe };
   }
 }

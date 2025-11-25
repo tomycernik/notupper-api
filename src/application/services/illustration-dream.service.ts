@@ -14,13 +14,12 @@ export class IllustrationDreamService {
     return illustrationResponse;
   }
 
-  async saveIllustrationFromUrl(imageUrl: string): Promise<string> {
+  async saveIllustrationFromUrl(imageTitle: string, imageUrl: string): Promise<string> {
     try {
-      const timestamp = Date.now();
-      const fileName = `dream_${timestamp}.jpg`;
+      const fileName = `dream_${imageTitle}.jpg`;
       const filePath = `dreams/${fileName}`;
 
-      const finalUrl = `${envs.SUPABASE_URL}/storage/v1/object/public/dreams/${filePath}`;
+      const finalUrl = `${envs.SUPABASE_URL}/storage/v1/object/public/dreams/dreams/${filePath}`;
 
       const response = await fetch(imageUrl, {
         redirect: "follow",

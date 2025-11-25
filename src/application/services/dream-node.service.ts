@@ -15,6 +15,7 @@ import { MissionService } from "@application/services/mission.service";
 import { Badge } from "@domain/models/badge.model";
 import { IPublicDream } from "@domain/interfaces/public-dream.interface";
 import { DreamGraphResponse } from "@/domain/interfaces/dream-map-item.interface";
+import { envs } from "@/config/envs";
 
 export class DreamNodeService {
   constructor(
@@ -28,20 +29,34 @@ export class DreamNodeService {
     dream: SaveDreamNodeRequestDto,
     dreamContext: DreamContext
   ): Promise<{ id: string; unlockedBadges: Badge[] }> {
-    const { title, description, interpretation, emotion, imageUrl, thumbUrl } =
-      dream;
+    const {
+      title,
+      description,
+      interpretation,
+      emotion,
+      imageTitle,
+      thumbTitle,
+    } = dream;
+
+    const imageFileName = `dream_${imageTitle}.jpg`;
+    const imageFilePath = `dreams/${imageFileName}`;
+    const finalImageUrl = `${envs.SUPABASE_URL}/storage/v1/object/public/dreams/${imageFilePath}`;
+
+    const thumbFileName = `dream_${thumbTitle}.jpg`;
+    const thumbFilePath = `dreams/${thumbFileName}`;
+    const finalThumbUrl = `${envs.SUPABASE_URL}/storage/v1/object/public/dreams/${thumbFilePath}`;
 
     const dreamNode: IDreamNode = {
       creationDate: new Date(),
       title,
       dream_description: description,
       interpretation,
-      imageUrl: imageUrl,
+      imageUrl: finalImageUrl,
       privacy: "Privado",
       state: "Activo",
       emotion: emotion as Emotion,
       type: dream.dreamType as DreamTypeName,
-      thumbUrl,
+      thumbUrl: finalThumbUrl,
     };
 
     const { data, error } = await this.dreamNodeRepository.save(

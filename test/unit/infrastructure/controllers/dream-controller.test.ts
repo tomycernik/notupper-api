@@ -255,7 +255,7 @@ mockDreamNodeService.saveDreamNode.mockResolvedValue({
         description: 'Test description',
         interpretation: 'Test interpretation',
         emotion: 'happy',
-        imageUrl: ''
+        imageUrl: 'https://example.com/image.jpg'
       };
 
       // Act
@@ -309,8 +309,7 @@ mockDreamNodeService.saveDreamNode.mockResolvedValue({
           title: 'Test Dream',
           description: 'Test description',
           emotion: 'happy',
-          imageUrl: '',
-          thumbUrl: '',
+          imageUrl: 'https://example.com/image.jpg',
           interpretation: 'Test interpretation'
         },
         expectedDreamContext

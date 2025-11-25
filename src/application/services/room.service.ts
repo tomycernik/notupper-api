@@ -3,7 +3,6 @@ import { GetUserRoomsResponseDto, RoomResponseDto } from '@infrastructure/dtos/r
 import { IRoomRepository } from '@domain/repositories/room.repository';
 import { ICoinRepository } from '@domain/repositories/coin.repository';
 import { IPaginatedResult, IPaginationOptions } from '@domain/interfaces/pagination.interface';
-
 export class RoomService {
   constructor(
     private readonly roomRepository: IRoomRepository,
@@ -191,6 +190,12 @@ export class RoomService {
     if (isNaN(price) || price <= 0) throw new Error('Precio inválido');
   
     await this.coinRepository.deductCoins(userId, price);
+    await this.coinRepository.registerMovement(
+      userId,
+      price,
+      'egreso',
+      `Compra de habitación: ${room.name || roomId}`
+    );
     await this.roomRepository.addRoomToUser(userId, roomId);
   }
 }

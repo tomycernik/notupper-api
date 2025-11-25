@@ -7,6 +7,7 @@ import { feedRouter } from "@infrastructure/routes/modules/feed.routes";
 import { statisticsRouter } from "@infrastructure/routes/modules/statistics.routes";
 import { roomRouter } from "@infrastructure/routes/modules/room.routes";
 import { skinRouter } from "@infrastructure/routes/modules/skin.routes";
+import { packageRouter } from "./modules/package.routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -21,6 +22,7 @@ export class AppRoutes {
     router.use("/api/rooms", roomRouter);
     router.use("/api/skins", skinRouter);
     router.use("/api/feed", feedRouter);
+    router.use("/api/packages", packageRouter);
     return router;
   }
 }

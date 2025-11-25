@@ -11,9 +11,6 @@ import { MembershipService } from '@/application/services/membership.service';
 import { MembershipRepositorySupabase } from '@/infrastructure/repositories/membership.repository.supabase';
 import { NotificationService } from '@/application/services/notification.service';
 import { NotificationRepositorySupabase } from '@/infrastructure/repositories/notification.repository.supabase';
-import { RoomRepositorySupabase } from '@/infrastructure/repositories/room.repository.supabase';
-import { RoomService } from '@/application/services/room.service';
-import { CoinRepositorySupabase } from '@/infrastructure/repositories/coin.repository.supabase';
 import { DreamNodeRepositorySupabase } from '@/infrastructure/repositories/dream-node.repository.supabase';
 import { DreamNodeService } from '@/application/services/dream-node.service';
 import { DreamNodeCommentService } from '@application/services/dream-node-comment.service';
@@ -22,21 +19,18 @@ const notificationRepository = new NotificationRepositorySupabase()
 const notificationService = new NotificationService(notificationRepository)
 const membershipRepository = new MembershipRepositorySupabase()
 const membershipService = new MembershipService(membershipRepository);
-const roomRepository = new RoomRepositorySupabase();
-const coinRepository = new CoinRepositorySupabase()
-const roomService = new RoomService(roomRepository,coinRepository)
 const dreamNodeRepository = new DreamNodeRepositorySupabase()
 const dreamNodeService = new DreamNodeService(dreamNodeRepository)
 const dreamNodeCommentService = new DreamNodeCommentService();
 const feedController = new FeedController(
 	new FeedService(dreamNodeRepository),
-	new UserService(new UserRepositorySupabase(), membershipService, roomService, coinRepository),
+	new UserService(new UserRepositorySupabase(), membershipService),
 	notificationService,
 	dreamNodeService
 );
 const feedRouter = Router();
 const userRepository = new UserRepositorySupabase()
-const userService = new UserService(userRepository, membershipService, roomService, coinRepository)
+const userService = new UserService(userRepository, membershipService)
 const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService, dreamNodeCommentService);
 
 feedRouter.get('/', authenticateToken, (req, res) => feedController.getFeed(req, res));

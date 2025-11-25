@@ -1,7 +1,4 @@
 import { PaymentController } from '../../../../src/infrastructure/controllers/payment.controller';
-import { PaymentService } from '../../../../src/application/services/payment.service';
-import { UserService } from '../../../../src/application/services/user.service';
-import { CreatePaymentRequestDto } from '../../../../src/infrastructure/dtos/payment/create-payment-request.dto';
 
 describe('PaymentController', () => {
   let paymentController: PaymentController;
@@ -13,26 +10,19 @@ describe('PaymentController', () => {
   beforeEach(() => {
     paymentService = { createPayment: jest.fn() };
     userService = {
-      coinRepository: {
-        addCoins: jest.fn(),
-        registerMovement: jest.fn()
-      },
       updateMembership: jest.fn()
     };
-    paymentController = new PaymentController(paymentService, userService);
+    const packageService = {
+      getPackageById: jest.fn(),
+      getAllPackages: jest.fn()
+    };
+    const notificationService = {};
+    const coinRepository = { registerMovement: jest.fn() };
+    paymentController = new PaymentController(paymentService, userService, packageService as any, notificationService as any, coinRepository);
     req = { body: {}, userId: 'user' };
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
   });
 
-  it('should credit coins and register movement if coin_amount is present and payment approved', async () => {
-    req.body = { coin_amount: 100 };
-    paymentService.createPayment.mockResolvedValue({ status: 'approved' });
-    await paymentController.createPayment(req, res);
-    expect(userService.coinRepository.addCoins).toHaveBeenCalledWith('user', 100);
-    expect(userService.coinRepository.registerMovement).toHaveBeenCalledWith('user', 100, 'ingreso', 'Compra de monedas por Mercado Pago');
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Pago aprobado y monedas acreditadas' });
-  });
 
   it('should update membership if coin_amount is not present and payment approved', async () => {
     req.body = {};

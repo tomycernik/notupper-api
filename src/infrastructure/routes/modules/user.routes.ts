@@ -32,7 +32,7 @@ const roomService = new RoomService(roomRepository, coinRepository);
 
 const badgeRepository = new BadgeRepositorySupabase();
 const badgeService = new BadgeService(badgeRepository);
-const userService = new UserService(userRepository, membershipService, roomService, coinRepository);
+const userService = new UserService(userRepository, membershipService);
 const userController = new UserController(userService, skinService, roomService, badgeService);
 const coinController = new CoinController(coinRepository);
 

@@ -684,11 +684,11 @@ mockDreamNodeService.saveDreamNode.mockResolvedValue({
         },
       };
 
-      mockDreamNodeService.getPublicDreams = jest.fn().mockResolvedValue(mockPublicDreams);
+      mockDreamNodeService.getDreamsForFeed = jest.fn().mockResolvedValue(mockPublicDreams);
 
       await controller.getPublicDreams(mockRequest, mockResponse);
 
-      expect(mockDreamNodeService.getPublicDreams).toHaveBeenCalledWith({ page: 1, limit: 10 });
+      expect(mockDreamNodeService.getDreamsForFeed).toHaveBeenCalledWith({ page: 1, limit: 10 });
       expect(mockResponse.json).toHaveBeenCalledWith(mockPublicDreams);
     });
 
@@ -707,16 +707,16 @@ mockDreamNodeService.saveDreamNode.mockResolvedValue({
         },
       };
 
-      mockDreamNodeService.getPublicDreams = jest.fn().mockResolvedValue(mockPublicDreams);
+      mockDreamNodeService.getDreamsForFeed = jest.fn().mockResolvedValue(mockPublicDreams);
 
       await controller.getPublicDreams(mockRequest, mockResponse);
 
-      expect(mockDreamNodeService.getPublicDreams).toHaveBeenCalledWith({ page: 1, limit: 10 });
+      expect(mockDreamNodeService.getDreamsForFeed).toHaveBeenCalledWith({ page: 1, limit: 10 });
       expect(mockResponse.json).toHaveBeenCalledWith(mockPublicDreams);
     });
 
     it('should return 500 if service throws error', async () => {
-      mockDreamNodeService.getPublicDreams = jest.fn().mockRejectedValue(new Error('DB Error'));
+      mockDreamNodeService.getDreamsForFeed = jest.fn().mockRejectedValue(new Error('DB Error'));
 
       await controller.getPublicDreams(mockRequest, mockResponse);
 

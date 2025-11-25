@@ -407,7 +407,7 @@ export class DreamNodeController {
 
       const pagination = { page, limit };
 
-      const paginatedResult = await this.dreamNodeService.getPublicDreams(
+      const paginatedResult = await this.dreamNodeService.getDreamsForFeed(
         pagination
       );
 

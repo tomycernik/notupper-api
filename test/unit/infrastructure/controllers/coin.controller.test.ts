@@ -40,15 +40,17 @@ describe('CoinController', () => {
     coinRepository.getMovements.mockResolvedValue([
       { description: 'Test', value: 100, sign: '+', date: '2025-11-24', time: '10:00' }
     ]);
+    coinRepository.getUserCoins = jest.fn().mockResolvedValue(1000);
     await coinController.getMovements(req, res);
     expect(coinRepository.getMovements).toHaveBeenCalledWith('user');
     expect(res.json).toHaveBeenCalledWith({ movements: [
       { description: 'Test', value: 100, sign: '+', date: '2025-11-24', time: '10:00' }
-    ] });
+    ], coins: 1000 });
   });
 
   it('should handle error on getMovements', async () => {
-    coinRepository.getMovements.mockRejectedValue(new Error('fail'));
+    coinRepository.getMovements.mockImplementationOnce(() => Promise.reject(new Error('fail')));
+    coinRepository.getUserCoins = jest.fn().mockResolvedValue(1000);
     await coinController.getMovements(req, res);
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: 'Error al obtener movimientos' });

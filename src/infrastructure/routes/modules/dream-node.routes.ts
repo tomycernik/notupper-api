@@ -30,8 +30,6 @@ import { NotificationService } from "@/application/services/notification.service
 import { NotificationRepositorySupabase } from "@/infrastructure/repositories/notification.repository.supabase";
 import { UserService } from "@/application/services/user.service";
 import { UserRepositorySupabase } from "@/infrastructure/repositories/user.repository.supabase";
-import { RoomRepositorySupabase } from "@/infrastructure/repositories/room.repository.supabase";
-import { RoomService } from "@/application/services/room.service";
 import { DreamNodeCommentService } from "@application/services/dream-node-comment.service";
 
 export const dreamNodeRouter = Router();
@@ -58,9 +56,7 @@ const transcriptionController = new TranscripcionController(transcriptionService
 const notificationRepository = new NotificationRepositorySupabase()
 const notificationService = new NotificationService(notificationRepository)
 const userRepository = new UserRepositorySupabase()
-const roomRepository = new RoomRepositorySupabase()
-const roomService = new RoomService(roomRepository, coinRepository)
-const userService = new UserService(userRepository, membershipService, roomService, coinRepository)
+const userService = new UserService(userRepository, membershipService)
 const dreamNodeCommentService = new DreamNodeCommentService();
 const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService, dreamNodeCommentService);
 

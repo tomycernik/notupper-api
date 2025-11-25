@@ -23,8 +23,11 @@ export class CoinController {
     try {
       const userId = (req as any).userId;
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-      const movements = await this.coinRepository.getMovements(userId);
-      res.json({ movements });
+      const [movements, coins] = await Promise.all([
+        this.coinRepository.getMovements(userId),
+        this.coinRepository.getUserCoins(userId)
+      ]);
+      res.json({ movements, coins });
     } catch (e: any) {
       console.error('CoinController getMovements error:', e);
       res.status(500).json({ error: 'Error al obtener movimientos' });

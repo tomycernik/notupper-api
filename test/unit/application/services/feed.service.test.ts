@@ -6,7 +6,7 @@ describe('FeedService', () => {
 
   beforeEach(() => {
     mockRepo = {
-      getPublicDreams: jest.fn(),
+      getDreamsForFeed: jest.fn(),
       countPublicDreams: jest.fn(),
       like: jest.fn(),
       unlike: jest.fn()
@@ -16,12 +16,12 @@ describe('FeedService', () => {
   });
 
   it('getFeed should return paginated result', async () => {
-    mockRepo.getPublicDreams.mockResolvedValueOnce([{ id: 'n1' }]);
+    mockRepo.getDreamsForFeed.mockResolvedValueOnce([{ id: 'n1' }]);
     mockRepo.countPublicDreams.mockResolvedValueOnce(1);
 
     const result = await service.getFeed(undefined, 10, 0);
 
-    expect(mockRepo.getPublicDreams).toHaveBeenCalledWith(
+    expect(mockRepo.getDreamsForFeed).toHaveBeenCalledWith(
       { limit: 10, offset: 0 },
       undefined
     );
@@ -29,7 +29,7 @@ describe('FeedService', () => {
   });
 
   it('getFeed returns the correct number of nodes for limit and offset', async () => {
-    mockRepo.getPublicDreams.mockResolvedValueOnce([
+    mockRepo.getDreamsForFeed.mockResolvedValueOnce([
       { id: 'n1' }, { id: 'n2' }, { id: 'n3' }
     ]);
     const result = await service.getFeed(undefined, 3, 0);
@@ -39,20 +39,20 @@ describe('FeedService', () => {
   });
 
   it('getFeed returns an empty array if there are no nodes', async () => {
-    mockRepo.getPublicDreams.mockResolvedValueOnce([]);
+    mockRepo.getDreamsForFeed.mockResolvedValueOnce([]);
     const result = await service.getFeed(undefined, 10, 0);
     expect(result).toEqual([]);
   });
 
   it('getFeed filters by user if profileId is provided', async () => {
-    mockRepo.getPublicDreams.mockResolvedValueOnce([{ id: 'n1', user: 'u1' }]);
+    mockRepo.getDreamsForFeed.mockResolvedValueOnce([{ id: 'n1', user: 'u1' }]);
     const result = await service.getFeed('u1', 1, 0);
-    expect(mockRepo.getPublicDreams).toHaveBeenCalledWith({ limit: 1, offset: 0 }, 'u1');
+    expect(mockRepo.getDreamsForFeed).toHaveBeenCalledWith({ limit: 1, offset: 0 }, 'u1');
     expect(result[0].user).toBe('u1');
   });
 
   it('getFeed handles repository errors correctly', async () => {
-    mockRepo.getPublicDreams.mockRejectedValueOnce(new Error('DB error'));
+    mockRepo.getDreamsForFeed.mockRejectedValueOnce(new Error('DB error'));
     await expect(service.getFeed(undefined, 10, 0)).rejects.toThrow('DB error');
   });
 

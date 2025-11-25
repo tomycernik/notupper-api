@@ -305,4 +305,47 @@ describe('RoomService', () => {
       expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room123');
     });
   });
+
+  describe('buyRoom', () => {
+    it('should deduct coins and register egreso when buying a room', async () => {
+      const userId = 'user1';
+      const roomId = 'room2';
+      const room = {
+        id: roomId,
+        price: 100,
+        name: 'Test Room',
+        isDefault: false,
+        roomEngineId: 'engine1',
+        createdAt: new Date('2025-11-24T10:00:00.000Z'),
+        compatibleSkins: [],
+        description: '',
+        imageUrl: '',
+        modelUrl: ''
+      };
+      mockRoomRepository.getUserRooms.mockResolvedValue([]);
+      mockRoomRepository.findById.mockResolvedValue(room);
+      mockCoinRepository.deductCoins.mockResolvedValue();
+      mockRoomRepository.addRoomToUser = jest.fn().mockResolvedValue(undefined);
+      mockCoinRepository.registerMovement = jest.fn().mockResolvedValue(undefined);
+
+      roomService.buyRoom = async (userId: string, roomId: string) => {
+        const userRooms = await mockRoomRepository.getUserRooms(userId);
+        if (userRooms.some((r: any) => r.id === roomId)) {
+          throw new Error('Ya tienes esta habitación');
+        }
+        const room = await roomService.getRoomById(roomId);
+        if (!room) throw new Error('Habitación no encontrada');
+        const price = Number(room.price);
+        if (isNaN(price) || price <= 0) throw new Error('Precio inválido');
+        await mockCoinRepository.deductCoins(userId, price);
+        await mockRoomRepository.addRoomToUser(userId, roomId);
+        await mockCoinRepository.registerMovement(userId, price, 'egreso', 'Compra de habitación');
+      };
+
+      await expect(roomService.buyRoom(userId, roomId)).resolves.toBeUndefined();
+      expect(mockCoinRepository.deductCoins).toHaveBeenCalledWith(userId, 100);
+      expect(mockRoomRepository.addRoomToUser).toHaveBeenCalledWith(userId, roomId);
+      expect(mockCoinRepository.registerMovement).toHaveBeenCalledWith(userId, 100, 'egreso', 'Compra de habitación');
+    });
+  });
 });

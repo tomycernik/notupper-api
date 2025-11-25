@@ -10,19 +10,21 @@ export class PaymentController {
   private userService: UserService;
   private packageService: PackageService;
   private notificationService: NotificationService;
+  private coinRepository: any;
 
   constructor(
     paymentService: PaymentService,
     userService: UserService,
     packageService: PackageService,
-    notificationService: NotificationService
+    notificationService: NotificationService,
+    coinRepository: any
   ) {
     this.paymentService = paymentService;
     this.userService = userService;
     this.packageService = packageService;
     this.notificationService = notificationService;
+    this.coinRepository = coinRepository;
   }
-
   async createPayment(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
@@ -72,6 +74,12 @@ export class PaymentController {
             dto.packageId
           );
           await this.userService.addCoins(userId, packageBuyed.coins);
+          await this.coinRepository.registerMovement(
+            userId,
+            packageBuyed.coins,
+            'ingreso',
+            `Compra de paquete de monedas: ${packageBuyed.description || packageBuyed.id}`
+          );
           await this.notificationService.buyPackageNotification(
             userId,
             packageBuyed

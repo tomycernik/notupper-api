@@ -3,7 +3,6 @@ import { GetUserRoomsResponseDto, RoomResponseDto } from '@infrastructure/dtos/r
 import { IRoomRepository } from '@domain/repositories/room.repository';
 import { ICoinRepository } from '@domain/repositories/coin.repository';
 import { IPaginatedResult, IPaginationOptions } from '@domain/interfaces/pagination.interface';
-
 export class RoomService {
   constructor(
     private readonly roomRepository: IRoomRepository,
@@ -181,18 +180,22 @@ export class RoomService {
   }
 
     async buyRoom(userId: string, roomId: string): Promise<void> {
-    // Verificar si el usuario ya tiene la habitación
     const userRooms = await this.roomRepository.getUserRooms(userId);
     if (userRooms.some(r => r.id === roomId)) {
       throw new Error('Ya tienes esta habitación');
     }
-    // Obtener precio de la habitación
     const room = await this.getRoomById(roomId);
     if (!room) throw new Error('Habitación no encontrada');
     const price = Number(room.price);
-    if (isNaN(price) || price <= 0) throw new Error('Precio inválido');
-    // Verificar saldo y descontar monedas
+      if (isNaN(price) || price <= 0) throw new Error('Precio inválido');
+  
     await this.coinRepository.deductCoins(userId, price);
+    await this.coinRepository.registerMovement(
+      userId,
+      price,
+      'egreso',
+      `Compra de habitación: ${room.name || roomId}`
+    );
     await this.roomRepository.addRoomToUser(userId, roomId);
-  }
+     }
 }

@@ -13,6 +13,7 @@ import { PackageRepositorySupabase } from "@/infrastructure/repositories/package
 import { PackageService } from "@/application/services/package.service";
 import { NotificationRepositorySupabase } from "@/infrastructure/repositories/notification.repository.supabase";
 import { NotificationService } from "@/application/services/notification.service";
+import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
 
 const userRepository = new UserRepositorySupabase();
 const membershipRepository = new MembershipRepositorySupabase();
@@ -21,6 +22,7 @@ const packageRepository = new PackageRepositorySupabase();
 const notificationRepository = new NotificationRepositorySupabase();
 
 const membershipService = new MembershipService(membershipRepository);
+const coinRepository = new CoinRepositorySupabase();
 const userService = new UserService(userRepository, membershipService);
 const paymentService = new PaymentService(paymentProvider);
 const packageService = new PackageService(packageRepository);
@@ -30,7 +32,8 @@ const paymentController = new PaymentController(
   paymentService,
   userService,
   packageService,
-  notificationService
+  notificationService,
+  coinRepository
 );
 
 export const paymentRouter = Router();

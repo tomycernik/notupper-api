@@ -5,7 +5,7 @@ export class FeedService {
 
   async getFeed(profileId?: string, limit: number = 20, offset: number = 0): Promise<any[]> {
     const options = { limit, offset };
-    const data = await this.dreamNodeRepository.getPublicDreams(options, profileId);
+    const data = await this.dreamNodeRepository.getDreamsForFeed(options, profileId);
     return data;
   }
 

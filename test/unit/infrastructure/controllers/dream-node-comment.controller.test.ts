@@ -73,7 +73,7 @@ describe('DreamNodeCommentController - getCommentsWithUser', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockUserService = new UserService({} as any, {} as any, {} as any);
+    mockUserService = new UserService({} as any, {} as any);
     mockNotificationService = new NotificationService({} as any);
     mockDreamNodeService = new DreamNodeService({} as any);
     mockCommentService = {

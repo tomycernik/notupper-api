@@ -11,6 +11,8 @@ describe("BadgeRepository", () => {
       awardBadge: jest.fn().mockResolvedValue(undefined),
       getUserFeaturedBadges: jest.fn().mockResolvedValue([]),
       setUserFeaturedBadges: jest.fn().mockResolvedValue(undefined),
+      getAllBadges: jest.fn().mockResolvedValue([]),
+      getAllBadgesWithUser: jest.fn().mockResolvedValue([]),
     };
   });
 

@@ -9,4 +9,5 @@ export interface IDreamNodeEntity {
     emotion_id: string;
     image_url: string;
     dream_type_id: string;
+    thumb_url: string;
 }

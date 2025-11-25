@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsEmail, IsNotEmpty, ValidateNested, IsOptional } from "class-validator";
+import { IsString, IsNumber, IsEmail, IsNotEmpty, ValidateNested, IsOptional, IsUUID } from "class-validator";
 import { Type } from "class-transformer";
 
 class IdentificationDto {
@@ -47,4 +47,8 @@ export class CreatePaymentRequestDto {
   @IsOptional()
   @IsString()
   context?: "membership" | "coins";
+
+  @IsOptional()
+  @IsUUID()
+  packageId?: string;
 }

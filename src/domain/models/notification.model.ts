@@ -1,4 +1,4 @@
-type NotificationType = "like" | "comment"
+type NotificationType = "like" | "comment" | "system" | "package_purchase";
 
 export interface INotification{
     id?:string,
@@ -10,4 +10,5 @@ export interface INotification{
     read: boolean;
     metadata?: any;
     type: NotificationType;
+    packageId?: string;
 }

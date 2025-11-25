@@ -5,18 +5,15 @@ import { IUserRepository } from "@domain/repositories/user.repository";
 import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
 
 export class UserRepositorySupabase implements IUserRepository {
-
   async findUserAvatarUrlById(userId: string): Promise<string | null> {
-     const { data, error } = await supabase.auth.admin.getUserById(userId);
+    const { data, error } = await supabase.auth.admin.getUserById(userId);
     if (error) {
       console.error("Error obteniendo usuario:", error);
       return null;
     }
     const user = data.user;
     if (!user) return null;
-    const avatarUrl =
-      user.user_metadata?.avatar_url ||
-      null;
+    const avatarUrl = user.user_metadata?.avatar_url || null;
 
     return avatarUrl;
   }
@@ -30,8 +27,7 @@ export class UserRepositorySupabase implements IUserRepository {
     const user = data.user;
     if (!user) return null;
     const name =
-      user.user_metadata?.name ||
-      null;
+      user.user_metadata?.full_name || user.user_metadata?.name || null;
 
     return name;
   }
@@ -159,7 +155,10 @@ export class UserRepositorySupabase implements IUserRepository {
     return data as IUser;
   }
 
-  async updateMembership(userId: string, membership: IMembership): Promise<void> {
+  async updateMembership(
+    userId: string,
+    membership: IMembership
+  ): Promise<void> {
     const { error } = await supabase
       .from("profile")
       .update({
@@ -178,7 +177,7 @@ export class UserRepositorySupabase implements IUserRepository {
   async addCoins(userId: string, amount: number): Promise<void> {
     const { data, error } = await supabase
       .from("profile")
-      .select("coins")
+      .select("coin_amount")
       .eq("id", userId)
       .single();
 
@@ -187,11 +186,11 @@ export class UserRepositorySupabase implements IUserRepository {
       throw new Error("No se pudieron obtener las monedas del usuario");
     }
 
-    const newBalance = (data?.coins ?? 0) + amount;
+    const newBalance = (data?.coin_amount ?? 0) + amount;
 
     const { error: updateError } = await supabase
       .from("profile")
-      .update({ coins: newBalance })
+      .update({ coin_amount: newBalance })
       .eq("id", userId);
 
     if (updateError) {
@@ -199,5 +198,4 @@ export class UserRepositorySupabase implements IUserRepository {
       throw new Error("No se pudieron actualizar las monedas");
     }
   }
-
 }

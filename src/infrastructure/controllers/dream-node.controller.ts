@@ -70,12 +70,21 @@ export class DreamNodeController {
     try {
       const { description } = req.body;
 
+<<<<<<< HEAD
       console.log(description)
 
       const illustrationUrl =
         await this.illustrationService.generateIllustration(description);
+=======
+      const illustration = await this.illustrationService.generateIllustration(
+        description
+      );
+>>>>>>> b80c6f1c6c6e99bbeca4c316fe4de5c39796060b
 
-      res.json({ imageUrl: illustrationUrl });
+      res.json({
+        imageUrl: illustration.file_url,
+        thumbUrl: illustration.thumb_url,
+      });
     } catch (error: any) {
       console.error("Error en DreamNodeController:", error);
       res.status(500).json({
@@ -84,55 +93,61 @@ export class DreamNodeController {
     }
   }
 
-      async getById(req: Request, res: Response) {
-        try {
-          const { id } = req.params;
-          if (!id) {
-            return res.status(400).json({
-              message: "ID del nodo es requerido",
-              errors: ["El parámetro 'id' es obligatorio"],
-            });
-          }
-          const dreamNode = await this.dreamNodeService.getDreamNodeById(id);
-          if (!dreamNode) {
-            return res.status(404).json({
-              message: "Nodo no encontrado",
-              errors: ["No existe un nodo con ese ID"],
-            });
-          }
-          res.json({
-            message: "Nodo obtenido exitosamente",
-            data: dreamNode,
-            errors: [],
-          });
-        } catch (error: any) {
-          console.error("Error en DreamNodeController getById:", error);
-          res.status(500).json({
-            message: "Error interno del servidor",
-            errors: [error.message || "Error al obtener el nodo"],
-          });
-        }
+  async getById(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({
+          message: "ID del nodo es requerido",
+          errors: ["El parámetro 'id' es obligatorio"],
+        });
       }
+      const dreamNode = await this.dreamNodeService.getDreamNodeById(id);
+      if (!dreamNode) {
+        return res.status(404).json({
+          message: "Nodo no encontrado",
+          errors: ["No existe un nodo con ese ID"],
+        });
+      }
+      res.json({
+        message: "Nodo obtenido exitosamente",
+        data: dreamNode,
+        errors: [],
+      });
+    } catch (error: any) {
+      console.error("Error en DreamNodeController getById:", error);
+      res.status(500).json({
+        message: "Error interno del servidor",
+        errors: [error.message || "Error al obtener el nodo"],
+      });
+    }
+  }
   async save(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
       const dreamNode: SaveDreamNodeRequestDto = req.body;
+      console.log("Imagen url:", dreamNode.imageUrl);
       dreamNode.imageUrl =
         dreamNode.imageUrl && dreamNode.imageUrl.includes("blockadelabs.com")
           ? await this.illustrationService.saveIllustrationFromUrl(
               dreamNode.imageUrl
             )
           : "";
+      dreamNode.thumbUrl = dreamNode.thumbUrl
+        ? await this.illustrationService.saveIllustrationFromUrl(
+            dreamNode.thumbUrl
+          )
+        : "";
 
       const session = req.session as any;
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))
         : {
-          themes: [],
-          people: [],
-          locations: [],
-          emotions_context: [],
-        };
+            themes: [],
+            people: [],
+            locations: [],
+            emotions_context: [],
+          };
 
       if (session.dreamContext) {
         session.dreamContext = null;
@@ -141,7 +156,7 @@ export class DreamNodeController {
         });
       }
 
-      const unlockedBadges = await this.dreamNodeService.saveDreamNode(
+      const { id, unlockedBadges } = await this.dreamNodeService.saveDreamNode(
         userId,
         dreamNode,
         dreamContext
@@ -150,6 +165,7 @@ export class DreamNodeController {
       return res.status(201).json({
         message: "Nodo de sueño guardado exitosamente",
         errors: [],
+        data: { id },
         unlockedBadges: unlockedBadges,
       });
     } catch (error: any) {
@@ -408,7 +424,7 @@ export class DreamNodeController {
 
       const pagination = { page, limit };
 
-      const paginatedResult = await this.dreamNodeService.getPublicDreams(
+      const paginatedResult = await this.dreamNodeService.getDreamsForFeed(
         pagination
       );
 

@@ -9,21 +9,29 @@ import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
 import { PaymentController } from "@infrastructure/controllers/payment.controller";
 import { MembershipRepositorySupabase } from "@infrastructure/repositories/membership.repository.supabase";
 import { MembershipService } from "@application/services/membership.service";
-import { RoomRepositorySupabase } from "@infrastructure/repositories/room.repository.supabase";
-import { RoomService } from "@application/services/room.service";
-import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
+import { PackageRepositorySupabase } from "@/infrastructure/repositories/package.repository.supabase";
+import { PackageService } from "@/application/services/package.service";
+import { NotificationRepositorySupabase } from "@/infrastructure/repositories/notification.repository.supabase";
+import { NotificationService } from "@/application/services/notification.service";
 
 const userRepository = new UserRepositorySupabase();
 const membershipRepository = new MembershipRepositorySupabase();
-const roomRepository = new RoomRepositorySupabase();
-
-const coinRepository = new CoinRepositorySupabase();
-const roomService = new RoomService(roomRepository, coinRepository);
-const membershipService = new MembershipService(membershipRepository);
-const userService = new UserService(userRepository, membershipService, roomService);
 const paymentProvider = new PaymentMercadoPagoProvider();
+const packageRepository = new PackageRepositorySupabase();
+const notificationRepository = new NotificationRepositorySupabase();
+
+const membershipService = new MembershipService(membershipRepository);
+const userService = new UserService(userRepository, membershipService);
 const paymentService = new PaymentService(paymentProvider);
-const paymentController = new PaymentController(paymentService, userService);
+const packageService = new PackageService(packageRepository);
+const notificationService = new NotificationService(notificationRepository);
+
+const paymentController = new PaymentController(
+  paymentService,
+  userService,
+  packageService,
+  notificationService
+);
 
 export const paymentRouter = Router();
 paymentRouter.post(
@@ -31,4 +39,10 @@ paymentRouter.post(
   authenticateToken,
   validateBody(CreatePaymentRequestDto),
   (req, res) => paymentController.createPayment(req, res)
+);
+paymentRouter.post(
+  "/package",
+  authenticateToken,
+  validateBody(CreatePaymentRequestDto),
+  (req, res) => paymentController.buyCoins(req, res)
 );

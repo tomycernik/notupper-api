@@ -70,16 +70,9 @@ export class DreamNodeController {
     try {
       const { description } = req.body;
 
-<<<<<<< HEAD
-      console.log(description)
-
-      const illustrationUrl =
-        await this.illustrationService.generateIllustration(description);
-=======
       const illustration = await this.illustrationService.generateIllustration(
         description
       );
->>>>>>> b80c6f1c6c6e99bbeca4c316fe4de5c39796060b
 
       res.json({
         imageUrl: illustration.file_url,
@@ -130,24 +123,24 @@ export class DreamNodeController {
       dreamNode.imageUrl =
         dreamNode.imageUrl && dreamNode.imageUrl.includes("blockadelabs.com")
           ? await this.illustrationService.saveIllustrationFromUrl(
-              dreamNode.imageUrl
-            )
+            dreamNode.imageUrl
+          )
           : "";
       dreamNode.thumbUrl = dreamNode.thumbUrl
         ? await this.illustrationService.saveIllustrationFromUrl(
-            dreamNode.thumbUrl
-          )
+          dreamNode.thumbUrl
+        )
         : "";
 
       const session = req.session as any;
       const dreamContext = session.dreamContext
         ? JSON.parse(JSON.stringify(session.dreamContext))
         : {
-            themes: [],
-            people: [],
-            locations: [],
-            emotions_context: [],
-          };
+          themes: [],
+          people: [],
+          locations: [],
+          emotions_context: [],
+        };
 
       if (session.dreamContext) {
         session.dreamContext = null;

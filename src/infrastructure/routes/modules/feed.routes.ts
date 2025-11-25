@@ -30,13 +30,13 @@ const dreamNodeService = new DreamNodeService(dreamNodeRepository)
 const dreamNodeCommentService = new DreamNodeCommentService();
 const feedController = new FeedController(
 	new FeedService(dreamNodeRepository),
-	new UserService(new UserRepositorySupabase(), membershipService, roomService),
+	new UserService(new UserRepositorySupabase(), membershipService, roomService, coinRepository),
 	notificationService,
 	dreamNodeService
 );
 const feedRouter = Router();
 const userRepository = new UserRepositorySupabase()
-const userService = new UserService(userRepository, membershipService, roomService)
+const userService = new UserService(userRepository, membershipService, roomService, coinRepository)
 const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService, dreamNodeCommentService);
 
 feedRouter.get('/', authenticateToken, (req, res) => feedController.getFeed(req, res));

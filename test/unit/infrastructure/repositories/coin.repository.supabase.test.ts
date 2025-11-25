@@ -94,4 +94,63 @@ describe('CoinRepositorySupabase Integration Tests', () => {
       await expect(repo.deductCoins(profileId, 10)).rejects.toThrow('rpc fail');
     });
   });
+
+  describe('registerMovement', () => {
+    it('should register a movement successfully', async () => {
+      supabase.from = jest.fn().mockReturnValue({
+        insert: jest.fn().mockResolvedValue({ error: null })
+      });
+      await expect(repo.registerMovement(profileId, 100, 'ingreso', 'Test ingreso')).resolves.toBeUndefined();
+      expect(supabase.from).toHaveBeenCalledWith('coin_movement');
+    });
+    it('should handle supabase error', async () => {
+      supabase.from = jest.fn().mockReturnValue({
+        insert: jest.fn().mockResolvedValue({ error: { message: 'insert fail' } })
+      });
+      await expect(repo.registerMovement(profileId, 100, 'ingreso', 'Test ingreso')).rejects.toThrow('insert fail');
+    });
+  });
+
+  describe('getMovements', () => {
+    it('should return formatted movements', async () => {
+      supabase.from = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        range: jest.fn().mockResolvedValue({
+          data: [
+            { amount: 100, type: 'ingreso', description: 'Ingreso test', created_at: '2025-11-24T10:00:00.000Z' },
+            { amount: 50, type: 'egreso', description: 'Egreso test', created_at: '2025-11-24T12:30:00.000Z' }
+          ],
+          error: null
+        })
+      });
+      const result = await repo.getMovements(profileId);
+      expect(result).toEqual([
+        {
+          description: 'Ingreso test',
+          value: 100,
+          sign: '+',
+          date: '2025-11-24',
+          time: '10:00'
+        },
+        {
+          description: 'Egreso test',
+          value: 50,
+          sign: '-',
+          date: '2025-11-24',
+          time: '12:30'
+        }
+      ]);
+    });
+    it('should handle supabase error', async () => {
+      supabase.from = jest.fn().mockReturnValue({
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockReturnThis(),
+        range: jest.fn().mockResolvedValue({ data: null, error: { message: 'fail' } })
+      });
+      await expect(repo.getMovements(profileId)).rejects.toThrow('fail');
+    });
+  });
 });

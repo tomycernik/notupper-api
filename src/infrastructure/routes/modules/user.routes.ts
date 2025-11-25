@@ -17,6 +17,7 @@ import { MembershipService } from "@application/services/membership.service";
 import { BadgeRepositorySupabase } from "@infrastructure/repositories/badge.repository.supabase";
 import { BadgeService } from "@application/services/badge.service";
 import { MembershipRepositorySupabase } from "@infrastructure/repositories/membership.repository.supabase";
+import { CoinController } from "@infrastructure/controllers/coin.controller";
 
 export const userRouter = Router();
 const userRepository = new UserRepositorySupabase();
@@ -31,8 +32,9 @@ const roomService = new RoomService(roomRepository, coinRepository);
 
 const badgeRepository = new BadgeRepositorySupabase();
 const badgeService = new BadgeService(badgeRepository);
-const userService = new UserService(userRepository, membershipService, roomService);
+const userService = new UserService(userRepository, membershipService, roomService, coinRepository);
 const userController = new UserController(userService, skinService, roomService, badgeService);
+const coinController = new CoinController(coinRepository);
 
 userRouter.post("/register", validateBody(RegisterUserDTO),(req, res) => userController.register(req, res));
 userRouter.post("/login", validateBody(LoginDTO), (req, res) => userController.login(req, res));
@@ -44,3 +46,5 @@ userRouter.post("/rooms/active", authenticateToken, validateBody(SetActiveRoomDt
 userRouter.get("/me", authenticateToken, (req, res) => userController.getUserInfo(req, res));
 userRouter.get("/profile/:userId", (req, res) => userController.getPublicProfile(req, res));
 userRouter.patch("/profile/featured-badges", authenticateToken, (req, res) => userController.setFeaturedBadges(req, res));
+userRouter.post("/coins/movement", authenticateToken, (req, res) => coinController.registerMovement(req, res));
+userRouter.get("/coins/movements", authenticateToken, (req, res) => coinController.getMovements(req, res));

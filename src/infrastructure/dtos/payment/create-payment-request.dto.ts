@@ -44,7 +44,4 @@ export class CreatePaymentRequestDto {
   @Type(() => PayerDto)
   payer!: PayerDto;
 
-  @IsOptional()
-  @IsString()
-  context?: "membership" | "coins";
 }

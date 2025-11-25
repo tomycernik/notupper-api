@@ -181,17 +181,15 @@ export class RoomService {
   }
 
     async buyRoom(userId: string, roomId: string): Promise<void> {
-    // Verificar si el usuario ya tiene la habitación
     const userRooms = await this.roomRepository.getUserRooms(userId);
     if (userRooms.some(r => r.id === roomId)) {
       throw new Error('Ya tienes esta habitación');
     }
-    // Obtener precio de la habitación
     const room = await this.getRoomById(roomId);
     if (!room) throw new Error('Habitación no encontrada');
     const price = Number(room.price);
     if (isNaN(price) || price <= 0) throw new Error('Precio inválido');
-    // Verificar saldo y descontar monedas
+  
     await this.coinRepository.deductCoins(userId, price);
     await this.roomRepository.addRoomToUser(userId, roomId);
   }

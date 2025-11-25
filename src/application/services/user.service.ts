@@ -1,5 +1,6 @@
 import { IUser } from "@domain/interfaces/user.interface";
 import { IUserRepository } from "@domain/repositories/user.repository";
+import { ICoinRepository } from '@domain/repositories/coin.repository';
 import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
 import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
 import { UserInfoResponseDto } from "@infrastructure/dtos/user/user-info-response.dto";
@@ -8,6 +9,7 @@ import { RoomService } from "@application/services/room.service";
 import { supabase } from "@config/supabase";
 
 export class UserService {
+  public coinRepository: ICoinRepository;
 
   async getUserIdByDreamNodeId(dreamNodeId: string): Promise<string> {
     const user = await this.userRepository.findByDreamNodeId(dreamNodeId);
@@ -30,8 +32,11 @@ export class UserService {
   constructor(
     private userRepository: IUserRepository,
     private membershipService: MembershipService,
-    private roomService: RoomService
-  ) { }
+    private roomService: RoomService,
+    coinRepository: ICoinRepository
+  ) {
+    this.coinRepository = coinRepository;
+  }
 
   async register(userInfo: RegisterUserDTO) {
     const user: IUser = {

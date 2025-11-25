@@ -60,14 +60,14 @@ const notificationService = new NotificationService(notificationRepository)
 const userRepository = new UserRepositorySupabase()
 const roomRepository = new RoomRepositorySupabase()
 const roomService = new RoomService(roomRepository, coinRepository)
-const userService = new UserService(userRepository, membershipService, roomService)
+const userService = new UserService(userRepository, membershipService, roomService, coinRepository)
 const dreamNodeCommentService = new DreamNodeCommentService();
 const dreamNodeCommentController = new DreamNodeCommentController(userService, notificationService, dreamNodeService, dreamNodeCommentService);
 
 // Endpoints de interpretación
-dreamNodeRouter.post("/interpret", authenticateToken, validateBody(InterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.interpret(req, res));
-dreamNodeRouter.post("/illustrate", authenticateToken, validateBody(InterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.illustrate(req, res));
-dreamNodeRouter.post("/reinterpret", authenticateToken, validateBody(ReinterpreteDreamRequestDto), contentModerationMiddleware, (req, res) => dreamNodeController.reinterpret(req, res));
+dreamNodeRouter.post("/interpret", authenticateToken, validateBody(InterpreteDreamRequestDto), (req, res, next) => contentModerationMiddleware(req, res, next), (req, res) => dreamNodeController.interpret(req, res));
+dreamNodeRouter.post("/illustrate", authenticateToken, validateBody(InterpreteDreamRequestDto), (req, res, next) => contentModerationMiddleware(req, res, next), (req, res) => dreamNodeController.illustrate(req, res));
+dreamNodeRouter.post("/reinterpret", authenticateToken, validateBody(ReinterpreteDreamRequestDto), (req, res, next) => contentModerationMiddleware(req, res, next), (req, res) => dreamNodeController.reinterpret(req, res));
 dreamNodeRouter.post("/save", authenticateToken, validateBody(SaveDreamNodeRequestDto), (req, res) => dreamNodeController.save(req, res));
 dreamNodeRouter.post("/transcribe", authenticateToken, validateAudio, (req, res) => transcriptionController.transcribeAudio(req, res));
 dreamNodeRouter.get("/history", authenticateToken, validateQuery(GetUserNodesRequestDto), (req, res) => dreamNodeController.getUserNodes(req, res));

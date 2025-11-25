@@ -31,6 +31,7 @@ import { NotificationRepositorySupabase } from "@/infrastructure/repositories/no
 import { UserService } from "@/application/services/user.service";
 import { UserRepositorySupabase } from "@/infrastructure/repositories/user.repository.supabase";
 import { DreamNodeCommentService } from "@application/services/dream-node-comment.service";
+import { SaveImageRequestDto } from "@/infrastructure/dtos/dream-node/save-image.dto";
 
 export const dreamNodeRouter = Router();
 
@@ -65,6 +66,7 @@ dreamNodeRouter.post("/interpret", authenticateToken, validateBody(InterpreteDre
 dreamNodeRouter.post("/illustrate", authenticateToken, validateBody(InterpreteDreamRequestDto), (req, res, next) => contentModerationMiddleware(req, res, next), (req, res) => dreamNodeController.illustrate(req, res));
 dreamNodeRouter.post("/reinterpret", authenticateToken, validateBody(ReinterpreteDreamRequestDto), (req, res, next) => contentModerationMiddleware(req, res, next), (req, res) => dreamNodeController.reinterpret(req, res));
 dreamNodeRouter.post("/save", authenticateToken, validateBody(SaveDreamNodeRequestDto), (req, res) => dreamNodeController.save(req, res));
+dreamNodeRouter.post("/save-image", authenticateToken, validateBody(SaveImageRequestDto), (req, res) => dreamNodeController.saveImage(req, res));
 dreamNodeRouter.post("/transcribe", authenticateToken, validateAudio, (req, res) => transcriptionController.transcribeAudio(req, res));
 dreamNodeRouter.get("/history", authenticateToken, validateQuery(GetUserNodesRequestDto), (req, res) => dreamNodeController.getUserNodes(req, res));
 dreamNodeRouter.get("/user", authenticateToken, (req, res) => dreamNodeController.showUser(req, res));

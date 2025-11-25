@@ -1,7 +1,7 @@
 import { supabase } from "../../config/supabase";
 import { ICoinRepository } from "../../domain/repositories/coin.repository";
 export class CoinRepositorySupabase implements ICoinRepository {
-  
+
   async getPackageById(packageId: string): Promise<{ id: string; description: string; price: number; coins: number; bonus: number } | null> {
       const { data, error } = await supabase
         .from('coin_package')

@@ -92,7 +92,6 @@ export class MissionService {
     if (completed && !wasAlreadyCompleted && mission.badgeId) {
       await this.badgeRepository.awardBadge(profileId, mission.badgeId);
       const badge = await this.badgeRepository.getBadgeById(mission.badgeId);
-      // Otorgar monedas si corresponde
       if (badge && badge.coin_reward && badge.coin_reward > 0) {
         await this.coinRepository.addCoins(profileId, badge.coin_reward);
         await this.coinRepository.registerMovement(
@@ -124,7 +123,6 @@ export class MissionService {
     if (completed && crossedThreshold && !wasAlreadyCompleted && mission.badgeId) {
       await this.badgeRepository.awardBadge(profileId, mission.badgeId);
       const badge = await this.badgeRepository.getBadgeById(mission.badgeId);
-      // Otorgar monedas si corresponde
       if (badge && badge.coin_reward && badge.coin_reward > 0) {
         await this.coinRepository.addCoins(profileId, badge.coin_reward);
         await this.coinRepository.registerMovement(

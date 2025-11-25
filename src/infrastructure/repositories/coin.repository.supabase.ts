@@ -2,7 +2,7 @@ import { supabase } from "../../config/supabase";
 import { ICoinRepository } from "../../domain/repositories/coin.repository";
 export class CoinRepositorySupabase implements ICoinRepository {
   
-    async getPackageById(packageId: string): Promise<{ id: string; description: string; price: number; coins: number; bonus: number } | null> {
+  async getPackageById(packageId: string): Promise<{ id: string; description: string; price: number; coins: number; bonus: number } | null> {
       const { data, error } = await supabase
         .from('coin_package')
         .select('id, description, price, coins, bonus')
@@ -10,21 +10,20 @@ export class CoinRepositorySupabase implements ICoinRepository {
         .single();
       if (error || !data) return null;
       return data;
-    }
-  
-  async registerMovement(profileId: string, amount: number, type: 'ingreso' | 'egreso', description: string): Promise<void> {
-    const { error } = await supabase
-      .from('coin_movement')
-      .insert({
-        profile_id: profileId,
-        amount,
-        type,
-        description,
-        created_at: new Date().toISOString()
-      });
-    if (error) throw new Error(error.message);
   }
 
+  async registerMovement(profileId: string, amount: number, type: 'ingreso' | 'egreso', description: string): Promise<void> {
+      const { error } = await supabase
+        .from('coin_movement')
+        .insert({
+          profile_id: profileId,
+          amount,
+          type,
+          description,
+          created_at: new Date().toISOString()
+        });
+      if (error) throw new Error(error.message);
+  }
   async getUserCoins(profileId: string): Promise<number> {
     const { data, error } = await supabase
       .from('profile')

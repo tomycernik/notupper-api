@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { ICoinRepository } from '../../domain/repositories/coin.repository';
+import { CoinService } from '../../application/services/coin.service';
 
 export class CoinController {
-  constructor(private readonly coinRepository: ICoinRepository) {}
+  constructor(private readonly coinService: CoinService) {}
 
   async registerMovement(req: Request, res: Response) {
     try {
@@ -11,8 +11,15 @@ export class CoinController {
       if (!userId || typeof amount !== 'number' || !['ingreso', 'egreso'].includes(type) || !description) {
         return res.status(400).json({ error: 'Datos inválidos' });
       }
-      await this.coinRepository.registerMovement(userId, amount, type, description);
-      res.json({ success: true });
+      try {
+        await this.coinService.registerMovement(userId, amount, type, description);
+        res.json({ success: true });
+      } catch (err: any) {
+        if (err.message === 'Datos inválidos') {
+          return res.status(400).json({ error: err.message });
+        }
+        throw err;
+      }
     } catch (e: any) {
       console.error('CoinController registerMovement error:', e);
       res.status(500).json({ error: 'Error al registrar movimiento' });
@@ -22,12 +29,15 @@ export class CoinController {
   async getMovements(req: Request, res: Response) {
     try {
       const userId = (req as any).userId;
-      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-      const [movements, coins] = await Promise.all([
-        this.coinRepository.getMovements(userId),
-        this.coinRepository.getUserCoins(userId)
-      ]);
-      res.json({ movements, coins });
+      try {
+        const result = await this.coinService.getMovements(userId);
+        res.json(result);
+      } catch (err: any) {
+        if (err.message === 'Unauthorized') {
+          return res.status(401).json({ error: err.message });
+        }
+        throw err;
+      }
     } catch (e: any) {
       console.error('CoinController getMovements error:', e);
       res.status(500).json({ error: 'Error al obtener movimientos' });

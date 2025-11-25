@@ -23,7 +23,6 @@ describe('PaymentController', () => {
     res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
   });
 
-
   it('should update membership if coin_amount is not present and payment approved', async () => {
     req.body = {};
     paymentService.createPayment.mockResolvedValue({ status: 'approved' });

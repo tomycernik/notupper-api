@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run tests",
+			"type": "shell",
+			"command": "npm test",
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "Run Jest tests",
+			"type": "shell",
+			"command": "npx jest --colors",
+			"isBackground": false,
+			"group": "test"
+		}
+	]
+}

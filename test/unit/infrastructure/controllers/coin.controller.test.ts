@@ -37,12 +37,13 @@ describe('CoinController', () => {
   });
 
   it('should get movements successfully', async () => {
-    coinRepository.getMovements.mockResolvedValue([
-      { description: 'Test', value: 100, sign: '+', date: '2025-11-24', time: '10:00' }
-    ]);
-    coinRepository.getUserCoins = jest.fn().mockResolvedValue(1000);
+    coinController.coinService.getMovements = jest.fn().mockResolvedValue({
+      movements: [
+        { description: 'Test', value: 100, sign: '+', date: '2025-11-24', time: '10:00' }
+      ],
+      coins: 1000
+    });
     await coinController.getMovements(req, res);
-    expect(coinRepository.getMovements).toHaveBeenCalledWith('user');
     expect(res.json).toHaveBeenCalledWith({ movements: [
       { description: 'Test', value: 100, sign: '+', date: '2025-11-24', time: '10:00' }
     ], coins: 1000 });

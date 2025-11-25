@@ -31,7 +31,7 @@ const roomService = new RoomService(roomRepository, coinRepository);
 
 const badgeRepository = new BadgeRepositorySupabase();
 const badgeService = new BadgeService(badgeRepository);
-const userService = new UserService(userRepository, membershipService, roomService);
+const userService = new UserService(userRepository, membershipService);
 const userController = new UserController(userService, skinService, roomService, badgeService);
 
 userRouter.post("/register", validateBody(RegisterUserDTO),(req, res) => userController.register(req, res));

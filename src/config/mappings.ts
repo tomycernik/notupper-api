@@ -33,5 +33,7 @@ export const dreamTypeMap: Record<string, string> = {
 
 export const notificationMap: Record<string, string> = {
   like: "4bdc07fd-fa6b-49f4-87dc-b6ba800aabb3",
-  comment: "04393652-af52-47fa-9ef7-4c4450d54d9c"
+  comment: "04393652-af52-47fa-9ef7-4c4450d54d9c",
+  package_purchase: "ea6d0845-843b-4209-a1e5-299881d238cb",
+  system: "235e3fa7-cc95-4b45-aaf3-1edc44fd804b",
 }

@@ -1,15 +1,17 @@
 import { envs } from "@/config/envs";
+import { IllustrationProviderResponse } from "@/domain/interfaces/illustration-provider-response.interface";
 import { supabase } from "@config/supabase";
 import { IllustrationProvider } from "@domain/providers/illustration.provider";
 
 export class IllustrationDreamService {
   constructor(private illustrationProvider: IllustrationProvider) {}
 
-  async generateIllustration(dreamText: string): Promise<string> {
-    const resultUrl = await this.illustrationProvider.generateIllustration(
-      dreamText
-    );
-    return resultUrl;
+  async generateIllustration(
+    dreamText: string
+  ): Promise<IllustrationProviderResponse> {
+    const illustrationResponse =
+      await this.illustrationProvider.generateIllustration(dreamText);
+    return illustrationResponse;
   }
 
   async saveIllustrationFromUrl(imageUrl: string): Promise<string> {
@@ -45,4 +47,5 @@ export class IllustrationDreamService {
       throw error;
     }
   }
+
 }

@@ -310,6 +310,7 @@ mockDreamNodeService.saveDreamNode.mockResolvedValue({
           description: 'Test description',
           emotion: 'happy',
           imageUrl: '',
+          thumbUrl: '',
           interpretation: 'Test interpretation'
         },
         expectedDreamContext

@@ -29,8 +29,7 @@ export class CoinRepositorySupabase implements ICoinRepository {
         created_at: new Date().toISOString()
       });
     if (error) throw new Error(error.message);
-
-    // Notificación automática por movimiento de monedas
+    
     await this.notificationService.saveNotification({
       from_user: profileId,
       to_user: profileId,

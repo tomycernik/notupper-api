@@ -7,6 +7,7 @@ import { SaveDreamNodeRequestDto } from "@infrastructure/dtos/dream-node";
 import { DreamContextService } from "@application/services/dream-context.service";
 import { UpdateDreamNodeRequestDto } from "@infrastructure/dtos/dream-node/update-dream-node.dto";
 import { MembershipService } from "@application/services/membership.service";
+import { SaveImageRequestDto } from "../dtos/dream-node/save-image.dto";
 
 export class DreamNodeController {
   constructor(
@@ -119,18 +120,6 @@ export class DreamNodeController {
     try {
       const userId = (req as any).userId;
       const dreamNode: SaveDreamNodeRequestDto = req.body;
-      console.log("Imagen url:", dreamNode.imageUrl);
-      dreamNode.imageUrl =
-        dreamNode.imageUrl && dreamNode.imageUrl.includes("blockadelabs.com")
-          ? await this.illustrationService.saveIllustrationFromUrl(
-            dreamNode.imageUrl
-          )
-          : "";
-      dreamNode.thumbUrl = dreamNode.thumbUrl
-        ? await this.illustrationService.saveIllustrationFromUrl(
-          dreamNode.thumbUrl
-        )
-        : "";
 
       const session = req.session as any;
       const dreamContext = session.dreamContext
@@ -166,6 +155,27 @@ export class DreamNodeController {
       return res.status(500).json({
         message: "Error interno del servidor",
         errors: [error.message || "Error al guardar el nodo de sueño"],
+      });
+    }
+  }
+
+  async saveImage(req: Request, res: Response) {
+    try {
+      const imageRequest: SaveImageRequestDto = req.body;
+      const imageUrl = await this.illustrationService.saveIllustrationFromUrl(
+        imageRequest.imageTitle,
+        imageRequest.imageUrl
+      );
+
+      const thumbUrl = await this.illustrationService.saveIllustrationFromUrl(
+        imageRequest.thumbTitle,
+        imageRequest.thumbUrl
+      );
+      res.json({ imageUrl, thumbUrl });
+    } catch (error: any) {
+      console.error("Error en DreamNodeController:", error);
+      res.status(500).json({
+        errors: "Error al guardar la ilustración",
       });
     }
   }

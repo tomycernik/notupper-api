@@ -43,6 +43,7 @@ describe('SkinService', () => {
   ];
 
   beforeEach(() => {
+    const mockCoinRepository = {} as any;
     mockSkinRepository = {
       getUserSkins: jest.fn(),
       getDefaultSkins: jest.fn(),
@@ -56,7 +57,7 @@ describe('SkinService', () => {
       setOwnershipStatus: jest.fn()
     } as any;
 
-    skinService = new SkinService(mockSkinRepository);
+    skinService = new SkinService(mockSkinRepository,mockCoinRepository);
   });
 
   describe('getUserSkins', () => {

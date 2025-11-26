@@ -187,8 +187,8 @@ export class RoomService {
     const room = await this.getRoomById(roomId);
     if (!room) throw new Error('Habitación no encontrada');
     const price = Number(room.price);
-      if (isNaN(price) || price <= 0) throw new Error('Precio inválido');
-  
+    if (isNaN(price) || price <= 0) throw new Error('Precio inválido');
+
     await this.coinRepository.deductCoins(userId, price);
     await this.coinRepository.registerMovement(
       userId,
@@ -197,5 +197,5 @@ export class RoomService {
       `Compra de habitación: ${room.name || roomId}`
     );
     await this.roomRepository.addRoomToUser(userId, roomId);
-     }
+  }
 }

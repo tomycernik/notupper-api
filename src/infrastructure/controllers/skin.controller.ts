@@ -77,4 +77,44 @@ export class SkinController {
             });
         }
     }
+
+    async buySkin(req: Request, res: Response) {
+        try {
+            const userId = (req as any).userId;
+            const { skinId } = req.body;
+
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'No autorizado'
+                });
+            }
+
+            if (!skinId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'El ID del skin es requerido'
+                });
+            }
+
+            await this.skinService.buySkin(userId, skinId);
+
+            res.status(200).json({
+                success: true,
+                message: 'Skin comprado exitosamente'
+            });
+        } catch (error: any) {
+            console.error('Error en SkinController buySkin:', error);
+
+            const statusCode = error.message?.includes('Ya tienes') ? 409 :
+                error.message?.includes('no encontrado') ? 404 :
+                error.message?.includes('Saldo insuficiente') ? 400 : 500;
+
+            res.status(statusCode).json({
+                success: false,
+                message: error.message || 'Error al comprar el skin',
+                errors: [error.message || 'Error desconocido']
+            });
+        }
+    }
 }

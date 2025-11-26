@@ -42,7 +42,7 @@ describe("DreamNodeService - saveDreamNode", () => {
       description: "Descripción del sueño",
       interpretation: "Interpretación del sueño",
       emotion: "felicidad",
-      imageUrl: "https://mock.blockadelabs.com/storage/v1/object/public/image1.jpg",
+      imageTitle: "image1.jpg",
       dreamType: "Estandar"
     };
 
@@ -56,37 +56,7 @@ describe("DreamNodeService - saveDreamNode", () => {
         emotion: expect.stringMatching(/felicidad/i),
         privacy: "Privado",
         state: "Activo",
-        imageUrl: node.imageUrl,
-        creationDate: expect.any(Date),
-        type: "Estandar"
-      }),
-      userId,
-      "Estandar"
-    );
-  });
-
-  it("should handle missing imageUrl gracefully", async () => {
-    const userId = "user123";
-    const node: SaveDreamNodeRequestDto = {
-      title: "Sueño sin imagen",
-      description: "Sin imagen",
-      interpretation: "Nada relevante",
-      emotion: "tristeza",
-      imageUrl: "",
-      dreamType: "Estandar"
-    };
-
-    await service.saveDreamNode(userId, node, dreamContext);
-
-    expect(mockRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: node.title,
-        dream_description: node.description,
-        emotion: node.emotion,
-        privacy: "Privado",
-        state: "Activo",
-        imageUrl: node.imageUrl,
-        interpretation: node.interpretation,
+        imageUrl: expect.stringContaining("image1.jpg"),
         creationDate: expect.any(Date),
         type: "Estandar"
       }),
@@ -102,7 +72,7 @@ describe("DreamNodeService - saveDreamNode", () => {
       description: "Descripción del sueño",
       interpretation: "Interpretación del sueño",
       emotion: "enojo",
-      imageUrl: "https://mock.blockadelabs.com/storage/v1/object/public/image2.jpg",
+      imageTitle: "https://mock.blockadelabs.com/storage/v1/object/public/image2.jpg",
       dreamType: "Estandar"
     };
 

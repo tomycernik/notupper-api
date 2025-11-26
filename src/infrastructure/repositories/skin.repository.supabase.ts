@@ -161,6 +161,17 @@ export class SkinRepositorySupabase implements ISkinRepository {
     };
   }
 
+  async userHasSkin(userId: string, skinId: string): Promise<boolean> {
+    const { data } = await supabase
+      .from('user_skin')
+      .select('profile_id')
+      .eq('profile_id', userId)
+      .eq('skin_id', skinId)
+      .single();
+
+    return !!data;
+  }
+
   async addSkinToUser(userId: string, skinId: string): Promise<void> {
     // Verificar que el skin existe
     const skin = await this.findById(skinId);
@@ -169,14 +180,8 @@ export class SkinRepositorySupabase implements ISkinRepository {
     }
 
     // Verificar si el usuario ya tiene este skin
-    const { data: existing } = await supabase
-      .from('user_skin')
-      .select('profile_id')
-      .eq('profile_id', userId)
-      .eq('skin_id', skinId)
-      .single();
-
-    if (existing) {
+    const hasSkin = await this.userHasSkin(userId, skinId);
+    if (hasSkin) {
       throw new Error('El usuario ya tiene este skin');
     }
 

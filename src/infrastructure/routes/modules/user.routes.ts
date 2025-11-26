@@ -27,8 +27,8 @@ const roomRepository = new RoomRepositorySupabase();
 const membershipRepository= new MembershipRepositorySupabase();
 
 const membershipService = new MembershipService(membershipRepository);
-const skinService = new SkinService(skinRepository);
 const coinRepository = new CoinRepositorySupabase();
+const skinService = new SkinService(skinRepository,coinRepository);
 const coinService = new CoinService(coinRepository);
 const roomService = new RoomService(roomRepository, coinRepository);
 

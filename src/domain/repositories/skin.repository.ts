@@ -7,6 +7,7 @@ export interface ISkinRepository {
   getDefaultSkins(): Promise<Skin[]>;
   findById(skinId: string): Promise<Skin | null>;
   addSkinToUser(userId: string, skinId: string): Promise<void>;
+  userHasSkin(userId: string, skinId: string): Promise<boolean>;
   create(skin: Omit<Skin, 'id' | 'createdAt'>): Promise<Skin>;
   update(skinId: string, skin: Partial<Skin>): Promise<Skin>;
   delete(skinId: string): Promise<void>;

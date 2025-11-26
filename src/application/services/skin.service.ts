@@ -1,10 +1,14 @@
 import { Skin } from '@domain/interfaces/skin.interface';
 import { GetUserSkinsResponseDto, SkinResponseDto } from '@infrastructure/dtos/skin/get-user-skins.dto';
 import { ISkinRepository } from '@domain/repositories/skin.repository';
+import { ICoinRepository } from '@domain/repositories/coin.repository';
 import { IPaginatedResult, IPaginationOptions } from '@domain/interfaces/pagination.interface';
 
 export class SkinService {
-  constructor(private readonly skinRepository: ISkinRepository) { }
+  constructor(
+    private readonly skinRepository: ISkinRepository,
+    private readonly coinRepository: ICoinRepository
+  ) { }
 
   async getAllSkins(pagination?: IPaginationOptions): Promise<IPaginatedResult<SkinResponseDto>> {
     try {
@@ -159,6 +163,34 @@ export class SkinService {
 
   async removeCompatibleRoom(skinId: string, roomId: string): Promise<Skin> {
     return await this.skinRepository.removeCompatibleRoom(skinId, roomId);
+  }
+
+  async buySkin(userId: string, skinId: string): Promise<void> {
+    const hasSkin = await this.skinRepository.userHasSkin(userId, skinId);
+    if (hasSkin) {
+      throw new Error('Ya tienes este skin');
+    }
+
+    const skin = await this.getSkinById(skinId);
+    if (!skin) {
+      throw new Error('Skin no encontrado');
+    }
+
+    const price = Number(skin.price);
+    if (isNaN(price) || price <= 0) {
+      throw new Error('Precio inválido');
+    }
+
+    await this.coinRepository.deductCoins(userId, price);
+
+    await this.coinRepository.registerMovement(
+      userId,
+      price,
+      'egreso',
+      `Compra skin ${skin.name || skinId}`
+    );
+
+    await this.skinRepository.addSkinToUser(userId, skinId);
   }
 
 }

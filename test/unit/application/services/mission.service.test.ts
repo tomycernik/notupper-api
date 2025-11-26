@@ -24,7 +24,8 @@ describe('MissionService - Badges', () => {
     coinRepository = {
       addCoins: jest.fn(),
       subtractCoins: jest.fn(),
-      getCoinAmount: jest.fn()
+      getCoinAmount: jest.fn(),
+      registerMovement: jest.fn(),
     };
     missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository, coinRepository);
   });

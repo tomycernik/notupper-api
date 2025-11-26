@@ -100,8 +100,11 @@ describe('CoinRepositorySupabase Integration Tests', () => {
       supabase.from = jest.fn().mockReturnValue({
         insert: jest.fn().mockResolvedValue({ error: null })
       });
+      // Mock notificationService.saveNotification
+      repo.notificationService.saveNotification = jest.fn().mockResolvedValue(undefined);
       await expect(repo.registerMovement(profileId, 100, 'ingreso', 'Test ingreso')).resolves.toBeUndefined();
       expect(supabase.from).toHaveBeenCalledWith('coin_movement');
+      expect(repo.notificationService.saveNotification).toHaveBeenCalled();
     });
     it('should handle supabase error', async () => {
       supabase.from = jest.fn().mockReturnValue({

@@ -89,7 +89,7 @@ export class DreamNodeController {
     } catch (error: any) {
       console.error('[DreamNodeController] Error al generar ilustración:', error);
       res.status(500).json({
-        errors: error?.message || "Error al generar ilustración",
+        errors: "Error al generar ilustración",
         details: error,
       });
     }

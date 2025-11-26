@@ -65,11 +65,13 @@ describe('CoinRepositorySupabase Integration Tests', () => {
   });
 
   describe('addCoins', () => {
+
     it('should add coins successfully', async () => {
       supabase.rpc = jest.fn().mockResolvedValue({ error: null });
       await expect(repo.addCoins(profileId, 10)).resolves.toBeUndefined();
       expect(supabase.rpc).toHaveBeenCalledWith('add_coins', { profile_id: profileId, amount: 10 });
     });
+    
     it('should handle supabase.rpc error', async () => {
       supabase.rpc = jest.fn().mockResolvedValue({ error: { message: 'rpc fail' } });
       await expect(repo.addCoins(profileId, 10)).rejects.toThrow('rpc fail');
@@ -84,10 +86,12 @@ describe('CoinRepositorySupabase Integration Tests', () => {
       expect(repo.getUserCoins).toHaveBeenCalledWith(profileId);
       expect(supabase.rpc).toHaveBeenCalledWith('subtract_coins', { profile_id: profileId, amount: 10 });
     });
+
     it('should throw error if not enough balance', async () => {
       jest.spyOn(repo, 'getUserCoins').mockResolvedValue(5);
       await expect(repo.deductCoins(profileId, 10)).rejects.toThrow('Saldo insuficiente');
     });
+
     it('should handle supabase.rpc error', async () => {
       jest.spyOn(repo, 'getUserCoins').mockResolvedValue(20);
       supabase.rpc = jest.fn().mockResolvedValue({ error: { message: 'rpc fail' } });

@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
 import { CoinService } from '../../application/services/coin.service';
-import { NotificationService } from '../../application/services/notification.service';
-import { NotificationRepositorySupabase } from '../../infrastructure/repositories/notification.repository.supabase';
 
 export class CoinController {
   constructor(private readonly coinService: CoinService) {}

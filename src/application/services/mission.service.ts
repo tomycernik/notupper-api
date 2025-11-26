@@ -2,7 +2,6 @@ import { IDreamNodeRepository } from "../../domain/repositories/dream-node.repos
 import { IBadgeRepository } from "../../domain/repositories/badge.repository";
 import { IMissionRepository } from "../../domain/repositories/mission.repository";
 import { Badge } from "../../domain/models/badge.model";
-import { NotificationService } from "./notification.service";
 import { ICoinRepository } from "../../domain/repositories/coin.repository";
 
 export class MissionService {

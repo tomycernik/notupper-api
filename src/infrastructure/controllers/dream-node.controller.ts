@@ -69,6 +69,15 @@ export class DreamNodeController {
 
   async illustrate(req: Request, res: Response): Promise<void> {
     try {
+      const id = (req as any).userId;
+      const userMembership = await this.membershipService.getUserMembership(id);
+      if (userMembership && userMembership.name !== "plus") {
+        res.status(403).json({
+          errors: "No tenes permiso para generar ilustraciones",
+        });
+        return;
+      }
+
       const { description } = req.body;
 
       const illustration = await this.illustrationService.generateIllustration(

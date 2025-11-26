@@ -2,15 +2,28 @@ import { IDreamNodeRepository } from "../../domain/repositories/dream-node.repos
 import { IBadgeRepository } from "../../domain/repositories/badge.repository";
 import { IMissionRepository } from "../../domain/repositories/mission.repository";
 import { Badge } from "../../domain/models/badge.model";
+import { NotificationService } from "./notification.service";
+
 import { ICoinRepository } from "../../domain/repositories/coin.repository";
 
 export class MissionService {
+  private readonly notificationService: NotificationService;
   constructor(
     private readonly dreamNodeRepository: IDreamNodeRepository,
     private readonly missionRepository: IMissionRepository,
     private readonly badgeRepository: IBadgeRepository,
-    private readonly coinRepository: ICoinRepository
-  ) {}
+    private readonly coinRepository: ICoinRepository,
+    notificationService?: NotificationService
+  ) {
+    const stubRepo = {
+      save: async () => {},
+      update: async () => {},
+      getById: async () => null,
+      getAll: async () => [],
+      getByUser: async () => [],
+    };
+    this.notificationService = notificationService ?? new NotificationService(stubRepo);
+  }
 
   async onDreamSaved(profileId: string): Promise<Badge[]> {
     const unlockedBadges: Badge[] = [];

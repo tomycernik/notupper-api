@@ -6,6 +6,7 @@ describe('MissionService - Badges', () => {
   let missionRepository: any;
   let badgeRepository: any;
   let coinRepository: any;
+  let notificationService: any;
 
   beforeEach(() => {
     dreamNodeRepository = {
@@ -24,9 +25,34 @@ describe('MissionService - Badges', () => {
     coinRepository = {
       addCoins: jest.fn(),
       subtractCoins: jest.fn(),
-      getCoinAmount: jest.fn()
+      getCoinAmount: jest.fn(),
+      registerMovement: jest.fn(),
     };
-    missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository, coinRepository);
+    notificationService = {
+      saveNotification: jest.fn(),
+    };
+    missionService = new MissionService(dreamNodeRepository, missionRepository, badgeRepository, coinRepository, notificationService);
+  });
+  it('should create notification when badge with coin reward is unlocked', async () => {
+    missionRepository.getAllMissions.mockResolvedValue([
+      { code: 'first_dream', target: 1, badgeId: 'b1' }
+    ]);
+    missionRepository.getUserMission.mockResolvedValue({ progress: 0, completedAt: null });
+    badgeRepository.getBadgeById.mockResolvedValue({ id: 'b1', coin_reward: 10, code: 'first_dream' });
+    dreamNodeRepository.countUserNodes.mockResolvedValue(1);
+    dreamNodeRepository.getUserNodes.mockResolvedValue([]);
+
+    await missionService.onDreamSaved('user');
+    expect(notificationService.saveNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        from_user: 'user',
+        to_user: 'user',
+        title: 'Ingreso de monedas',
+        message: expect.stringContaining('10 monedas'),
+        type: 'system',
+        metadata: expect.objectContaining({ amount: 10, type: 'ingreso', badge: 'first_dream' })
+      })
+    );
   });
 
   it('should unlock badge for counter mission via onDreamSaved', async () => {

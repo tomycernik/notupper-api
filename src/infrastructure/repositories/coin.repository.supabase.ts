@@ -1,6 +1,12 @@
 import { supabase } from "../../config/supabase";
 import { ICoinRepository } from "../../domain/repositories/coin.repository";
+import { NotificationService } from "../../application/services/notification.service";
+import { NotificationRepositorySupabase } from "./notification.repository.supabase";
 export class CoinRepositorySupabase implements ICoinRepository {
+  private notificationService: NotificationService;
+  constructor() {
+    this.notificationService = new NotificationService(new NotificationRepositorySupabase());
+  }
 
   async getPackageById(packageId: string): Promise<{ id: string; description: string; price: number; coins: number; bonus: number } | null> {
       const { data, error } = await supabase
@@ -13,16 +19,28 @@ export class CoinRepositorySupabase implements ICoinRepository {
   }
 
   async registerMovement(profileId: string, amount: number, type: 'ingreso' | 'egreso', description: string): Promise<void> {
-      const { error } = await supabase
-        .from('coin_movement')
-        .insert({
-          profile_id: profileId,
-          amount,
-          type,
-          description,
-          created_at: new Date().toISOString()
-        });
-      if (error) throw new Error(error.message);
+    const { error } = await supabase
+      .from('coin_movement')
+      .insert({
+        profile_id: profileId,
+        amount,
+        type,
+        description,
+        created_at: new Date().toISOString()
+      });
+    if (error) throw new Error(error.message);
+
+    // Notificación automática por movimiento de monedas
+    await this.notificationService.saveNotification({
+      from_user: profileId,
+      to_user: profileId,
+      title: type === 'ingreso' ? 'Ingreso de monedas' : 'Egreso de monedas',
+      message: `Se ha registrado un ${type} de ${amount} monedas. Motivo: ${description}`,
+      delivered: false,
+      read: false,
+      type: 'system',
+      metadata: { amount, type, description },
+    });
   }
   async getUserCoins(profileId: string): Promise<number> {
     const { data, error } = await supabase

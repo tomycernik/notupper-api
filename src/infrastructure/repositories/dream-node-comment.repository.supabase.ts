@@ -37,7 +37,6 @@ export class DreamNodeCommentRepositorySupabase {
           avatar_url = userData.user.user_metadata?.avatar_url || "";
         }
 
-        //arma el array
         return {
           ...comment,
           user: {

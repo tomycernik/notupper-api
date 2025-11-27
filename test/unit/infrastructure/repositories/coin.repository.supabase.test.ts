@@ -71,7 +71,6 @@ describe('CoinRepositorySupabase Integration Tests', () => {
       await expect(repo.addCoins(profileId, 10)).resolves.toBeUndefined();
       expect(supabase.rpc).toHaveBeenCalledWith('add_coins', { profile_id: profileId, amount: 10 });
     });
-    
     it('should handle supabase.rpc error', async () => {
       supabase.rpc = jest.fn().mockResolvedValue({ error: { message: 'rpc fail' } });
       await expect(repo.addCoins(profileId, 10)).rejects.toThrow('rpc fail');

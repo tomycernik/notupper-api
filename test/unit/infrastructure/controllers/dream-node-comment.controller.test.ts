@@ -1,57 +1,4 @@
 
-jest.mock('../../../../src/config/envs', () => ({
-  envs: {
-    SUPABASE_URL: 'https://mock.supabase.co',
-    SUPABASE_KEY: 'mock-key',
-    SUPABASE_ANON_KEY: 'mock-anon-key',
-    SUPABASE_SERVICE_KEY: 'mock-service-key',
-  },
-}));
-
-jest.mock('../../../../src/config/supabase', () => ({
-  supabase: {
-    from: jest.fn(),
-    auth: {
-      admin: {
-        getUserById: jest.fn(),
-      },
-    },
-  },
-}));
-
-const mockGetDreamNodeById = jest.fn();
-const mockGetCommentsByNodeWithUser = jest.fn();
-const mockCountComments = jest.fn();
-
-jest.mock('../../../../src/application/services/user.service', () => ({
-  UserService: jest.fn().mockImplementation(() => ({
-    getUserIdByDreamNodeId: jest.fn(),
-    getUserNameById: jest.fn(),
-    getAvatarUrlById: jest.fn(),
-  })),
-}));
-
-jest.mock('../../../../src/application/services/notification.service', () => ({
-  NotificationService: jest.fn().mockImplementation(() => ({
-    saveNotification: jest.fn(),
-  })),
-}));
-
-jest.mock('../../../../src/application/services/dream-node.service', () => ({
-  DreamNodeService: jest.fn().mockImplementation(() => ({
-    getDreamNodeById: mockGetDreamNodeById,
-  })),
-}));
-
-jest.mock('../../../../src/application/services/dream-node-comment.service', () => ({
-  DreamNodeCommentService: jest.fn().mockImplementation(() => ({
-    getCommentsByNodeWithUser: mockGetCommentsByNodeWithUser,
-    countComments: mockCountComments,
-  })),
-}));
-
-jest.mock('../../../../src/infrastructure/repositories/dream-node.repository.supabase');
-
 import { Request, Response } from 'express';
 import { DreamNodeCommentController } from '../../../../src/infrastructure/controllers/dream-node-comment.controller';
 import { IDreamNodeCommentWithUser } from '../../../../src/domain/interfaces/dream-node-comment.interface';
@@ -65,17 +12,35 @@ describe('DreamNodeCommentController - getCommentsWithUser', () => {
   let mockResponse: Partial<Response>;
   let mockJson: jest.Mock;
   let mockStatus: jest.Mock;
-  let mockUserService: UserService;
-  let mockNotificationService: NotificationService;
-  let mockDreamNodeService: DreamNodeService;
+  let mockUserService: jest.Mocked<UserService>;
+  let mockNotificationService: jest.Mocked<NotificationService>;
+  let mockDreamNodeService: jest.Mocked<DreamNodeService>;
   let mockCommentService: any;
+  let mockGetDreamNodeById: jest.Mock;
+  let mockGetCommentsByNodeWithUser: jest.Mock;
+  let mockCountComments: jest.Mock;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockUserService = new UserService({} as any, {} as any);
-    mockNotificationService = new NotificationService({} as any);
-    mockDreamNodeService = new DreamNodeService({} as any);
+    mockGetDreamNodeById = jest.fn();
+    mockGetCommentsByNodeWithUser = jest.fn();
+    mockCountComments = jest.fn();
+
+    mockUserService = {
+      getUserIdByDreamNodeId: jest.fn(),
+      getUserNameById: jest.fn(),
+      getAvatarUrlById: jest.fn(),
+    } as any;
+
+    mockNotificationService = {
+      saveNotification: jest.fn(),
+    } as any;
+
+    mockDreamNodeService = {
+      getDreamNodeById: mockGetDreamNodeById,
+    } as any;
+
     mockCommentService = {
       getCommentsByNodeWithUser: mockGetCommentsByNodeWithUser,
       countComments: mockCountComments,

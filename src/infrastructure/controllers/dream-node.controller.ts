@@ -79,19 +79,18 @@ export class DreamNodeController {
       }
 
       const { description } = req.body;
-
-      const illustration = await this.illustrationService.generateIllustration(
-        description
-      );
-
+      console.log('[DreamNodeController] Generating illustration for:', description);
+      const illustration = await this.illustrationService.generateIllustration(description);
+      console.log('[DreamNodeController] Illustration response:', illustration);
       res.json({
         imageUrl: illustration.file_url,
         thumbUrl: illustration.thumb_url,
       });
     } catch (error: any) {
-      console.error("Error en DreamNodeController:", error);
+      console.error('[DreamNodeController] Error al generar ilustración:', error);
       res.status(500).json({
         errors: "Error al generar ilustración",
+        details: error,
       });
     }
   }

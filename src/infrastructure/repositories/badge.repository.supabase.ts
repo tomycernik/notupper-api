@@ -45,17 +45,18 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
   async getUserBadges(profileId: string): Promise<Badge[]> {
     const { data, error } = await supabase
       .from('user_badge')
-      .select('badge:badge_id ( id, badge_description, badge_image, coin_reward )')
+      .select('badge:badge_id ( id, badge_description, badge_image, coin_reward, mission_id )')
       .eq('profile_id', profileId);
 
     if (error) throw new Error(error.message);
 
     return (data || []).map((row: any) => ({
-  id: row.badge.id,
-  description: row.badge.badge_description || undefined,
-  imageUrl: row.badge.badge_image || undefined,
-  code: row.badge.badge_code || undefined,
-  coin_reward: row.badge.coin_reward ?? undefined,
+      id: row.badge.id,
+      description: row.badge.badge_description || undefined,
+      imageUrl: row.badge.badge_image || undefined,
+      code: row.badge.badge_code || undefined,
+      coin_reward: row.badge.coin_reward ?? undefined,
+      mission_id: row.badge.mission_id || undefined,
     }));
   }
 
@@ -70,11 +71,11 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
     if (!data) return null;
 
     return {
-  id: data.id,
-  description: data.badge_description || undefined,
-  imageUrl: data.badge_image || undefined,
-  code: data.badge_code || undefined,
-  coin_reward: data.coin_reward ?? undefined,
+      id: data.id,
+      description: data.badge_description || undefined,
+      imageUrl: data.badge_image || undefined,
+      code: data.badge_code || undefined,
+      coin_reward: data.coin_reward ?? undefined,
     };
   }
 
@@ -90,7 +91,7 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
   async getUserFeaturedBadges(profileId: string): Promise<Badge[]> {
     const { data, error } = await supabase
       .from('user_badge')
-      .select('badge:badge_id ( id, badge_description, badge_image, badge_code, coin_reward ), featured_order')
+      .select('badge:badge_id ( id, badge_description, badge_image, badge_code, coin_reward, mission_id ), featured_order')
       .eq('profile_id', profileId)
       .not('featured_order', 'is', null)
       .order('featured_order', { ascending: true })
@@ -104,6 +105,7 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
       imageUrl: row.badge.badge_image || undefined,
       code: row.badge.badge_code || undefined,
       coin_reward: row.badge.coin_reward ?? undefined,
+      mission_id: row.badge.mission_id || undefined,
     }));
   }
 

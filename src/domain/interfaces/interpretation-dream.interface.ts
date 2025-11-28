@@ -15,4 +15,5 @@ export interface Interpretation {
   emotion: string;
   context: DreamContext;
   dreamType: DreamTypeName;
+  color?: string;
 }

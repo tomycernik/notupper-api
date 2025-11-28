@@ -5,14 +5,18 @@ import { envs } from "@config/envs";
 type DreamApproach = "psychological" | "spiritual" | "symbolic";
 import { Interpretation } from "@domain/interfaces/interpretation-dream.interface";
 import { IDreamContext } from "@domain/interfaces/dream-context.interface";
-import { isRecurringDream } from '@domain/utils/dream-utils';
+import { isRecurringDream } from "@domain/utils/dream-utils";
 import { DreamTypeName } from "@domain/models/dream-node.model";
 import { EmotionRepositorySupabase } from "@infrastructure/repositories/emotion.repository.supabase";
 import { DreamTypeRepositorySupabase } from "@infrastructure/repositories/dream-type.repository.supabase";
+import { colorMap } from "@/config/mappings";
 
 export class InterpretationOpenAIProvider implements InterpretationProvider {
   private openai: OpenAI;
-  constructor(private readonly emotionRepository: EmotionRepositorySupabase, private readonly dreamTypeRepository: DreamTypeRepositorySupabase) {
+  constructor(
+    private readonly emotionRepository: EmotionRepositorySupabase,
+    private readonly dreamTypeRepository: DreamTypeRepositorySupabase
+  ) {
     this.openai = new OpenAI({
       apiKey: envs.OPENAI_API_KEY,
     });
@@ -38,15 +42,15 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
     dreamContext?: IDreamContext | null
   ): Promise<Interpretation> {
     try {
-      console.log('Dream Context:', JSON.stringify(dreamContext, null, 2));
+      console.log("Dream Context:", JSON.stringify(dreamContext, null, 2));
       const contextSection = this.buildContextSection(dreamContext);
-      const emotions = await this.emotionRepository.getAllByName()
-      const emotionsString = emotions.join('|');
+      const emotions = await this.emotionRepository.getAllByName();
+      const emotionsString = emotions.join("|");
       const dreamTypes = await this.dreamTypeRepository.getAllByName();
-      const dreamTypesString = (await dreamTypes).join('|');
-      console.log('Context Section:', contextSection);
+      const dreamTypesString = (await dreamTypes).join("|");
+      console.log("Context Section:", contextSection);
 
-            const prompt = `${contextSection}Analiza este sueño y proporciona:
+      const prompt = `${contextSection}Analiza este sueño y proporciona:
       1. Un título creativo y descriptivo (3-6 palabras)
       2. Una interpretación psicológica concisa pero profunda que incluya:
         - Significado simbólico de los elementos principales
@@ -82,13 +86,17 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         "dreamType": ${dreamTypesString}
       }`;
 
-            // Siempre usa el modelo psicológico para la interpretación
-            const modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
+      // Siempre usa el modelo psicológico para la interpretación
+      const modelUsed =
+        envs.OPENAI_MODEL_PSYCHOLOGICAL ||
+        envs.OPENAI_FINE_TUNED_MODEL ||
+        envs.OPENAI_MODEL ||
+        "gpt-3.5-turbo";
       console.log(
         "[InterpretationOpenAIProvider] Modelo usado para interpretación:",
         modelUsed
       );
-          const response = await this.openai.chat.completions.create({
+      const response = await this.openai.chat.completions.create({
         model: modelUsed,
         messages: [
           {
@@ -111,21 +119,26 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
       let title = "Interpretación de Sueño";
       let interpretation = "No se pudo interpretar el sueño.";
       let emotion = "Tristeza";
-      let dreamType: DreamTypeName = 'Estandar';
+      let dreamType: DreamTypeName = "Estandar";
       let themes: string[] = [];
       let people: string[] = [];
       let locations: string[] = [];
       let emotionsContext: string[] = [];
+      let color: string = colorMap[emotion]!;
 
       try {
         const aiResult = JSON.parse(responseContent);
 
         title = this.sanitizeText(aiResult.title || title);
-        interpretation = this.sanitizeText(aiResult.interpretation || interpretation);
+        interpretation = this.sanitizeText(
+          aiResult.interpretation || interpretation
+        );
         interpretation = this.limitSentences(interpretation, 4);
 
-        let aiEmotion = (aiResult.emotion || emotion || "").toString().toLowerCase();
-        const allowedEmotions = new Set(emotions.map(e => e.toLowerCase()));
+        let aiEmotion = (aiResult.emotion || emotion || "")
+          .toString()
+          .toLowerCase();
+        const allowedEmotions = new Set(emotions.map((e) => e.toLowerCase()));
         if (!allowedEmotions.has(aiEmotion)) aiEmotion = "tristeza";
 
         const textToCheck = `${title} ${interpretation}`.toLowerCase();
@@ -137,16 +150,24 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
             break;
           }
         }
-        if ((aiEmotion === "tristeza" || !textToCheck.includes(aiEmotion)) && foundEmotion) {
+        if (
+          (aiEmotion === "tristeza" || !textToCheck.includes(aiEmotion)) &&
+          foundEmotion
+        ) {
           aiEmotion = foundEmotion;
         }
         emotion = aiEmotion.charAt(0).toUpperCase() + aiEmotion.slice(1);
+        color = colorMap[emotion]!;
 
         const dreamAnalysis = {
           themes: Array.isArray(aiResult.themes) ? aiResult.themes : [],
           people: Array.isArray(aiResult.people) ? aiResult.people : [],
-          locations: Array.isArray(aiResult.locations) ? aiResult.locations : [],
-          emotions: Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : []
+          locations: Array.isArray(aiResult.locations)
+            ? aiResult.locations
+            : [],
+          emotions: Array.isArray(aiResult.emotions_context)
+            ? aiResult.emotions_context
+            : [],
         };
 
         let isRecurring = false;
@@ -156,22 +177,28 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
           isRecurring = result.isRecurring;
         }
 
-        if (isRecurring && dreamType == 'Estandar') {
-          dreamType = 'Recurrente';
+        if (isRecurring && dreamType == "Estandar") {
+          dreamType = "Recurrente";
         } else {
           const allowedDreamTypes = new Set(dreamTypes);
-          let rawDreamType = aiResult.dreamType || 'Estandar';
-          rawDreamType = rawDreamType
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
-          dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
+          let rawDreamType = aiResult.dreamType || "Estandar";
+          rawDreamType =
+            rawDreamType
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .charAt(0)
+              .toUpperCase() + rawDreamType.slice(1).toLowerCase();
+          dreamType = (
+            allowedDreamTypes.has(rawDreamType) ? rawDreamType : "Estandar"
+          ) as DreamTypeName;
         }
 
         themes = Array.isArray(aiResult.themes) ? aiResult.themes : [];
         people = Array.isArray(aiResult.people) ? aiResult.people : [];
         locations = Array.isArray(aiResult.locations) ? aiResult.locations : [];
-        emotionsContext = Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : [];
-
+        emotionsContext = Array.isArray(aiResult.emotions_context)
+          ? aiResult.emotions_context
+          : [];
       } catch {
         // Error parseando la respuesta de la IA
       }
@@ -180,13 +207,20 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         title,
         interpretation,
         emotion,
+        color,
         dreamType,
         context: {
           themes: themes.map((theme: string) => ({ label: theme, count: 1 })),
           people: people.map((person: string) => ({ label: person, count: 1 })),
-          locations: locations.map((location: string) => ({ label: location, count: 1 })),
-          emotions_context: emotionsContext.map((emotion: string) => ({ label: emotion, count: 1 }))
-        }
+          locations: locations.map((location: string) => ({
+            label: location,
+            count: 1,
+          })),
+          emotions_context: emotionsContext.map((emotion: string) => ({
+            label: emotion,
+            count: 1,
+          })),
+        },
       };
     } catch (error: any) {
       throw new Error(error.message || "Error al interpretar el sueño.");
@@ -194,50 +228,68 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
   }
 
   private buildContextSection(userContext?: IDreamContext | null): string {
-    if (!userContext) return '';
+    if (!userContext) return "";
 
-    let contextText = '\n\nContexto del usuario (para enriquecer la interpretación):\n';
+    let contextText =
+      "\n\nContexto del usuario (para enriquecer la interpretación):\n";
 
-    if (userContext.themes && Array.isArray(userContext.themes) && userContext.themes.length > 0) {
+    if (
+      userContext.themes &&
+      Array.isArray(userContext.themes) &&
+      userContext.themes.length > 0
+    ) {
       const themesList = userContext.themes
-        .filter(t => t && t.label && typeof t.count === 'number')
+        .filter((t) => t && t.label && typeof t.count === "number")
         .map((t) => `"${t.label}" (${t.count} veces)`)
-        .join(', ');
+        .join(", ");
       if (themesList) {
         contextText += `- Temas recurrentes: ${themesList}\n`;
       }
     }
 
-    if (userContext.people && Array.isArray(userContext.people) && userContext.people.length > 0) {
+    if (
+      userContext.people &&
+      Array.isArray(userContext.people) &&
+      userContext.people.length > 0
+    ) {
       const peopleList = userContext.people
-        .filter(p => p && p.label && typeof p.count === 'number')
+        .filter((p) => p && p.label && typeof p.count === "number")
         .map((p) => `"${p.label}" (${p.count} veces)`)
-        .join(', ');
+        .join(", ");
       if (peopleList) {
         contextText += `- Personas importantes: ${peopleList}\n`;
       }
     }
 
-    if (userContext.emotions_context && Array.isArray(userContext.emotions_context) && userContext.emotions_context.length > 0) {
+    if (
+      userContext.emotions_context &&
+      Array.isArray(userContext.emotions_context) &&
+      userContext.emotions_context.length > 0
+    ) {
       const emotionsList = userContext.emotions_context
-        .filter(e => e && e.label && typeof e.count === 'number')
+        .filter((e) => e && e.label && typeof e.count === "number")
         .map((e) => `"${e.label}" (${e.count} veces)`)
-        .join(', ');
+        .join(", ");
       if (emotionsList) {
         contextText += `- Emociones frecuentes: ${emotionsList}\n`;
       }
     }
 
-    if (userContext.locations && Array.isArray(userContext.locations) && userContext.locations.length > 0) {
+    if (
+      userContext.locations &&
+      Array.isArray(userContext.locations) &&
+      userContext.locations.length > 0
+    ) {
       const locationsList = userContext.locations
-        .filter(l => l && l.label && typeof l.count === 'number')
+        .filter((l) => l && l.label && typeof l.count === "number")
         .map((l) => `"${l.label}" (${l.count} veces)`)
-        .join(', ');
+        .join(", ");
       if (locationsList) {
         contextText += `- Lugares recurrentes: ${locationsList}`;
       }
     }
-    contextText += "\nConsidera estos patrones al interpretar el nuevo sueño.\n";
+    contextText +=
+      "\nConsidera estos patrones al interpretar el nuevo sueño.\n";
     return contextText;
   }
 
@@ -248,12 +300,15 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
     approach: DreamApproach
   ): Promise<Interpretation> {
     try {
-      console.log(`[InterpretationOpenAIProvider] Approach usado para reinterpretación:`, approach);
+      console.log(
+        `[InterpretationOpenAIProvider] Approach usado para reinterpretación:`,
+        approach
+      );
       const contextSection = this.buildContextSection(dreamContext);
-      const emotions = await this.emotionRepository.getAllByName()
-      const emotionsString = emotions.join('|');
+      const emotions = await this.emotionRepository.getAllByName();
+      const emotionsString = emotions.join("|");
       const dreamTypes = await this.dreamTypeRepository.getAllByName();
-      const dreamTypesString = (await dreamTypes).join('|');
+      const dreamTypesString = (await dreamTypes).join("|");
       const prompt = `IGNORA COMPLETAMENTE la interpretación anterior. Debes dar una perspectiva RADICALMENTE OPUESTA y diferente.
 
 Sueño: ${dreamText}
@@ -293,7 +348,11 @@ Responde EXACTAMENTE en este formato JSON:
 }`;
 
       // Selecciona el modelo segun el enfoque
-      let modelUsed = envs.OPENAI_MODEL_PSYCHOLOGICAL || envs.OPENAI_FINE_TUNED_MODEL || envs.OPENAI_MODEL || "gpt-3.5-turbo";
+      let modelUsed =
+        envs.OPENAI_MODEL_PSYCHOLOGICAL ||
+        envs.OPENAI_FINE_TUNED_MODEL ||
+        envs.OPENAI_MODEL ||
+        "gpt-3.5-turbo";
       if (approach === "spiritual") {
         modelUsed = envs.OPENAI_MODEL_SPIRITUAL || modelUsed;
       } else if (approach === "symbolic") {
@@ -304,8 +363,7 @@ Responde EXACTAMENTE en este formato JSON:
         messages: [
           {
             role: "system",
-            content:
-              `Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando el simbolismo y las emociones subyacentes.`,
+            content: `Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido con 'title', 'interpretation' y 'emotion', sin markdown y sin etiquetas HTML. La emoción debe ser la que mejor represente el sentimiento central del soñante en el sueño, y debe ser coherente con el contenido. No inventes ni devuelvas una emoción por default si no estás seguro: analiza el texto y elige la emoción más adecuada. Las emociones válidas son: ${emotionsString}. Las interpretaciones deben ser concisas pero profundas (3-4 oraciones), explorando el simbolismo y las emociones subyacentes.`,
           },
           {
             role: "user",
@@ -321,36 +379,43 @@ Responde EXACTAMENTE en este formato JSON:
       let title = "Nueva Perspectiva";
       let interpretation = "No se pudo reinterpretar el sueño.";
       let emotion = "Tristeza";
+      let color = colorMap[emotion]!;
       let themes: string[] = [];
       let people: string[] = [];
       let locations: string[] = [];
       let emotions_context: string[] = [];
-      let dreamType:DreamTypeName = 'Estandar';
+      let dreamType: DreamTypeName = "Estandar";
       try {
         const aiResult = JSON.parse(responseContent);
         title = aiResult.title || title;
         interpretation = aiResult.interpretation || interpretation;
         emotion = aiResult.emotion || emotion;
         emotion = emotion.charAt(0).toUpperCase() + emotion.slice(1);
+        color = colorMap[emotion]!;
         themes = aiResult.themes || [];
         people = aiResult.people || [];
         locations = aiResult.locations || [];
         emotions_context = aiResult.emotions_context || [];
 
-        const rawDreamType = (aiResult.dreamType || 'Estandar')
+        const rawDreamType = (aiResult.dreamType || "Estandar")
           .toString()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
           .toLowerCase();
 
-        dreamType = rawDreamType.charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase() as DreamTypeName;
-         let isRecurring = false;
+        dreamType = (rawDreamType.charAt(0).toUpperCase() +
+          rawDreamType.slice(1).toLowerCase()) as DreamTypeName;
+        let isRecurring = false;
 
-          const dreamAnalysis = {
+        const dreamAnalysis = {
           themes: Array.isArray(aiResult.themes) ? aiResult.themes : [],
           people: Array.isArray(aiResult.people) ? aiResult.people : [],
-          locations: Array.isArray(aiResult.locations) ? aiResult.locations : [],
-          emotions: Array.isArray(aiResult.emotions_context) ? aiResult.emotions_context : []
+          locations: Array.isArray(aiResult.locations)
+            ? aiResult.locations
+            : [],
+          emotions: Array.isArray(aiResult.emotions_context)
+            ? aiResult.emotions_context
+            : [],
         };
 
         if (dreamContext) {
@@ -358,15 +423,20 @@ Responde EXACTAMENTE en este formato JSON:
           isRecurring = result.isRecurring;
         }
 
-        if (isRecurring && dreamType == 'Estandar') {
-          dreamType = 'Recurrente';
+        if (isRecurring && dreamType == "Estandar") {
+          dreamType = "Recurrente";
         } else {
           const allowedDreamTypes = new Set(dreamTypes);
-          let rawDreamType = aiResult.dreamType || 'Estandar';
-          rawDreamType = rawDreamType
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .charAt(0).toUpperCase() + rawDreamType.slice(1).toLowerCase();
-          dreamType = (allowedDreamTypes.has(rawDreamType) ? rawDreamType : 'Estandar') as DreamTypeName;
+          let rawDreamType = aiResult.dreamType || "Estandar";
+          rawDreamType =
+            rawDreamType
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .charAt(0)
+              .toUpperCase() + rawDreamType.slice(1).toLowerCase();
+          dreamType = (
+            allowedDreamTypes.has(rawDreamType) ? rawDreamType : "Estandar"
+          ) as DreamTypeName;
         }
       } catch {
         interpretation = responseContent.trim() || interpretation;
@@ -377,24 +447,25 @@ Responde EXACTAMENTE en este formato JSON:
         interpretation,
         dreamType,
         emotion,
+        color,
         context: {
-          themes: (themes || []).map(theme => ({
+          themes: (themes || []).map((theme) => ({
             label: theme,
-            count: 1
+            count: 1,
           })),
-          people: (people || []).map(person => ({
+          people: (people || []).map((person) => ({
             label: person,
-            count: 1
+            count: 1,
           })),
-          locations: (locations || []).map(location => ({
+          locations: (locations || []).map((location) => ({
             label: location,
-            count: 1
+            count: 1,
           })),
-          emotions_context: (emotions_context || []).map(emotion => ({
+          emotions_context: (emotions_context || []).map((emotion) => ({
             label: emotion,
-            count: 1
-          }))
-        }
+            count: 1,
+          })),
+        },
       };
     } catch (error: any) {
       throw new Error(error.message || "Error al reinterpretar el sueño.");

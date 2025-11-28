@@ -110,14 +110,14 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
   }
 
   async setUserFeaturedBadges(profileId: string, badgeIds: string[]): Promise<void> {
-    // Limpiar featured_order de todas las insignias del usuario
+    // limpiar el featured_order de todas las insignias del usuario
     const { error: clearError } = await supabase
       .from('user_badge')
       .update({ featured_order: null })
       .eq('profile_id', profileId);
     if (clearError) throw new Error(clearError.message);
 
-    // Asignar featured_order a las seleccionadas
+    // asigna featured_order a las insignias seleccionadas
     for (let i = 0; i < badgeIds.length; i++) {
       const badgeId = badgeIds[i];
       const { error } = await supabase

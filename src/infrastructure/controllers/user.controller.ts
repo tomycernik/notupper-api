@@ -222,11 +222,11 @@ export class UserController {
         return;
       }
       const userInfo = await this.userService.getUserInfo(userId);
+      const badges = await this.badgeService.getUserBadges(userId);
       let featuredBadges = await this.badgeService.getUserFeaturedBadges(userId);
       if (!featuredBadges || featuredBadges.length === 0) {
         featuredBadges = (await this.badgeService.getUserBadges(userId)).slice(0, 3);
       }
-      const badges = await this.badgeService.getUserBadges(userId);
       res.status(200).json({
         ...userInfo,
         badges,

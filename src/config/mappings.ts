@@ -22,13 +22,26 @@ export const emotionMap: Record<string, string> = {
   Confusion: "ce03333c-a372-415e-a97d-404071bb828a",
 };
 
+export const colorMap: Record<string, string> = {
+  Frustracion: "#B22222",
+  Tristeza: "#1E3A8A",
+  Miedo: "#8A2BE2",
+  Enojo: "#FF0000",
+  Alegria: "#E0BD0B",
+  Verguenza: "#FF69B4",
+  Sorpresa: "#5DD6E8",
+  Celos: "#008000",
+  Nostalgia: "#D2691E",
+  Confusion: "#A9A9A9",
+}
+
 export const dreamTypeMap: Record<string, string> = {
   Lucido: "57dcaad0-ac51-40c1-a2ad-8a9207564e3b",
   Pesadilla: "3ef3b451-9a82-4cab-9fd4-ca6f9769e3f4",
   Recurrente: "0531e25e-4b15-46f6-b02b-43cd66020e30",
   Estandar: "e2d8f9d0-0d03-4ea3-82b1-0bbb85b098c3",
   Premonitorio: "56b55eed-add4-42ad-b54f-971f64d0cf99",
-  Vivido: "13063e93-931c-4309-bf0a-322a14744138"
+  Vivido: "13063e93-931c-4309-bf0a-322a14744138",
 };
 
 export const notificationMap: Record<string, string> = {
@@ -36,4 +49,4 @@ export const notificationMap: Record<string, string> = {
   comment: "04393652-af52-47fa-9ef7-4c4450d54d9c",
   package_purchase: "ea6d0845-843b-4209-a1e5-299881d238cb",
   system: "235e3fa7-cc95-4b45-aaf3-1edc44fd804b",
-}
+};

@@ -56,6 +56,7 @@ export class DreamNodeController {
         description,
         interpretation: interpretation.interpretation,
         emotion: interpretation.emotion,
+        color: interpretation.color,
         title: interpretation.title,
         dreamType: interpretation.dreamType,
       });
@@ -263,6 +264,7 @@ export class DreamNodeController {
         description,
         interpretation: reinterpretedDream.interpretation,
         emotion: reinterpretedDream.emotion,
+        color: reinterpretedDream.color,
         title: reinterpretedDream.title,
         dreamType: reinterpretedDream.dreamType,
         unlockedBadges,

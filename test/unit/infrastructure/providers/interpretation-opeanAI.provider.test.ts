@@ -18,10 +18,21 @@ describe("InterpretationOpenAIProvider", () => {
   let mockOpenAI: jest.Mocked<OpenAI>;
   let mockChatCompletions: jest.Mock;
   const mockEmotionRepo = {
-    getAllByName: jest.fn().mockResolvedValue(["Felicidad", "Tristeza", "Miedo", "Enojo", "Amor", "Sorpresa"]),
+    getAllByName: jest
+      .fn()
+      .mockResolvedValue([
+        "Alegria",
+        "Tristeza",
+        "Miedo",
+        "Enojo",
+        "Amor",
+        "Sorpresa",
+      ]),
   };
   const mockDreamTypeRepo = {
-    getAllByName: jest.fn().mockResolvedValue(["Lucido", "Pesadilla", "Estandar", "Recurrente"]),
+    getAllByName: jest
+      .fn()
+      .mockResolvedValue(["Lucido", "Pesadilla", "Estandar", "Recurrente"]),
   };
 
   beforeEach(() => {
@@ -42,7 +53,10 @@ describe("InterpretationOpenAIProvider", () => {
 
     // Mock del constructor de OpenAI
     MockedOpenAI.mockImplementation(() => mockOpenAI);
-    provider = new InterpretationOpenAIProvider(mockEmotionRepo, mockDreamTypeRepo);
+    provider = new InterpretationOpenAIProvider(
+      mockEmotionRepo,
+      mockDreamTypeRepo
+    );
   });
 
   describe("constructor", () => {
@@ -66,7 +80,8 @@ describe("InterpretationOpenAIProvider", () => {
                 title: "Vuelo sobre montañas",
                 interpretation:
                   "Este sueño representa tu deseo de libertad y superación personal.",
-                emotion: "felicidad",
+                emotion: "Alegria",
+                color: "#E0BD0B",
                 context: {
                   emotions_context: [],
                   people: [],
@@ -89,8 +104,9 @@ describe("InterpretationOpenAIProvider", () => {
         title: "Vuelo sobre montañas",
         interpretation:
           "Este sueño representa tu deseo de libertad y superación personal.",
-        emotion: "Felicidad",
+        emotion: "Alegria",
         dreamType: "Estandar",
+        color: "#E0BD0B",
         context: {
           emotions_context: [],
           people: [],
@@ -127,7 +143,8 @@ describe("InterpretationOpenAIProvider", () => {
             message: {
               content: JSON.stringify({
                 title: "Interpretación de Sueño",
-                interpretation: "Invalid JSON response from OpenAI. Sentí mucha felicidad al despertar.",
+                interpretation:
+                  "Invalid JSON response from OpenAI. Sentí mucha Alegria al despertar.",
                 emotion: "Tristeza",
                 context: {
                   emotions_context: [],
@@ -149,15 +166,17 @@ describe("InterpretationOpenAIProvider", () => {
       // Assert
       expect(result).toEqual({
         title: "Interpretación de Sueño",
-        interpretation: "Invalid JSON response from OpenAI. Sentí mucha felicidad al despertar.",
-        emotion: "Felicidad",
+        interpretation:
+          "Invalid JSON response from OpenAI. Sentí mucha Alegria al despertar.",
+        emotion: "Alegria",
         dreamType: "Estandar",
+        color: "#E0BD0B",
         context: {
           emotions_context: [],
           people: [],
           locations: [],
           themes: [],
-        }
+        },
       });
     });
 
@@ -184,6 +203,7 @@ describe("InterpretationOpenAIProvider", () => {
         interpretation: "No se pudo interpretar el sueño.",
         emotion: "Tristeza",
         dreamType: "Estandar",
+        color: "#1E3A8A",
         context: {
           emotions_context: [],
           people: [],
@@ -212,6 +232,7 @@ describe("InterpretationOpenAIProvider", () => {
           themes: [],
         },
         emotion: "Tristeza",
+        color: "#1E3A8A",
         dreamType: "Estandar",
       });
     });
@@ -267,6 +288,7 @@ describe("InterpretationOpenAIProvider", () => {
         interpretation: "No se pudo interpretar el sueño.",
         emotion: "Tristeza",
         dreamType: "Estandar",
+        color: "#1E3A8A",
         context: {
           emotions_context: [],
           people: [],
@@ -341,6 +363,7 @@ describe("InterpretationOpenAIProvider", () => {
           themes: [],
         },
         emotion: "Miedo",
+        color: "#8A2BE2",
         dreamType: "Estandar",
       });
 
@@ -350,11 +373,15 @@ describe("InterpretationOpenAIProvider", () => {
           messages: expect.arrayContaining([
             expect.objectContaining({
               role: "system",
-              content: expect.stringContaining("Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido"),
+              content: expect.stringContaining(
+                "Eres un psicólogo especialista en interpretación de sueños. Debes responder SIEMPRE en formato JSON válido"
+              ),
             }),
             expect.objectContaining({
               role: "user",
-              content: expect.stringContaining("IGNORA COMPLETAMENTE la interpretación anterior. Debes dar una perspectiva RADICALMENTE OPUESTA y diferente."),
+              content: expect.stringContaining(
+                "IGNORA COMPLETAMENTE la interpretación anterior. Debes dar una perspectiva RADICALMENTE OPUESTA y diferente."
+              ),
             }),
           ]),
           max_tokens: 350,
@@ -383,7 +410,12 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
+      await provider.reinterpretDream(
+        dreamText,
+        previousInterpretation,
+        null,
+        "psychological"
+      );
 
       // Assert
       const callArgs = mockChatCompletions.mock.calls[0][0];
@@ -412,7 +444,12 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
+      await provider.reinterpretDream(
+        dreamText,
+        previousInterpretation,
+        null,
+        "psychological"
+      );
 
       // Assert
       expect(mockChatCompletions).toHaveBeenCalledWith(
@@ -450,6 +487,7 @@ describe("InterpretationOpenAIProvider", () => {
         interpretation: "Invalid JSON for reinterpretation",
         emotion: "Tristeza",
         dreamType: "Estandar",
+        color: "#1E3A8A",
         context: {
           emotions_context: [],
           people: [],
@@ -466,13 +504,18 @@ describe("InterpretationOpenAIProvider", () => {
 
       // Act & Assert
       try {
-        await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
+        await provider.reinterpretDream(
+          dreamText,
+          previousInterpretation,
+          null,
+          "psychological"
+        );
       } catch (err) {
-        console.log('Test error:', err);
+        console.log("Test error:", err);
         const msg = (err as Error).message;
         expect([
           "Reinterpretation API Error",
-          "Error al reinterpretar el sueño."
+          "Error al reinterpretar el sueño.",
         ]).toContain(msg);
       }
     });
@@ -483,10 +526,15 @@ describe("InterpretationOpenAIProvider", () => {
 
       // Act & Assert
       try {
-        await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
+        await provider.reinterpretDream(
+          dreamText,
+          previousInterpretation,
+          null,
+          "psychological"
+        );
       } catch (err) {
         // Log para ver el error real
-        console.log('Test error:', err);
+        console.log("Test error:", err);
         expect((err as Error).message).toBe("Error al reinterpretar el sueño.");
       }
     });
@@ -546,6 +594,7 @@ describe("InterpretationOpenAIProvider", () => {
         interpretation: "No se pudo interpretar el sueño.",
         emotion: "Tristeza",
         dreamType: "Estandar",
+        color: "#1E3A8A",
         context: {
           emotions_context: [],
           people: [],
@@ -576,6 +625,7 @@ describe("InterpretationOpenAIProvider", () => {
         interpretation: "No se pudo interpretar el sueño.",
         emotion: "Tristeza",
         dreamType: "Estandar",
+        color: "#1E3A8A",
         context: {
           emotions_context: [],
           people: [],
@@ -612,7 +662,7 @@ describe("InterpretationOpenAIProvider", () => {
                 title: "Vuelo sobre el Mar",
                 interpretation:
                   "Este sueño simboliza tu búsqueda de libertad emocional.",
-                emotion: "felicidad",
+                emotion: "Alegria",
               }),
             },
           },
@@ -659,7 +709,7 @@ describe("InterpretationOpenAIProvider", () => {
               content: JSON.stringify({
                 title: "Test Title",
                 interpretation: "Test interpretation",
-                emotion: "felicidad",
+                emotion: "Alegria",
               }),
             },
           },
@@ -694,7 +744,7 @@ describe("InterpretationOpenAIProvider", () => {
               content: JSON.stringify({
                 title: "Test Title",
                 interpretation: "Test interpretation",
-                emotion: "felicidad",
+                emotion: "Alegria",
               }),
             },
           },
@@ -745,7 +795,12 @@ describe("InterpretationOpenAIProvider", () => {
       mockChatCompletions.mockResolvedValue(mockResponse);
 
       // Act
-      await provider.reinterpretDream(dreamText, previousInterpretation, null, "psychological");
+      await provider.reinterpretDream(
+        dreamText,
+        previousInterpretation,
+        null,
+        "psychological"
+      );
 
       // Assert
       expect(mockChatCompletions).toHaveBeenCalledWith(
@@ -772,7 +827,7 @@ describe("InterpretationOpenAIProvider", () => {
               content: JSON.stringify({
                 title: "Test",
                 interpretation: "Test",
-                emotion: "felicidad",
+                emotion: "Alegria",
               }),
             },
           },
@@ -792,6 +847,5 @@ describe("InterpretationOpenAIProvider", () => {
 
       consoleSpy.mockRestore();
     });
-
   });
 });

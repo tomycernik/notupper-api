@@ -12,6 +12,7 @@ describe('MissionService - Coin movements for badges', () => {
     missionRepository = {
       getAllMissions: jest.fn(),
       getUserMission: jest.fn(),
+      getUserMissions: jest.fn(),
       upsertUserMission: jest.fn()
     };
     badgeRepository = {
@@ -29,7 +30,9 @@ describe('MissionService - Coin movements for badges', () => {
     missionRepository.getAllMissions.mockResolvedValue([
       { code: 'first_dream', target: 1, badgeId: 'b1' }
     ]);
-    missionRepository.getUserMission.mockResolvedValue({ progress: 0, completedAt: null });
+    missionRepository.getUserMissions.mockResolvedValue([
+      { code: 'first_dream', progress: 0, completedAt: null }
+    ]);
     badgeRepository.getBadgeById.mockResolvedValue({ id: 'b1', coin_reward: 50 });
     dreamNodeRepository.countUserNodes.mockResolvedValue(1);
     dreamNodeRepository.getUserNodes.mockResolvedValue([]);

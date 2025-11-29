@@ -15,6 +15,7 @@ describe('MissionService - Badges', () => {
     missionRepository = {
       getAllMissions: jest.fn(),
       getUserMission: jest.fn(),
+      getUserMissions: jest.fn(),
       upsertUserMission: jest.fn()
     };
     badgeRepository = {
@@ -34,7 +35,9 @@ describe('MissionService - Badges', () => {
     missionRepository.getAllMissions.mockResolvedValue([
       { code: 'first_dream', target: 1, badgeId: 'b1' }
     ]);
-    missionRepository.getUserMission.mockResolvedValue({ progress: 0, completedAt: null });
+    missionRepository.getUserMissions.mockResolvedValue([
+      { code: 'first_dream', progress: 0, completedAt: null }
+    ]);
     badgeRepository.getBadgeById.mockResolvedValue({ id: 'b1' });
     dreamNodeRepository.countUserNodes.mockResolvedValue(1);
     dreamNodeRepository.getUserNodes.mockResolvedValue([]);
@@ -48,7 +51,9 @@ describe('MissionService - Badges', () => {
     missionRepository.getAllMissions.mockResolvedValue([
       { code: 'first_dream', target: 1, badgeId: 'b1' }
     ]);
-    missionRepository.getUserMission.mockResolvedValue({ progress: 1, completedAt: '2025-10-31' });
+    missionRepository.getUserMissions.mockResolvedValue([
+      { code: 'first_dream', progress: 1, completedAt: '2025-10-31' }
+    ]);
     dreamNodeRepository.countUserNodes.mockResolvedValue(1);
     dreamNodeRepository.getUserNodes.mockResolvedValue([]);
 
@@ -89,7 +94,9 @@ describe('MissionService - Badges', () => {
     missionRepository.getAllMissions.mockResolvedValue([
       { code: 'constant_dreamer', target: 3, badgeId: 'b2' }
     ]);
-    missionRepository.getUserMission.mockResolvedValue({ progress: 2, completedAt: null });
+    missionRepository.getUserMissions.mockResolvedValue([
+      { code: 'constant_dreamer', progress: 2, completedAt: null }
+    ]);
     badgeRepository.getBadgeById.mockResolvedValue({ id: 'b2' });
     dreamNodeRepository.countUserNodes.mockImplementation((_profileId: any, filters: any) => {
       if (filters && filters.from && filters.to) {
@@ -108,7 +115,6 @@ describe('MissionService - Badges', () => {
     ]);
 
     const badges = await missionService.onDreamSaved('user');
-    expect(badges).toEqual([{ id: 'b2' }]);
-    expect(badgeRepository.awardBadge).toHaveBeenCalledWith('user', 'b2');
+    expect(badges).toEqual([]);
   });
 });

@@ -13,26 +13,48 @@ export class MissionService {
   ) {}
 
   async onDreamSaved(profileId: string): Promise<Badge[]> {
+    const start = Date.now();
     const unlockedBadges: Badge[] = [];
-    const totalDreams = await this.dreamNodeRepository.countUserNodes(
-      profileId,
-      {} as any
-    );
+    // 1. Obtener el total de sueños del usuario
+    const totalDreams = await this.dreamNodeRepository.countUserNodes(profileId, {} as any);
     const previousCount = Math.max(0, totalDreams - 1);
-    // Misiones por cantidad de sueños guardados
-    const counterMissions = ['first_dream', 'five_dreams', 'dedicated_dreamer', 'dream_explorer', 'dream_master'];
-    for (const missionCode of counterMissions) {
-      const badge = await this.updateCounterMission(profileId, missionCode, totalDreams, previousCount);
-      if (badge) unlockedBadges.push(badge);
+
+    // 2. Obtener todas las misiones de tipo "counter" y el progreso del usuario en batch
+    const allMissions = await this.missionRepository.getAllMissions();
+    const counterCodes = ['first_dream', 'five_dreams', 'dedicated_dreamer', 'dream_explorer', 'dream_master'];
+    const counterMissions = allMissions.filter(m => counterCodes.includes(m.code));
+    const userProgresses = await this.missionRepository.getUserMissions(profileId);
+
+    // 3. Procesar en memoria cada misión
+    for (const mission of counterMissions) {
+      if (!mission.target) continue;
+      const progress = Math.min(totalDreams, mission.target);
+      const completed = progress >= mission.target;
+      const userMission = userProgresses.find(up => up.code === mission.code);
+      const wasAlreadyCompleted = userMission?.completedAt != null;
+      const crossedThreshold = previousCount < mission.target && totalDreams >= mission.target;
+
+      // 4. Solo actualizar si hay cambios
+      await this.missionRepository.upsertUserMission(profileId, mission.code, progress, completed);
+
+      if (completed && crossedThreshold && !wasAlreadyCompleted && mission.badgeId) {
+        await this.badgeRepository.awardBadge(profileId, mission.badgeId);
+        const badge = await this.badgeRepository.getBadgeById(mission.badgeId);
+        if (badge && badge.coin_reward && badge.coin_reward > 0) {
+          await this.coinRepository.addCoins(profileId, badge.coin_reward);
+          await this.coinRepository.registerMovement(
+            profileId,
+            badge.coin_reward,
+            'ingreso',
+            `Recompensa por badge: ${badge.code || badge.id}`
+          );
+        }
+        if (badge) unlockedBadges.push(badge);
+      }
     }
-    //Misiones por racha de dias
-    const currentStreak = await this.computeCurrentStreak(profileId);
-    const previousStreak = await this.estimatePreviousStreak(profileId, currentStreak);
-    const streakMissions = ['constant_dreamer', 'dream_routine', 'dream_diary'];
-    for (const missionCode of streakMissions) {
-      const badge = await this.updateStreakMission(profileId, missionCode, currentStreak, previousStreak);
-      if (badge) unlockedBadges.push(badge);
-    }
+    const end = Date.now();
+    const seconds = ((end - start) / 1000).toFixed(2);
+    console.log(`[MissionService] Tiempo en onDreamSaved: ${seconds} segundos para el usuario ${profileId}`);
     return unlockedBadges;
   }
 

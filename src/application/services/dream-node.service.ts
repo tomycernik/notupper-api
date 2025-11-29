@@ -29,6 +29,7 @@ export class DreamNodeService {
     dream: SaveDreamNodeRequestDto,
     dreamContext: DreamContext
   ): Promise<{ id: string; unlockedBadges: Badge[] }> {
+    const start = Date.now();
     const {
       title,
       description,
@@ -86,6 +87,9 @@ export class DreamNodeService {
         console.error("MissionService onDreamSaved error:", e);
       }
     }
+    const end = Date.now();
+    const seconds = ((end - start) / 1000).toFixed(2);
+    console.log(`[DreamNodeService] Tiempo en saveDreamNode: ${seconds} segundos para el usuario ${userId}`);
     return { id: data.id, unlockedBadges };
   }
 

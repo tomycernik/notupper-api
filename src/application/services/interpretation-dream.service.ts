@@ -6,9 +6,17 @@ export class InterpretationDreamService {
     constructor(private interpretationProvider: InterpretationProvider, ) {
         this.interpretationProvider = interpretationProvider;
     }
-    async interpretDream(dreamText: string, userDreamContext?: IDreamContext | null): Promise<Interpretation> {
+    async interpretDream(
+        dreamText: string,
+        userDreamContext?: IDreamContext | null,
+        approach?: "psychological" | "spiritual" | "symbolic"
+    ): Promise<Interpretation> {
         try {
-            const interpretation = await this.interpretationProvider.interpretDream(dreamText, userDreamContext);
+            const interpretation = await this.interpretationProvider.interpretDream(
+                dreamText,
+                userDreamContext,
+                approach || "psychological"
+            );
 
             return interpretation;
         } catch (error) {

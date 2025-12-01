@@ -64,11 +64,15 @@ export class UserService {
 
     let avatar_url: string | undefined = undefined;
     let username: string | undefined = undefined;
+    let email: string | undefined = undefined;
+    let name: string | undefined = undefined;
     try {
       const { data: authUser, error: authError } =
         await supabase.auth.admin.getUserById(userId);
       if (!authError && authUser?.user) {
         avatar_url = authUser.user.user_metadata?.avatar_url || undefined;
+        email = authUser.user.email;
+        name = authUser.user.user_metadata?.full_name || authUser.user.user_metadata?.name;
         username =
           authUser.user.user_metadata?.username ||
           (authUser.user.email
@@ -87,8 +91,8 @@ export class UserService {
 
     return {
       id: user.id!,
-      email: user.email,
-      name: user.name,
+      email: email ?? user.email,
+      name: name ?? user.name,
       username: username ?? null,
       coin_amount: user.coin_amount,
       avatar_url: avatar_url ?? null,

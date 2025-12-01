@@ -154,6 +154,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       dream_description: node.description,
       interpretation: node.interpretation,
       imageUrl: node.image_url,
+      thumbUrl: node.thumb_url,
       creationDate: new Date(node.creation_date),
       privacy: node.privacy?.privacy_description || node.privacy_id,
       state: node.state?.state_description || node.state_id,
@@ -245,6 +246,7 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       dream_description: data.dream_description,
       interpretation: data.interpretation,
       imageUrl: data.image_url,
+      thumbUrl: data.thumb_url,
       creationDate: new Date(data.creation_date),
       privacy: privacyData.data?.privacy_description || "Privado",
       state: stateData.data?.state_description || "Activo",
@@ -499,7 +501,8 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
 
   async getDreamsForFeed(
     pagination: IPaginationOptions,
-    currentUserId?: string
+    currentUserId?: string,
+    userId?: string
   ): Promise<any[]> {
     let query = supabase
       .from("dream_node")
@@ -507,6 +510,11 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       .in("privacy_id", [privacyMap["Publico"], privacyMap["Anonimo"]])
       .eq("state_id", stateMap["Activo"])
       .order("creation_date", { ascending: false });
+
+    // Filter by userId if provided
+    if (userId) {
+      query = query.eq("profile_id", userId);
+    }
 
     if (pagination?.offset !== undefined && pagination?.limit !== undefined) {
       const to = pagination.offset + pagination.limit - 1;

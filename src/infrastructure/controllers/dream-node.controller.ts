@@ -21,14 +21,38 @@ export class DreamNodeController {
   async interpret(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).userId;
-      const { description } = req.body;
+      const { description, approach } = req.body;
+
+      // Validate approach parameter
+      const validApproaches = ["psychological", "spiritual", "symbolic"];
+      const selectedApproach = approach || "psychological";
+
+      if (!validApproaches.includes(selectedApproach)) {
+        res.status(400).json({
+          errors: "El parámetro 'approach' debe ser uno de: psychological, spiritual, symbolic.",
+        });
+        return;
+      }
+
+      // Check membership for non-psychological approaches
+      if (selectedApproach !== "psychological") {
+        const userMembership = await this.membershipService.getUserMembership(userId);
+        if (userMembership && userMembership.name !== "plus") {
+          res.status(403).json({
+            errors: "Los enfoques spiritual y symbolic son exclusivos para usuarios Plus",
+          });
+          return;
+        }
+      }
+
       const userDreamContext = await this.contextService.getUserDreamContext(
         userId
       );
       const interpretation =
         await this.interpretationDreamService.interpretDream(
           description,
-          userDreamContext
+          userDreamContext,
+          selectedApproach as "psychological" | "spiritual" | "symbolic"
         );
 
       if (interpretation.context && req.session) {
@@ -59,6 +83,7 @@ export class DreamNodeController {
         color: interpretation.color,
         title: interpretation.title,
         dreamType: interpretation.dreamType,
+        approach: interpretation.approach,
       });
     } catch (error: any) {
       console.error("Error en DreamNodeController:", error);
@@ -267,6 +292,7 @@ export class DreamNodeController {
         color: reinterpretedDream.color,
         title: reinterpretedDream.title,
         dreamType: reinterpretedDream.dreamType,
+        approach: reinterpretedDream.approach,
         unlockedBadges,
       });
     } catch (error: any) {

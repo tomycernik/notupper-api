@@ -3,9 +3,12 @@ import { IDreamNodeRepository } from '@domain/repositories/dream-node.repository
 export class FeedService {
   constructor(private readonly dreamNodeRepository: IDreamNodeRepository) { }
 
-  async getFeed(profileId?: string, limit: number = 20, offset: number = 0): Promise<any[]> {
-    const options = { limit, offset };
-    const data = await this.dreamNodeRepository.getDreamsForFeed(options, profileId);
+  async getFeed(profileId?: string, limit?: number, offset?: number, userId?: string): Promise<any[]> {
+    const options = {
+      limit: limit ?? 20,
+      offset: offset ?? 0
+    };
+    const data = await this.dreamNodeRepository.getDreamsForFeed(options, profileId, userId);
     return data;
   }
 

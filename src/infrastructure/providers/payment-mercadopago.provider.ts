@@ -6,6 +6,8 @@ import {
   PaymentResponse,
 } from "@domain/models/payment.model";
 
+const USE_MOCK = true;
+
 export class PaymentMercadoPagoProvider implements PaymentProvider {
   private paymentApi: Payment;
 
@@ -19,6 +21,21 @@ export class PaymentMercadoPagoProvider implements PaymentProvider {
   }
 
   async createPayment(paymentData: PaymentRequest): Promise<PaymentResponse> {
+
+    console.log("Payment data:", paymentData);
+
+    if (USE_MOCK) {
+      console.log("Using Mock Payment Provider");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return {
+        id: "123456789",
+        status: "approved",
+        status_details: "accredited",
+        transaction_amount: paymentData.transaction_amount,
+        description: paymentData.description,
+      };
+    }
+
     try {
       const body = {
         transaction_amount: Number(paymentData.transaction_amount.toFixed(2)),

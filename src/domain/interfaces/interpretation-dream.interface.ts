@@ -16,4 +16,5 @@ export interface Interpretation {
   context: DreamContext;
   dreamType: DreamTypeName;
   color?: string;
+  approach?: "psychological" | "spiritual" | "symbolic";
 }

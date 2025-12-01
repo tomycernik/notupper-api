@@ -4,7 +4,8 @@ import { Interpretation } from "@domain/interfaces/interpretation-dream.interfac
 export interface InterpretationProvider {
   interpretDream(
     dreamText: string,
-    dreamContext?: IDreamContext | null
+    dreamContext?: IDreamContext | null,
+    approach?: "psychological" | "spiritual" | "symbolic"
   ): Promise<Interpretation>;
   reinterpretDream(
     dreamText: string,

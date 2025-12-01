@@ -23,6 +23,7 @@ describe('FeedService', () => {
 
     expect(mockRepo.getDreamsForFeed).toHaveBeenCalledWith(
       { limit: 10, offset: 0 },
+      undefined,
       undefined
     );
     expect(result).toEqual([{ id: 'n1' }]);
@@ -47,7 +48,7 @@ describe('FeedService', () => {
   it('getFeed filters by user if profileId is provided', async () => {
     mockRepo.getDreamsForFeed.mockResolvedValueOnce([{ id: 'n1', user: 'u1' }]);
     const result = await service.getFeed('u1', 1, 0);
-    expect(mockRepo.getDreamsForFeed).toHaveBeenCalledWith({ limit: 1, offset: 0 }, 'u1');
+    expect(mockRepo.getDreamsForFeed).toHaveBeenCalledWith({ limit: 1, offset: 0 }, 'u1', undefined);
     expect(result[0].user).toBe('u1');
   });
 

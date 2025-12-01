@@ -42,7 +42,7 @@ describe('InterpretationDreamService', () => {
       const result = await service.interpretDream(dreamDescription, dreamContext);
 
       // Assert
-      expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(dreamDescription, dreamContext);
+      expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(dreamDescription, dreamContext, 'psychological');
       expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledTimes(1);
       expect(result).toEqual(expectedResult);
     });
@@ -62,7 +62,7 @@ describe('InterpretationDreamService', () => {
 
       // Act & Assert
       await expect(service.interpretDream(dreamDescription, dreamContext)).rejects.toThrow('Error interpretando el sueño: OpenAI API error');
-      expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(dreamDescription, dreamContext);
+      expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(dreamDescription, dreamContext, 'psychological');
     });
 
     it('should handle empty dream description', async () => {
@@ -88,7 +88,7 @@ describe('InterpretationDreamService', () => {
       const result = await service.interpretDream(dreamDescription, dreamContext);
 
       // Assert
-      expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(dreamDescription, dreamContext);
+      expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(dreamDescription, dreamContext, 'psychological');
       expect(result).toEqual(expectedResult);
     });
   });
@@ -273,7 +273,7 @@ describe('InterpretationDreamService', () => {
         const result = await service.interpretDream(description, dreamContext);
 
         // Assert
-        expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(description, dreamContext);
+        expect(mockInterpretationProvider.interpretDream).toHaveBeenCalledWith(description, dreamContext, 'psychological');
         expect(result.dreamType).toBe(dreamType);
         expect(result.emotion).toBe(dreamType === 'Pesadilla' ? 'negative' : 'neutral');
       });

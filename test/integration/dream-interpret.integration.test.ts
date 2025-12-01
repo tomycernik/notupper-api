@@ -326,7 +326,8 @@ describe("Dream API Integration Tests", () => {
           locations: expect.any(Array),
           people: expect.any(Array),
           themes: expect.any(Array),
-        })
+        }),
+        "psychological"
       );
     });
 

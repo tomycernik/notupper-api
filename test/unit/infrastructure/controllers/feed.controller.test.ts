@@ -49,7 +49,7 @@ describe('FeedController', () => {
 
     await controller.getFeed(req as Request, mockRes as Response);
 
-    expect(mockFeedService.getFeed).toHaveBeenCalledWith('user-1', 10, 0);
+    expect(mockFeedService.getFeed).toHaveBeenCalledWith('user-1', 10, 0, undefined);
     expect(mockRes.json).toHaveBeenCalled();
   });
 

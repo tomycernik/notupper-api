@@ -107,6 +107,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Alegria",
         dreamType: "Estandar",
         color: "#E0BD0B",
+        approach: "psychological",
         context: {
           emotions_context: [],
           people: [],
@@ -171,6 +172,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Alegria",
         dreamType: "Estandar",
         color: "#E0BD0B",
+        approach: "psychological",
         context: {
           emotions_context: [],
           people: [],
@@ -204,6 +206,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Tristeza",
         dreamType: "Estandar",
         color: "#1E3A8A",
+        approach: "psychological",
         context: {
           emotions_context: [],
           people: [],
@@ -234,6 +237,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Tristeza",
         color: "#1E3A8A",
         dreamType: "Estandar",
+        approach: "psychological",
       });
     });
 
@@ -289,6 +293,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Tristeza",
         dreamType: "Estandar",
         color: "#1E3A8A",
+        approach: "psychological",
         context: {
           emotions_context: [],
           people: [],
@@ -365,6 +370,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Miedo",
         color: "#8A2BE2",
         dreamType: "Estandar",
+        approach: "psychological",
       });
 
       expect(mockChatCompletions).toHaveBeenCalledWith(
@@ -488,6 +494,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Tristeza",
         dreamType: "Estandar",
         color: "#1E3A8A",
+        approach: "psychological",
         context: {
           emotions_context: [],
           people: [],
@@ -595,6 +602,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Tristeza",
         dreamType: "Estandar",
         color: "#1E3A8A",
+        approach: "psychological",
         context: {
           emotions_context: [],
           people: [],
@@ -626,6 +634,7 @@ describe("InterpretationOpenAIProvider", () => {
         emotion: "Tristeza",
         dreamType: "Estandar",
         color: "#1E3A8A",
+        approach: "psychological",
         context: {
           emotions_context: [],
           people: [],

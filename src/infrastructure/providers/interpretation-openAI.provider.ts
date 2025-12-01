@@ -39,10 +39,12 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
 
   async interpretDream(
     dreamText: string,
-    dreamContext?: IDreamContext | null
+    dreamContext?: IDreamContext | null,
+    approach: "psychological" | "spiritual" | "symbolic" = "psychological"
   ): Promise<Interpretation> {
     try {
       console.log("Dream Context:", JSON.stringify(dreamContext, null, 2));
+      console.log("[InterpretationOpenAIProvider] Approach usado para interpretación:", approach);
       const contextSection = this.buildContextSection(dreamContext);
       const emotions = await this.emotionRepository.getAllByName();
       const emotionsString = emotions.join("|");
@@ -86,12 +88,19 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         "dreamType": ${dreamTypesString}
       }`;
 
-      // Siempre usa el modelo psicológico para la interpretación
-      const modelUsed =
+      // Select model based on approach
+      let modelUsed =
         envs.OPENAI_MODEL_PSYCHOLOGICAL ||
         envs.OPENAI_FINE_TUNED_MODEL ||
         envs.OPENAI_MODEL ||
         "gpt-3.5-turbo";
+
+      if (approach === "spiritual") {
+        modelUsed = envs.OPENAI_MODEL_SPIRITUAL || modelUsed;
+      } else if (approach === "symbolic") {
+        modelUsed = envs.OPENAI_MODEL_SYMBOLIC || modelUsed;
+      }
+
       console.log(
         "[InterpretationOpenAIProvider] Modelo usado para interpretación:",
         modelUsed
@@ -209,6 +218,7 @@ export class InterpretationOpenAIProvider implements InterpretationProvider {
         emotion,
         color,
         dreamType,
+        approach,
         context: {
           themes: themes.map((theme: string) => ({ label: theme, count: 1 })),
           people: people.map((person: string) => ({ label: person, count: 1 })),
@@ -445,23 +455,18 @@ Responde EXACTAMENTE en este formato JSON:
       return {
         title,
         interpretation,
-        dreamType,
         emotion,
         color,
+        dreamType,
+        approach,
         context: {
-          themes: (themes || []).map((theme) => ({
-            label: theme,
-            count: 1,
-          })),
-          people: (people || []).map((person) => ({
-            label: person,
-            count: 1,
-          })),
-          locations: (locations || []).map((location) => ({
+          themes: themes.map((theme: string) => ({ label: theme, count: 1 })),
+          people: people.map((person: string) => ({ label: person, count: 1 })),
+          locations: locations.map((location: string) => ({
             label: location,
             count: 1,
           })),
-          emotions_context: (emotions_context || []).map((emotion) => ({
+          emotions_context: emotions_context.map((emotion: string) => ({
             label: emotion,
             count: 1,
           })),

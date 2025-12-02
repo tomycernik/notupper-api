@@ -161,7 +161,7 @@ export class UserController {
         return;
       }
 
-      const { roomId } = req.body;
+      const { roomId, skinId } = req.body;
       if (!roomId || roomId.trim() === "") {
         res.status(400).json({
           success: false,
@@ -170,7 +170,7 @@ export class UserController {
         return;
       }
 
-      await this.roomService.setActiveRoom(userId, roomId);
+      await this.roomService.setActiveRoom(userId, roomId, skinId);
 
       res.json({
         success: true,

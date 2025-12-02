@@ -13,5 +13,5 @@ export interface IRoomRepository {
   addCompatibleSkin(roomId: string, skinId: string): Promise<Room>;
   removeCompatibleSkin(roomId: string, skinId: string): Promise<Room>;
   getActiveRoom(userId: string): Promise<Room | null>;
-  setActiveRoom(userId: string, roomId: string): Promise<void>;
+  setActiveRoom(userId: string, roomId: string, skinId?: string): Promise<void>;
 }

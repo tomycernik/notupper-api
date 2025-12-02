@@ -22,5 +22,8 @@ skinRouter.get('/', authenticateToken, (req, res) => skinController.getAllSkins(
 // POST /api/skins/buy - Comprar skin con monedas
 skinRouter.post('/buy', authenticateToken, (req, res) => skinController.buySkin(req, res));
 
+// POST /api/skins/getfree - Obtener skin gratuito (sin verificación Plus)
+skinRouter.post('/getfree', authenticateToken, (req, res) => skinController.getFreeSkin(req, res));
+
 // POST /api/skins - Agregar skin al usuario (requiere Plus)
 skinRouter.post('/', authenticateToken, (req, res) => skinController.addSkinToUser(req, res));

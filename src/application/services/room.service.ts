@@ -140,7 +140,7 @@ export class RoomService {
     }
   }
 
-  async setActiveRoom(userId: string, roomId: string): Promise<void> {
+  async setActiveRoom(userId: string, roomId: string, skinId?: string): Promise<void> {
     if (!userId?.trim()) {
       throw new Error('ID de usuario no proporcionado');
     }
@@ -149,7 +149,7 @@ export class RoomService {
     }
 
     try {
-      await this.roomRepository.setActiveRoom(userId, roomId);
+      await this.roomRepository.setActiveRoom(userId, roomId, skinId);
     } catch (error: any) {
       console.error('Error setting active room:', error);
       throw error;

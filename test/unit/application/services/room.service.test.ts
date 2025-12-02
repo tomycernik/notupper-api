@@ -254,7 +254,7 @@ describe('RoomService', () => {
 
       await roomService.setActiveRoom('user1', 'room123');
 
-      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room123');
+      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room123', undefined);
     });
 
     it('should throw error when userId is empty', async () => {
@@ -292,7 +292,7 @@ describe('RoomService', () => {
       await expect(roomService.setActiveRoom('user1', 'room999'))
         .rejects.toThrow('Room not found');
 
-      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room999');
+      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room999', undefined);
     });
 
     it('should handle database constraint errors', async () => {
@@ -302,7 +302,7 @@ describe('RoomService', () => {
       await expect(roomService.setActiveRoom('user1', 'room123'))
         .rejects.toThrow('Unique constraint violation');
 
-      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room123');
+      expect(mockRoomRepository.setActiveRoom).toHaveBeenCalledWith('user1', 'room123', undefined);
     });
   });
 

@@ -84,20 +84,20 @@ describe('DreamNodeRepositorySupabase Integration Tests', () => {
         Promise.resolve({ data: [dreamNodeMock], error: null })
       );
 
-      const orderMock = jest.fn(() => ({
+      const inMock = jest.fn(() => ({
         range: rangeMock
+      }));
+
+      const orderMock = jest.fn(() => ({
+        in: inMock
       }));
 
       const eqMock = jest.fn(() => ({
         order: orderMock
       }));
 
-      const inMock = jest.fn(() => ({
-        eq: eqMock
-      }));
-
       const selectMock = jest.fn(() => ({
-        in: inMock
+        eq: eqMock
       }));
 
       // Mock para la consulta de profile

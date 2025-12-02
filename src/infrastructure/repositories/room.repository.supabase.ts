@@ -343,7 +343,7 @@ export class RoomRepositorySupabase implements IRoomRepository {
     };
   }
 
-  async setActiveRoom(userId: string, roomId: string): Promise<void> {
+  async setActiveRoom(userId: string, roomId: string, skinId?: string): Promise<void> {
     const { data: userRoom } = await supabase
       .from('user_room')
       .select('room_id')
@@ -366,7 +366,10 @@ export class RoomRepositorySupabase implements IRoomRepository {
 
     const { error: activateError } = await supabase
       .from('user_room')
-      .update({ is_active: true })
+      .update({
+        is_active: true,
+        texture_applied: skinId || null
+      })
       .eq('profile_id', userId)
       .eq('room_id', roomId);
 

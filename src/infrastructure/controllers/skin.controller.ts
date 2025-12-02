@@ -117,4 +117,59 @@ export class SkinController {
             });
         }
     }
+
+    async getFreeSkin(req: Request, res: Response) {
+        try {
+            const userId = (req as any).userId;
+            const { skinId } = req.body;
+
+            if (!userId) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'No autorizado'
+                });
+            }
+
+            if (!skinId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'El ID del skin es requerido'
+                });
+            }
+
+            // Verificar que la skin sea gratuita (price null o 0)
+            const skin = await this.skinService.getSkinById(skinId);
+            if (!skin) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Skin no encontrado'
+                });
+            }
+
+            if (skin.price !== null && skin.price !== 0) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Esta skin no es gratuita'
+                });
+            }
+
+            await this.skinService.addSkinToUser(userId, skinId);
+
+            res.status(201).json({
+                success: true,
+                message: 'Skin gratuito agregado exitosamente'
+            });
+        } catch (error: any) {
+            console.error('Error en SkinController getFreeSkin:', error);
+
+            const statusCode = error.message?.includes('ya tiene') ? 409 :
+                error.message?.includes('no encontrada') ? 404 : 500;
+
+            res.status(statusCode).json({
+                success: false,
+                message: error.message || 'Error al agregar el skin gratuito',
+                errors: [error.message || 'Error desconocido']
+            });
+        }
+    }
 }

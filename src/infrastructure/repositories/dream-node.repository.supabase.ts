@@ -504,16 +504,22 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
     currentUserId?: string,
     userId?: string
   ): Promise<any[]> {
+    const { withRetry, batchProcess } = await import('@infrastructure/utils/retry.util');
+
     let query = supabase
       .from("dream_node")
       .select(`*, emotion:emotion_id(id, emotion, color)`)
-      .in("privacy_id", [privacyMap["Publico"], privacyMap["Anonimo"]])
       .eq("state_id", stateMap["Activo"])
       .order("creation_date", { ascending: false });
 
-    // Filter by userId if provided
+    // Filter by userId if provided - only show PUBLIC dreams for specific user
     if (userId) {
-      query = query.eq("profile_id", userId);
+      query = query
+        .eq("profile_id", userId)
+        .eq("privacy_id", privacyMap["Publico"]); // Solo públicos cuando se filtra por usuario
+    } else {
+      // General feed - show both public and anonymous
+      query = query.in("privacy_id", [privacyMap["Publico"], privacyMap["Anonimo"]]);
     }
 
     if (pagination?.offset !== undefined && pagination?.limit !== undefined) {
@@ -526,61 +532,120 @@ export class DreamNodeRepositorySupabase implements IDreamNodeRepository {
       throw new Error(error.message);
     }
 
-    return await Promise.all(
-      (data ?? []).map(async (node: any) => {
-        const isAnonymous = node.privacy_id === privacyMap["Anonimo"];
+    // Process dreams in batches of 10 for better performance
+    return await batchProcess(
+      data ?? [],
+      async (node: any) => {
+        try {
+          const isAnonymous = node.privacy_id === privacyMap["Anonimo"];
 
-        const { data: userData } = isAnonymous
-          ? { data: null }
-          : await supabase.auth.admin.getUserById(node.profile_id);
+          // Fetch user data with retry logic (reduced delay for speed)
+          const { data: userData } = isAnonymous
+            ? { data: null }
+            : await withRetry(
+                () => supabase.auth.admin.getUserById(node.profile_id),
+                { maxRetries: 2, initialDelay: 200 }
+              );
 
-        const { data: profileData } = isAnonymous
-          ? { data: null }
-          : await supabase
-            .from('profile')
-            .select('membership_id')
-            .eq('id', node.profile_id)
-            .single();
+          // Fetch profile data with retry logic
+          const { data: profileData } = isAnonymous
+            ? { data: null }
+            : await withRetry(
+                async () => {
+                  const result = await supabase
+                    .from('profile')
+                    .select('membership_id')
+                    .eq('id', node.profile_id)
+                    .single();
+                  return result;
+                },
+                { maxRetries: 2, initialDelay: 200 }
+              );
 
-        const likeCount = await this.countLikes(node.id);
-        const likedByMe = currentUserId
-          ? await this.isLikedByUser(node.id, currentUserId)
-          : false;
+          // Fetch like count with retry logic
+          const likeCount = await withRetry(
+            () => this.countLikes(node.id),
+            { maxRetries: 2, initialDelay: 200 }
+          );
 
-        const commentRepo = new (
-          await import("./dream-node-comment.repository.supabase")
-        ).DreamNodeCommentRepositorySupabase();
-        const commentCount = await commentRepo.countComments(node.id);
-        const comments = (
-          await commentRepo.getCommentsByNodeWithUser(node.id)
-        ).slice(-3);
-        return {
-          id: node.id,
-          title: node.title,
-          dream_description: node.dream_description,
-          interpretation: node.interpretation,
-          creationDate: node.creation_date,
-          imageUrl: node.image_url,
-          thumbUrl: node.thumb_url,
-          profile_id: isAnonymous ? undefined : node.profile_id,
-          userName: isAnonymous
-            ? undefined
-            : userData?.user?.user_metadata?.full_name ||
-            userData?.user?.email?.split("@")[0] ||
-            "Usuario",
-          fotoUser: isAnonymous
-            ? undefined
-            : userData?.user?.user_metadata?.avatar_url || null,
-          membershipId: isAnonymous ? undefined : profileData?.membership_id || null,
-          likeCount,
-          likedByMe,
-          commentCount,
-          comments,
-          colorEmotion: node.emotion?.color || null,
-          emotion: node.emotion?.emotion || null,
-          isOwner: currentUserId ? node.profile_id === currentUserId : false,
-        };
-      })
+          // Check if liked by current user with retry logic
+          const likedByMe = currentUserId
+            ? await withRetry(
+                () => this.isLikedByUser(node.id, currentUserId),
+                { maxRetries: 2, initialDelay: 200 }
+              )
+            : false;
+
+          // Fetch comment data with retry logic
+          const commentRepo = new (
+            await import("./dream-node-comment.repository.supabase")
+          ).DreamNodeCommentRepositorySupabase();
+
+          const commentCount = await withRetry(
+            () => commentRepo.countComments(node.id),
+            { maxRetries: 2, initialDelay: 200 }
+          );
+
+          const comments = await withRetry(
+            async () => {
+              const allComments = await commentRepo.getCommentsByNodeWithUser(node.id);
+              return allComments.slice(-3);
+            },
+            { maxRetries: 2, initialDelay: 200 }
+          );
+
+          return {
+            id: node.id,
+            title: node.title,
+            dream_description: node.dream_description,
+            interpretation: node.interpretation,
+            creationDate: node.creation_date,
+            imageUrl: node.image_url,
+            thumbUrl: node.thumb_url,
+            profile_id: isAnonymous ? undefined : node.profile_id,
+            userName: isAnonymous
+              ? undefined
+              : userData?.user?.user_metadata?.full_name ||
+                userData?.user?.email?.split("@")[0] ||
+                "Usuario",
+            fotoUser: isAnonymous
+              ? undefined
+              : userData?.user?.user_metadata?.avatar_url || null,
+            membershipId: isAnonymous ? undefined : profileData?.membership_id || null,
+            likeCount,
+            likedByMe,
+            commentCount,
+            comments,
+            colorEmotion: node.emotion?.color || null,
+            emotion: node.emotion?.emotion || null,
+            isOwner: currentUserId ? node.profile_id === currentUserId : false,
+          };
+        } catch (error: any) {
+          console.error(`[getDreamsForFeed] Error processing dream ${node.id}:`, error.message);
+          // Return a partial result if processing fails
+          return {
+            id: node.id,
+            title: node.title,
+            dream_description: node.dream_description,
+            interpretation: node.interpretation,
+            creationDate: node.creation_date,
+            imageUrl: node.image_url,
+            thumbUrl: node.thumb_url,
+            profile_id: undefined,
+            userName: "Usuario",
+            fotoUser: null,
+            membershipId: null,
+            likeCount: 0,
+            likedByMe: false,
+            commentCount: 0,
+            comments: [],
+            colorEmotion: node.emotion?.color || null,
+            emotion: node.emotion?.emotion || null,
+            isOwner: false,
+          };
+        }
+      },
+      10 // Process 10 dreams at a time for better performance
     );
   }
 

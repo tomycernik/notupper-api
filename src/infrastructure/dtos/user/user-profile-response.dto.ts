@@ -5,12 +5,5 @@ export interface UserProfileResponseDto {
   email: string;
   name: string;
   coin_amount: number;
-  membership: {
-    id: number;
-    name: string;
-    startDate: string;
-    endDate: string;
-    features: any[];
-  };
   badges: Badge[];
 }

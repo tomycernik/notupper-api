@@ -38,3 +38,4 @@ app.listen(port, () => {
     console.log(`Server corriendo en puerto ${port}`);
     console.log(`Modo: ${process.env.NODE_ENV}`)
 });
+ 

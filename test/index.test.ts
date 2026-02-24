@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals';
-
+ 
 describe('Basic Tests', () => {
     it('should pass basic math', () => {
         expect(2 + 2).toBe(4);

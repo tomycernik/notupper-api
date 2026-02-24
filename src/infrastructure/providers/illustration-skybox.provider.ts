@@ -41,3 +41,4 @@ export class IllustrationSkyboxProvider implements IllustrationProvider {
     return { file_url: resultUrl, thumb_url: thumbUrl! };
   }
 }
+ 

@@ -11,3 +11,4 @@ export interface IDreamNodeEntity {
     dream_type_id: string;
     thumb_url: string;
 }
+ 

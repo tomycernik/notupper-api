@@ -1,5 +1,3 @@
-import { IMembershipFeature } from "../../../domain/interfaces/membership.interface";
-
 export interface UserInfoResponseDto {
   id: string;
   email: string;
@@ -7,11 +5,4 @@ export interface UserInfoResponseDto {
   username?: string | null;
   coin_amount: number;
   avatar_url?: string | null | undefined;
-  membership: {
-    id: number;
-    name: string;
-    startDate: string;
-    endDate: string;
-    features: IMembershipFeature[];
-  };
 }

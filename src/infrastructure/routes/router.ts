@@ -9,7 +9,7 @@ import { roomRouter } from "@infrastructure/routes/modules/room.routes";
 import { skinRouter } from "@infrastructure/routes/modules/skin.routes";
 import { packageRouter } from "./modules/package.routes";
 import { paymentRouter } from "./modules/payment.routes";
-
+ 
 export class AppRoutes {
   static get routes(): Router {
     const router = Router();

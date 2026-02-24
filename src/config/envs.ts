@@ -4,19 +4,3 @@ import { get } from 'env-var';
 dotenv.config({
     path: `.env.${process.env.NODE_ENV || 'development'}`
 });
-
-export const envs = {
-    PORT: get('PORT').default(3000).asPortNumber(),
-    OPENAI_API_KEY: get('OPENAI_API_KEY').required().asString(),
-    OPENAI_MODEL: get('OPENAI_MODEL').default('gpt-3.5-turbo').asString(),
-    OPENAI_FINE_TUNED_MODEL: get('OPENAI_FINE_TUNED_MODEL').asString(),
-    OPENAI_MODEL_PSYCHOLOGICAL: get('OPENAI_MODEL_PSYCHOLOGICAL').asString(),
-    OPENAI_MODEL_SPIRITUAL: get('OPENAI_MODEL_SPIRITUAL').asString(),
-    OPENAI_MODEL_SYMBOLIC: get('OPENAI_MODEL_SYMBOLIC').asString(),
-    SUPABASE_URL: get('SUPABASE_URL').required().asString(),
-    SUPABASE_KEY: get('SUPABASE_KEY').required().asString(),
-    SUPABASE_JWT_SECRET: get('SUPABASE_JWT_SECRET').required().asString(),
-    SKYBOX_API_KEY: get('SKYBOX_API_KEY').required().asString(),
-    SESSION_SECRET: get('SESSION_SECRET').default('your-secret-key').asString(),
-    MERCADO_PAGO_ACCESS_TOKEN: get('MERCADO_PAGO_ACCESS_TOKEN').required().asString()
-};

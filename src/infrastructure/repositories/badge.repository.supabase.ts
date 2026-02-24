@@ -129,3 +129,4 @@ export class BadgeRepositorySupabase implements IBadgeRepository {
     }
   }
 }
+ 

@@ -1,14 +1,10 @@
-import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
-import { IMembership } from "@domain/interfaces/membership.interface";
-import { IRepositoryUser, IUser } from "@domain/interfaces/user.interface";
+import { IAuthUser, IUser, IUserContext } from '@domain/interfaces/user.interface';
 
 export interface IUserRepository {
-  findUserAvatarUrlById(userId: string): Promise<string | null>;
-  findUserNameById(userId: string): Promise<string | null>;
-  findByDreamNodeId(dreamNodeId: string): Promise<IUser | null>;
-  register(user: IUser): Promise<IRepositoryUser>;
-  login(userCredentials: LoginDTO): Promise<IRepositoryUser>;
-  updateMembership(userId: string, membership: IMembership): Promise<void>;
-  addCoins(userId: string, amount: number): Promise<void>;
-  findById(id: string): Promise<IUser | null>;
+  register(user: IUser): Promise<IAuthUser>;
+  login(email: string, password: string): Promise<IAuthUser>;
+  findById(id: string): Promise<IUserContext | null>;
+  findAll(): Promise<IUserContext[]>;
+  update(id: string, data: Partial<IUser>): Promise<IUserContext>;
+  delete(id: string): Promise<void>;
 }

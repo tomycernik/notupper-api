@@ -1,201 +1,82 @@
-import { supabase } from "@config/supabase";
-import { IMembership } from "@domain/interfaces/membership.interface";
-import { IRepositoryUser, IUser } from "@domain/interfaces/user.interface";
-import { IUserRepository } from "@domain/repositories/user.repository";
-import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { supabase } from '@config/supabase';
+import { envs } from '@config/envs';
+import { IUserRepository } from '@domain/repositories/user.repository';
+import { IUser, IUserContext, IAuthUser } from '@domain/interfaces/user.interface';
 
 export class UserRepositorySupabase implements IUserRepository {
-  async findUserAvatarUrlById(userId: string): Promise<string | null> {
-    const { data, error } = await supabase.auth.admin.getUserById(userId);
-    if (error) {
-      console.error("Error obteniendo usuario:", error);
-      return null;
-    }
-    const user = data.user;
-    if (!user) return null;
-    const avatarUrl = user.user_metadata?.avatar_url || null;
-
-    return avatarUrl;
+  private buildToken(user: IUserContext): string {
+    return jwt.sign({ id: user.id, rol: user.rol }, envs.JWT_SECRET, { expiresIn: '7d' });
   }
 
-  async findUserNameById(userId: string): Promise<string | null> {
-    const { data, error } = await supabase.auth.admin.getUserById(userId);
-    if (error) {
-      console.error("Error obteniendo usuario:", error);
-      return null;
-    }
-    const user = data.user;
-    if (!user) return null;
-    const name =
-      user.user_metadata?.full_name || user.user_metadata?.name || null;
+  async register(user: IUser): Promise<IAuthUser> {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
 
-    return name;
-  }
-  async findByDreamNodeId(dreamNodeId: string): Promise<IUser | null> {
     const { data, error } = await supabase
-      .from("dream_node")
-      .select("profile:profile(*)")
-      .eq("id", dreamNodeId)
+      .from('users')
+      .insert({ ...user, password: hashedPassword, rol: 'USER' })
+      .select()
       .single();
 
-    if (error) {
-      console.error("Error buscando usuario:", error);
-      return null;
-    }
+    if (error) throw new Error(error.message);
 
-    const profile = Array.isArray(data.profile)
-      ? data.profile[0]
-      : data.profile;
-
-    return profile as IUser;
-  }
-  async register(user: IUser): Promise<IRepositoryUser> {
-    const { email, password, date_of_birth: dateOfBirth } = user;
-
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          date_of_birth: dateOfBirth.toISOString().split("T")[0],
-        },
-      },
-    });
-
-    if (authError || !authData.user) {
-      throw new Error(authError?.message || "No se pudo crear usuario");
-    }
-
-    // Asignar la room por defecto al nuevo usuario
-    const { data: defaultRoom } = await supabase
-      .from("room")
-      .select("id")
-      .eq("is_default", true)
-      .single();
-
-    if (defaultRoom) {
-      await supabase.from("user_room").insert({
-        profile_id: authData.user.id,
-        room_id: defaultRoom.id,
-        active: true,
-      });
-
-      const { data: defaultSkin } = await supabase
-        .from("skin")
-        .select("id")
-        .eq("room_id", defaultRoom.id)
-        .limit(1)
-        .single();
-
-      if (defaultSkin) {
-        await supabase.from("user_skin").insert({
-          profile_id: authData.user.id,
-          skin_id: defaultSkin.id,
-        });
-      }
-    }
-
-    return {
-      id: authData.user.id,
-      email: user.email,
-      name: user.name,
-      date_of_birth: user.date_of_birth,
-      token: authData.session?.access_token || null,
-      coin_amount: 0,
-    };
+    const { password: _, ...userContext } = data as IUser & { id: string };
+    return { ...(userContext as IUserContext), token: this.buildToken(userContext as IUserContext) };
   }
 
-  async login(userCredentials: LoginDTO): Promise<IRepositoryUser> {
-    const { email, password } = userCredentials;
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error || !data.session || !data.user) {
-      throw new Error(error?.message || "No se pudo iniciar sesión");
-    }
-
-    const { data: profileData, error: profileError } = await supabase
-      .from("profile")
-      .select("*")
-      .eq("id", data.user.id)
-      .maybeSingle();
-
-    if (profileError) {
-      throw new Error(`Error al obtener perfil: ${profileError.message}`);
-    }
-
-    if (!profileData) {
-      throw new Error("No se encontró el perfil del usuario");
-    }
-
-    return {
-      id: data.user.id,
-      email: email,
-      name: data.user.user_metadata?.name ?? null,
-      date_of_birth: profileData.date_of_birth,
-      coin_amount: profileData.coin_amount,
-      token: data.session.access_token,
-    };
-  }
-
-  async findById(id: string): Promise<IUser | null> {
+  async login(email: string, password: string): Promise<IAuthUser> {
     const { data, error } = await supabase
-      .from("profile")
-      .select("*")
-      .eq("id", id)
+      .from('users')
+      .select('*')
+      .eq('email', email)
       .single();
 
-    if (error) {
-      console.error("Error buscando usuario:", error);
-      return null;
-    }
+    if (error || !data) throw new Error('Credenciales inválidas');
 
-    return data as IUser;
+    const valid = await bcrypt.compare(password, data.password);
+    if (!valid) throw new Error('Credenciales inválidas');
+
+    const { password: _, ...userContext } = data as IUser & { id: string };
+    return { ...(userContext as IUserContext), token: this.buildToken(userContext as IUserContext) };
   }
 
-  async updateMembership(
-    userId: string,
-    membership: IMembership
-  ): Promise<void> {
-    const { error } = await supabase
-      .from("profile")
-      .update({
-        membership_id: membership.membership_id,
-        membership_start_date: membership.membership_start_date,
-        membership_end_date: membership.membership_end_date,
-      })
-      .eq("id", userId);
-
-    if (error) {
-      console.error("Error actualizando membresía:", error);
-      throw new Error("No se pudo actualizar la membresía");
-    }
-  }
-
-  async addCoins(userId: string, amount: number): Promise<void> {
+  async findById(id: string): Promise<IUserContext | null> {
     const { data, error } = await supabase
-      .from("profile")
-      .select("coin_amount")
-      .eq("id", userId)
+      .from('users')
+      .select('id, nombre, apellido, email, celular, zona, rol')
+      .eq('id', id)
       .single();
 
-    if (error) {
-      console.error("Error obteniendo monedas:", error);
-      throw new Error("No se pudieron obtener las monedas del usuario");
-    }
+    if (error) return null;
+    return data as IUserContext;
+  }
 
-    const newBalance = (data?.coin_amount ?? 0) + amount;
+  async findAll(): Promise<IUserContext[]> {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, nombre, apellido, email, celular, zona, rol')
+      .order('created_at', { ascending: false });
 
-    const { error: updateError } = await supabase
-      .from("profile")
-      .update({ coin_amount: newBalance })
-      .eq("id", userId);
+    if (error) throw new Error(error.message);
+    return (data ?? []) as IUserContext[];
+  }
 
-    if (updateError) {
-      console.error("Error actualizando monedas:", updateError);
-      throw new Error("No se pudieron actualizar las monedas");
-    }
+  async update(id: string, data: Partial<IUser>): Promise<IUserContext> {
+    const { password, ...safeData } = data;
+    const { data: updated, error } = await supabase
+      .from('users')
+      .update(safeData)
+      .eq('id', id)
+      .select('id, nombre, apellido, email, celular, zona, rol')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return updated as IUserContext;
+  }
+
+  async delete(id: string): Promise<void> {
+    const { error } = await supabase.from('users').delete().eq('id', id);
+    if (error) throw new Error(error.message);
   }
 }

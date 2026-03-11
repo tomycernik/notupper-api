@@ -1,52 +1,31 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
-    // File Layout
     "rootDir": "./",
     "outDir": "./dist",
-
-    // Environment Settings
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16"  ,
+    "moduleResolution": "node16",
     "target": "ES2020",
     "esModuleInterop": true,
-
-    // Decorators (NECESARIO para class-validator)
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-
     "types": ["node", "jest"],
-    "typeRoots": ["./node_modules/@types", "./src/types"],
-
-    // Path Aliases
+    "typeRoots": ["./node_modules/@types"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@application/*": ["src/application/*"],
       "@domain/*": ["src/domain/*"],
       "@infrastructure/*": ["src/infrastructure/*"],
-      "@config/*": ["src/config/*"],
-      "@types/*": ["src/types/*"]
+      "@config/*": ["src/config/*"]
     },
-
-    // Other Outputs
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "forceConsistentCasingInFileNames": true,
-
-    // Recommended Options
     "strict": true,
-    "jsx": "react-jsx",
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
+    "moduleDetection": "force"
   },
   "include": ["src", "test/**/*"]
 }
- 

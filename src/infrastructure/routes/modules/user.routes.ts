@@ -1,52 +1,25 @@
-import { Router } from "express";
-import { UserController } from "@infrastructure/controllers/user.controller";
+import { Router } from 'express';
+import { UserController } from '@infrastructure/controllers/user.controller';
+import { UserService } from '@application/services/user.service';
 import { UserRepositorySupabase } from '@infrastructure/repositories/user.repository.supabase';
-import { UserService } from "@application/services/user.service";
-import { validateBody } from "@infrastructure/middlewares/validate-class.middleware";
-import { RegisterUserDTO } from "@infrastructure/dtos/user/register-user.dto";
-import { LoginDTO } from "@infrastructure/dtos/user/login.dto";
-import { authenticateToken } from "@infrastructure/middlewares/auth.middleware";
-import { SetActiveRoomDto } from "@infrastructure/dtos/room/set-active-room.dto";
-import { SkinService } from "@application/services/skin.service";
-import { RoomService } from "@application/services/room.service";
-import { CoinRepositorySupabase } from "@infrastructure/repositories/coin.repository.supabase";
-import { CoinService } from "@application/services/coin.service";
-import { RoomRepositorySupabase } from "@infrastructure/repositories/room.repository.supabase";
-import { SkinRepositorySupabase } from "@infrastructure/repositories/skin.repository.supabase";
-import { MembershipService } from "@application/services/membership.service";
+import { authenticateToken, requireAdmin } from '@infrastructure/middlewares/auth.middleware';
+import { validateBody } from '@infrastructure/middlewares/validate-body.middleware';
+import { RegisterUserDTO, LoginDTO, UpdateUserDTO } from '@infrastructure/dtos/user/user.dto';
 
-import { BadgeRepositorySupabase } from "@infrastructure/repositories/badge.repository.supabase";
-import { BadgeService } from "@application/services/badge.service";
-import { MembershipRepositorySupabase } from "@infrastructure/repositories/membership.repository.supabase";
-import { CoinController } from "@infrastructure/controllers/coin.controller";
+const userRepository = new UserRepositorySupabase();
+const userService = new UserService(userRepository);
+const userController = new UserController(userService);
 
 export const userRouter = Router();
-const userRepository = new UserRepositorySupabase();
-const skinRepository = new SkinRepositorySupabase();
-const roomRepository = new RoomRepositorySupabase();
-const membershipRepository= new MembershipRepositorySupabase();
 
-const membershipService = new MembershipService(membershipRepository);
-const coinRepository = new CoinRepositorySupabase();
-const skinService = new SkinService(skinRepository,coinRepository);
-const coinService = new CoinService(coinRepository);
-const roomService = new RoomService(roomRepository, coinRepository);
+// Auth pública
+userRouter.post('/register', validateBody(RegisterUserDTO), (req, res) => userController.register(req, res));
+userRouter.post('/login', validateBody(LoginDTO), (req, res) => userController.login(req, res));
 
-const badgeRepository = new BadgeRepositorySupabase();
-const badgeService = new BadgeService(badgeRepository);
-const userService = new UserService(userRepository, membershipService);
-const userController = new UserController(userService, skinService, roomService, badgeService);
-const coinController = new CoinController(coinService);
+// Usuario autenticado
+userRouter.get('/me', authenticateToken, (req, res) => userController.getMe(req, res));
+userRouter.patch('/me', authenticateToken, validateBody(UpdateUserDTO), (req, res) => userController.update(req, res));
 
-userRouter.post("/register", validateBody(RegisterUserDTO),(req, res) => userController.register(req, res));
-userRouter.post("/login", validateBody(LoginDTO), (req, res) => userController.login(req, res));
-userRouter.get("/assets", authenticateToken, (req, res) => userController.getUserAssets(req, res));
-userRouter.get("/skins", authenticateToken, (req, res) => userController.getUserSkins(req, res));
-userRouter.get("/rooms", authenticateToken, (req, res) => userController.getUserRooms(req, res));
-userRouter.get("/rooms/active", authenticateToken, (req, res) => userController.getActiveRoom(req, res));
-userRouter.post("/rooms/active", authenticateToken, validateBody(SetActiveRoomDto), (req, res) => userController.setActiveRoom(req, res));
-userRouter.get("/me", authenticateToken, (req, res) => userController.getUserInfo(req, res));
-userRouter.get("/profile/:userId", (req, res) => userController.getPublicProfile(req, res));
-userRouter.patch("/profile/featured-badges", authenticateToken, (req, res) => userController.setFeaturedBadges(req, res));
-userRouter.post("/coins/movement", authenticateToken, (req, res) => coinController.registerMovement(req, res));
-userRouter.get("/coins/movements", authenticateToken, (req, res) => coinController.getMovements(req, res));
+// Solo admin
+userRouter.get('/', authenticateToken, requireAdmin, (req, res) => userController.getAll(req, res));
+userRouter.delete('/:id', authenticateToken, requireAdmin, (req, res) => userController.delete(req, res));

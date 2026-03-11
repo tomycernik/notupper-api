@@ -1,41 +1,17 @@
-import express from "express";
 import 'reflect-metadata';
-import cors from "cors";
-import { AppRoutes } from "@infrastructure/routes/router";
-import { envs } from "@config/envs";
-import session from 'express-session';
+import express from 'express';
+import cors from 'cors';
+import { envs } from '@config/envs';
+import { AppRoutes } from '@infrastructure/routes/router';
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 1000 * 60 * 30,
-    },
-    name: 'oniria.sid',
-    rolling: true,
-  })
-);
+app.use('/api', AppRoutes.routes);
 
-app.use(AppRoutes.routes);
-
-const port = envs.PORT || 3000;
-
-app.listen(port, () => {
-    console.log(`Server corriendo en puerto ${port}`);
-    console.log(`Modo: ${process.env.NODE_ENV}`)
+app.listen(envs.PORT, () => {
+  console.log(`🚀 NotTupper API corriendo en puerto ${envs.PORT}`);
 });
- 

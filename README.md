@@ -1,66 +1,118 @@
-![Node.js](https://img.shields.io/badge/Node.js-20.x-green?logo=node.js&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript&logoColor=white)
-![Express](https://img.shields.io/badge/Express.js-4.x-lightgrey?logo=express&logoColor=black)
-![Jest](https://img.shields.io/badge/Jest-29.x-C21325?logo=jest&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI/CD-2088FF?logo=githubactions&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-DB-3ECF8E?logo=supabase&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-Hosting-black?logo=vercel&logoColor=white)
+# 🍱 NotTupper API
 
-# ⚙️ Oniria – Backend API
-
-- Este es el **backend de Oniria**, desarrollado en **Node.js + Express**.  
-Se conecta a **Supabase** para manejar autenticación, base de datos y almacenamiento, y expone una **API REST** que permite analizar, guardar e interpretar sueños mediante IA.  
-
-Podes acceder a ella desde: 👉 [oniria-api](https://oniria-api.vercel.app/)
-
-## 🚀 Funcionalidades principales
-- Autenticación de usuarios (integrada con Supabase Auth).  
-- Gestión de sueños: creación, listado, detalles.  
-- Interpretación automática de sueños mediante IA.  
-- Exposición de endpoints REST para consumo desde el frontend.  
+Backend REST para el emprendimiento de venta de viandas semanales.  
+Construido con **Node.js + TypeScript + Express + Supabase**, siguiendo arquitectura limpia por capas.
 
 ---
 
-## 📖 Documentación
+## 🏗️ Arquitectura
 
-La documentación completa sobre la arquitectura y el funcionamiento del backend está disponible en la **Wiki**:  
-👉 [Sección Backend en la Wiki](https://github.com/PedroOsnaghi/oniria-api/wiki#-backend)
+```
+src/
+├── config/                  # Supabase, variables de entorno
+├── domain/
+│   ├── interfaces/          # Tipos e interfaces del negocio
+│   └── repositories/        # Contratos (interfaces) de repositorios
+├── application/
+│   └── services/            # Lógica de negocio
+└── infrastructure/
+    ├── controllers/         # Manejo de request/response
+    ├── repositories/        # Implementación Supabase
+    ├── dtos/                # Validación de entrada
+    ├── middlewares/         # Auth JWT, validación
+    └── routes/              # Rutas Express
+```
 
 ---
 
-## 🔧 Requisitos
-- Node.js >= 20  
-- npm (viene con Node)  
-- Cuenta de **Supabase** (con el proyecto configurado).  
-
----
-
-## 🛠️ Instalación y ejecución
+## 🚀 Instalación
 
 ```bash
-# 1. Clonar el repositorio
-git clone git@github.com:org/oniria-api.git
-cd oniria-api
-
-# 2. Instalar dependencias
+git clone <repo>
+cd nottupper-api
 npm install
-
-# 3. Configurar variables de entorno
-cp .env.example .env
-
-# 4. Ejecutar en modo desarrollo
+cp .env.example .env  # Completar con tus credenciales
 npm run dev
 ```
 
 ---
 
+## 🔑 Variables de entorno
 
-<h2>El equipo de Oniria 😎</h2>
-
-| [<img src="https://github.com/moavalos.png" width="100" style="border-radius:50%"><br/>Mora Avalos](https://github.com/moavalos)     | [<img src="https://github.com/ClarisaR.png" width="100" style="border-radius:50%"><br/>Clarisa R](https://github.com/ClarisaR)                     | [<img src="https://github.com/PedroOsnaghi.png" width="100" style="border-radius:50%"><br/>Pedro Osnaghi](https://github.com/PedroOsnaghi) | [<img src="https://github.com/KevinLlombart.png" width="100" style="border-radius:50%"><br/>Kevin Llombart](https://github.com/KevinLlombart) |
-| ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| [<img src="https://github.com/tomycernik.png" width="100" style="border-radius:50%"><br/>Tomy Cernik](https://github.com/tomycernik) | [<img src="https://github.com/MilagrosChavezz.png" width="100" style="border-radius:50%"><br/>Milagros Chavez](https://github.com/MilagrosChavezz) | [<img src="https://github.com/ma3rtin.png" width="100" style="border-radius:50%"><br/>Martin Mutuverria](https://github.com/ma3rtin)       | [<img src="https://github.com/ricartes123.png" width="100" style="border-radius:50%"><br/>Pedro Ricartes](https://github.com/ricartes123)             |
+```env
+PORT=3000
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+JWT_SECRET=your-jwt-secret
+```
 
 ---
 
- 
+## 📡 Endpoints
+
+### Auth / Usuarios
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| POST | `/api/users/register` | — | Registrar usuario |
+| POST | `/api/users/login` | — | Login |
+| GET | `/api/users/me` | USER | Mi perfil |
+| PATCH | `/api/users/me` | USER | Actualizar perfil |
+| GET | `/api/users` | ADMIN | Listar usuarios |
+| DELETE | `/api/users/:id` | ADMIN | Eliminar usuario |
+
+### Comidas (catálogo reutilizable)
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/api/comidas` | — | Listar comidas (`?soloActivas=true`) |
+| GET | `/api/comidas/:id` | — | Detalle |
+| POST | `/api/comidas` | ADMIN | Crear |
+| PATCH | `/api/comidas/:id` | ADMIN | Actualizar |
+| PATCH | `/api/comidas/:id/toggle` | ADMIN | Activar/desactivar |
+| DELETE | `/api/comidas/:id` | ADMIN | Eliminar |
+
+### Viandas (menú activo)
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/api/viandas` | — | Listar viandas (`?soloActivas=true`) |
+| GET | `/api/viandas/:id` | — | Detalle con comidas |
+| POST | `/api/viandas` | ADMIN | Crear |
+| PATCH | `/api/viandas/:id` | ADMIN | Actualizar |
+| PATCH | `/api/viandas/:id/toggle` | ADMIN | Activar/desactivar |
+| PUT | `/api/viandas/:id/comidas` | ADMIN | Asignar comidas (reemplaza todas) |
+| DELETE | `/api/viandas/:id/comidas/:comidaId` | ADMIN | Quitar comida |
+| DELETE | `/api/viandas/:id` | ADMIN | Eliminar |
+
+### Pedidos
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| POST | `/api/pedidos` | USER | Crear pedido |
+| GET | `/api/pedidos/mis-pedidos` | USER | Mis pedidos |
+| PATCH | `/api/pedidos/:id/cancelar` | USER | Cancelar pedido |
+| GET | `/api/pedidos` | ADMIN | Todos los pedidos (`?estado=PENDIENTE`) |
+| GET | `/api/pedidos/:id` | ADMIN | Detalle |
+| PATCH | `/api/pedidos/:id/estado` | ADMIN | Cambiar estado |
+| DELETE | `/api/pedidos/:id` | ADMIN | Eliminar |
+
+---
+
+## 🗄️ Base de datos
+
+Ver el SQL completo en `/supabase/schema.sql`.
+
+Tablas: `users`, `comidas`, `viandas`, `vianda_comidas`, `pedidos`
+
+---
+
+## 🎯 Flujo del sistema
+
+**Admin:**
+1. Crea comidas en el catálogo
+2. Crea viandas y les asigna comidas
+3. Activa las viandas del menú actual
+4. Gestiona pedidos y actualiza estados
+
+**Usuario:**
+1. Ve el menú (`GET /api/viandas?soloActivas=true`)
+2. Elige una vianda y hace el pedido
+3. Contacta por WhatsApp (canal externo)
+4. Consulta el estado de sus pedidos

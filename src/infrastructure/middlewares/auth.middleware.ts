@@ -1,42 +1,36 @@
-import { NextFunction, Request, Response } from "express";
-import { envs } from "@config/envs";
-import jwt from "jsonwebtoken";
-import { JwtPayload } from "@supabase/supabase-js";
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { envs } from '@config/envs';
 
-export async function authenticateToken(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader?.split(" ")[1];
+export interface JwtPayload {
+  id: string;
+  rol: string;
+}
+
+export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader?.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+    res.status(401).json({ success: false, message: 'Token requerido' });
+    return;
   }
 
   try {
-    const secret = envs.SUPABASE_JWT_SECRET;
-    const url = envs.SUPABASE_URL;
-
-    jwt.verify(token, secret, (err, decoded) => {
-      if (err) {
-        console.error("JWT verification failed:", err);
-        return res.status(403).json({ message: "Forbidden" });
-      }
-      const payload = decoded as JwtPayload;
-
-      if (!payload.iss?.includes(url)) {
-        return res.status(403).json({ message: "Invalid issuer" });
-      }
-
-      (req as any).userId = payload.sub;
-
-      next();
-    });
-  } catch (err) {
-    console.error("Unexpected error in authenticateToken:", err);
-    return res.status(500).json({ message: "Internal server error" });
+    const payload = jwt.verify(token, envs.JWT_SECRET) as JwtPayload;
+    (req as any).userId = payload.id;
+    (req as any).userRol = payload.rol;
+    next();
+  } catch {
+    res.status(403).json({ success: false, message: 'Token inválido o expirado' });
   }
-}
- 
+};
+
+export const requireAdmin = (req: Request, res: Response, next: NextFunction): void => {
+  const rol = (req as any).userRol;
+  if (rol !== 'ADMIN') {
+    res.status(403).json({ success: false, message: 'Acceso restringido a administradores' });
+    return;
+  }
+  next();
+};

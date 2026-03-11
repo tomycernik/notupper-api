@@ -1,23 +1,27 @@
+export type UserRol = 'USER' | 'ADMIN';
+
 export interface IUser {
-    id?: string;
-    email: string;
-    name: string;
-    password: string;
-    date_of_birth: Date;
-    coin_amount: number;
-    membership_id: number;
-    membership_start_date?: string;
-    membership_end_date?: string;
+  id?: string;
+  nombre: string;
+  apellido: string;
+  email?: string;
+  celular: string;
+  zona: string;
+  password: string;
+  rol: UserRol;
+  created_at?: string;
 }
 
 export interface IUserContext {
-    id: string;
-    email: string;
-    name: string;
-    date_of_birth: Date;
-    coin_amount: number;
+  id: string;
+  nombre: string;
+  apellido: string;
+  email?: string;
+  celular: string;
+  zona: string;
+  rol: UserRol;
 }
 
-export interface IRepositoryUser extends IUserContext {
-    token: string | null;
+export interface IAuthUser extends IUserContext {
+  token: string;
 }

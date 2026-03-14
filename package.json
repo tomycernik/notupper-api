@@ -1,66 +1,36 @@
 {
   "name": "nottupper-api",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev -r tsconfig-paths/register --respawn src/index.ts",
     "build": "tsc",
-    "start": "cross-env NODE_ENV=production node dist/src/index.js",
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "test": "rimraf dist && jest"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node",
-    "setupFiles": [
-      "reflect-metadata"
-    ],
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1",
-      "^@application/(.*)$": "<rootDir>/src/application/$1",
-      "^@domain/(.*)$": "<rootDir>/src/domain/$1",
-      "^@infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1",
-      "^@config/(.*)$": "<rootDir>/src/config/$1"
-    }
+    "start": "cross-env NODE_ENV=production node -r tsconfig-paths/register dist/src/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
-    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.0",
-    "@types/supertest": "^6.0.3",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
     "cross-env": "^10.0.0",
-    "eslint": "^9.0.0",
-    "jest": "^30.0.0",
-    "rimraf": "^6.0.0",
-    "supertest": "^7.0.0",
-    "ts-jest": "^29.0.0",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@angular/common": "^21.2.1",
-    "@angular/core": "^21.2.1",
     "@supabase/supabase-js": "^2.0.0",
-    "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "cors": "^2.8.5",
     "dotenv": "^17.0.0",
-    "env-var": "^7.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2",
     "uuid": "^11.0.0"
   }
 }

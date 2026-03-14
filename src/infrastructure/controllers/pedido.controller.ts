@@ -18,11 +18,11 @@ export class PedidoController {
 
       const pedidoData: any = {
         usuario_id: userId,
-        vianda_id: vianda_id ?? null,
         tamano: tamano ?? 'CHICA',
         observaciones,
         estado: 'PENDIENTE',
       };
+      if (vianda_id) pedidoData.vianda_id = vianda_id;
 
       const pedido = await this.pedidoService.crear(pedidoData, extras);
       res.status(201).json({ success: true, data: pedido });

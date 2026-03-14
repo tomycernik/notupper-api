@@ -1,14 +1,15 @@
 import { IPedidoRepository } from '@domain/repositories/pedido.repository';
-import { IPedido, IPedidoDetalle, PedidoEstado } from '@domain/interfaces/pedido.interface';
+import { IPedido, IPedidoDetalle, IPedidoExtra, PedidoEstado } from '@domain/interfaces/pedido.interface';
 
 export class PedidoService {
   constructor(private readonly pedidoRepository: IPedidoRepository) {}
 
-  async crear(data: IPedido): Promise<IPedido> {
-    return this.pedidoRepository.create({
-      ...data,
-      estado: 'PENDIENTE',
-    });
+  async crear(data: IPedido, extras?: Omit<IPedidoExtra, 'id' | 'pedido_id'>[]): Promise<IPedido> {
+    const pedido = await this.pedidoRepository.create({ ...data, estado: 'PENDIENTE' });
+    if (extras && extras.length > 0 && pedido.id) {
+      await this.pedidoRepository.createExtras(pedido.id, extras);
+    }
+    return pedido;
   }
 
   async obtenerTodos(estado?: PedidoEstado): Promise<IPedidoDetalle[]> {

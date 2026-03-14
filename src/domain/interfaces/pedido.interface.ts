@@ -1,5 +1,14 @@
 export type PedidoEstado = 'PENDIENTE' | 'EN_PROCESO' | 'ENTREGADO' | 'CANCELADO';
 export type PedidoTamano = 'CHICA' | 'GRANDE';
+export type ExtraTipo = 'empanada' | 'pizza';
+
+export interface IPedidoExtra {
+  id?: string;
+  pedido_id?: string;
+  tipo: ExtraTipo;
+  sabor: string;
+  cantidad: number;
+}
 
 export interface IPedido {
   id?: string;
@@ -22,4 +31,5 @@ export interface IPedidoDetalle extends IPedido {
     nombre: string;
     tipo: string;
   };
+  extras?: IPedidoExtra[];
 }

@@ -9,14 +9,22 @@ export class PedidoController {
   async crear(req: Request, res: Response): Promise<void> {
     try {
       const userId = (req as any).userId as string;
-      const { vianda_id, tamano, observaciones } = req.body as CreatePedidoDTO;
-      const pedido = await this.pedidoService.crear({
+      const { vianda_id, tamano, observaciones, extras } = req.body as CreatePedidoDTO;
+
+      if (!vianda_id && (!extras || extras.length === 0)) {
+        res.status(400).json({ success: false, message: 'Debe incluir una vianda o extras' });
+        return;
+      }
+
+      const pedidoData: any = {
         usuario_id: userId,
-        vianda_id,
-        tamano,
+        vianda_id: vianda_id ?? null,
+        tamano: tamano ?? 'CHICA',
         observaciones,
         estado: 'PENDIENTE',
-      });
+      };
+
+      const pedido = await this.pedidoService.crear(pedidoData, extras);
       res.status(201).json({ success: true, data: pedido });
     } catch (error: any) {
       res.status(400).json({ success: false, message: error.message });

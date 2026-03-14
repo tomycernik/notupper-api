@@ -1,11 +1,12 @@
 import { supabase } from '@config/supabase';
 import { IPedidoRepository } from '@domain/repositories/pedido.repository';
-import { IPedido, IPedidoDetalle, PedidoEstado } from '@domain/interfaces/pedido.interface';
+import { IPedido, IPedidoDetalle, IPedidoExtra, PedidoEstado } from '@domain/interfaces/pedido.interface';
 
 const SELECT_DETALLE = `
   *,
   usuario:users(nombre, apellido, celular, zona),
-  vianda:viandas(nombre, tipo)
+  vianda:viandas(nombre, tipo),
+  extras:pedido_extras(id, tipo, sabor, cantidad)
 `;
 
 export class PedidoRepositorySupabase implements IPedidoRepository {
@@ -18,6 +19,13 @@ export class PedidoRepositorySupabase implements IPedidoRepository {
 
     if (error) throw new Error(error.message);
     return data as IPedido;
+  }
+
+  async createExtras(pedidoId: string, extras: Omit<IPedidoExtra, 'id' | 'pedido_id'>[]): Promise<void> {
+    if (!extras.length) return;
+    const rows = extras.map(e => ({ ...e, pedido_id: pedidoId }));
+    const { error } = await supabase.from('pedido_extras').insert(rows);
+    if (error) throw new Error(error.message);
   }
 
   async findAll(estado?: PedidoEstado): Promise<IPedidoDetalle[]> {

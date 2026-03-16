@@ -11,6 +11,15 @@ export class UserRepositorySupabase implements IUserRepository {
   }
 
   async register(user: IUser): Promise<IAuthUser> {
+    // Verificar si el email ya existe
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', user.email)
+      .single();
+
+    if (existing) throw new Error('Ya existe una cuenta con ese email. Ingresá o usá otro email.');
+
     const hashedPassword = await bcrypt.hash(user.password, 10);
 
     const { data, error } = await supabase
@@ -19,7 +28,12 @@ export class UserRepositorySupabase implements IUserRepository {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.message.includes('unique') || error.message.includes('duplicate')) {
+        throw new Error('Ya existe una cuenta con ese email. Ingresá o usá otro email.');
+      }
+      throw new Error('Error al crear la cuenta. Intentá de nuevo.');
+    }
 
     const { password: _, ...userContext } = data as IUser & { id: string };
     return { ...(userContext as IUserContext), token: this.buildToken(userContext as IUserContext) };
@@ -32,10 +46,10 @@ export class UserRepositorySupabase implements IUserRepository {
       .eq('email', email)
       .single();
 
-    if (error || !data) throw new Error('Credenciales inválidas');
+    if (error || !data) throw new Error('No encontramos una cuenta con ese email.');
 
     const valid = await bcrypt.compare(password, data.password);
-    if (!valid) throw new Error('Credenciales inválidas');
+    if (!valid) throw new Error('La contraseña es incorrecta.');
 
     const { password: _, ...userContext } = data as IUser & { id: string };
     return { ...(userContext as IUserContext), token: this.buildToken(userContext as IUserContext) };
